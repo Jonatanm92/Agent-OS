@@ -86,7 +86,10 @@ function extractError(body: Record<string, unknown>, status: number): string | n
   return null;
 }
 
-async function post(path: string, payload: unknown): Promise<{ body: Record<string, unknown>; status: number }> {
+async function post(
+  path: string,
+  payload: unknown
+): Promise<{ raw: string; status: number; contentType: string }> {
   const cfg = resolveConfig();
   let res: Response;
   try {
@@ -94,7 +97,7 @@ async function post(path: string, payload: unknown): Promise<{ body: Record<stri
       method: 'POST',
       headers: authHeaders(cfg.fccAuthToken),
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(120000),
+      signal: AbortSignal.timeout(180000),
     });
   } catch (err) {
     throw new Error(
@@ -104,17 +107,71 @@ async function post(path: string, payload: unknown): Promise<{ body: Record<stri
     );
   }
   const raw = await res.text();
-  let body: Record<string, unknown>;
-  try {
-    body = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
-  } catch {
-    throw new Error(`FCC returned a non-JSON response (HTTP ${res.status}): ${raw.slice(0, 300)}`);
+  return { raw, status: res.status, contentType: res.headers.get('content-type') ?? '' };
+}
+
+/** FCC may answer either as one JSON body or as a Server-Sent Events stream. */
+function isSSE(raw: string, contentType: string): boolean {
+  return (
+    contentType.includes('text/event-stream') ||
+    /(^|\n)\s*event:/.test(raw) ||
+    /(^|\n)data:/.test(raw)
+  );
+}
+
+/** Yield the JSON payload string from each `data:` line of an SSE body. */
+function sseDataLines(raw: string): string[] {
+  const out: string[] = [];
+  for (const line of raw.split(/\r?\n/)) {
+    const m = line.match(/^data:\s?(.*)$/);
+    if (m && m[1] && m[1].trim() !== '[DONE]') out.push(m[1]);
   }
-  return { body, status: res.status };
+  return out;
+}
+
+function tryParse(s: string): Record<string, unknown> | null {
+  try {
+    return JSON.parse(s) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function statusOk(status: number): boolean {
+  return status >= 200 && status < 300;
 }
 
 // ── Anthropic Messages transport (Claude Code, Hermes) ──────────────────────
 interface AnthropicBlock { type: string; text?: string }
+
+/** Parse an Anthropic Messages SSE stream into final text + usage. */
+function parseMessagesStream(raw: string): { text: string; usage?: ChatResult['usage'] } {
+  let text = '';
+  let usage: ChatResult['usage'] | undefined;
+  for (const data of sseDataLines(raw)) {
+    const ev = tryParse(data);
+    if (!ev) continue;
+    const type = ev.type as string;
+    if (type === 'content_block_delta') {
+      const delta = ev.delta as { type?: string; text?: string } | undefined;
+      if (delta?.type === 'text_delta' && typeof delta.text === 'string') text += delta.text;
+    } else if (type === 'content_block_start') {
+      const block = ev.content_block as AnthropicBlock | undefined;
+      if (block?.type === 'text' && typeof block.text === 'string') text += block.text;
+    } else if (type === 'message_start') {
+      const u = (ev.message as { usage?: { input_tokens?: number } } | undefined)?.usage;
+      if (u) usage = { ...usage, input_tokens: u.input_tokens };
+    } else if (type === 'message_delta') {
+      const u = ev.usage as { output_tokens?: number } | undefined;
+      if (u) usage = { ...usage, output_tokens: u.output_tokens };
+    } else if (type === 'error') {
+      const e = ev.error as { message?: string } | undefined;
+      throw new Error(`Free Claude Code: ${e?.message || 'stream error'}`);
+    }
+  }
+  return { text: text.trim(), usage };
+}
+
 async function callMessages(model: string, history: ChatTurn[], system?: string) {
   const payload: Record<string, unknown> = {
     model,
@@ -123,7 +180,15 @@ async function callMessages(model: string, history: ChatTurn[], system?: string)
   };
   if (system && system.trim()) payload.system = system;
 
-  const { body, status } = await post('/v1/messages', payload);
+  const { raw, status, contentType } = await post('/v1/messages', payload);
+
+  if (isSSE(raw, contentType)) {
+    const { text, usage } = parseMessagesStream(raw);
+    if (!text && !statusOk(status)) throw new Error(`Free Claude Code: HTTP ${status}`);
+    return { text, usage };
+  }
+
+  const body = tryParse(raw) ?? {};
   const errMsg = !statusOk(status) || body.error || body.detail ? extractError(body, status) : null;
   if (errMsg) throw new Error(`Free Claude Code: ${errMsg}`);
 
@@ -138,9 +203,31 @@ async function callMessages(model: string, history: ChatTurn[], system?: string)
 
 // ── OpenAI Responses transport (Codex) ──────────────────────────────────────
 interface ResponsesItem { type?: string; content?: { type?: string; text?: string }[] }
+
+/** Parse an OpenAI Responses SSE stream into final text. */
+function parseResponsesStream(raw: string): { text: string } {
+  let text = '';
+  let done = '';
+  for (const data of sseDataLines(raw)) {
+    const ev = tryParse(data);
+    if (!ev) continue;
+    const type = (ev.type as string) || '';
+    if (type.endsWith('output_text.delta') && typeof ev.delta === 'string') {
+      text += ev.delta;
+    } else if (type.endsWith('output_text.done') && typeof ev.text === 'string') {
+      done = ev.text;
+    } else if (type === 'response.completed' || type === 'response.done') {
+      const resp = ev.response as { output_text?: string; output?: ResponsesItem[] } | undefined;
+      if (resp?.output_text) done = resp.output_text;
+    } else if (type.includes('error')) {
+      const e = (ev.error as { message?: string } | undefined)?.message || (ev.message as string);
+      if (e) throw new Error(`Free Claude Code (Codex): ${e}`);
+    }
+  }
+  return { text: (text || done).trim() };
+}
+
 async function callResponses(model: string, history: ChatTurn[], system?: string) {
-  // The Responses API takes a single `input`. We flatten the conversation and
-  // pass any memory/system via `instructions`.
   const input = history.map((t) => ({
     role: t.role,
     content: [{ type: 'input_text', text: t.content }],
@@ -148,11 +235,18 @@ async function callResponses(model: string, history: ChatTurn[], system?: string
   const payload: Record<string, unknown> = { model, input };
   if (system && system.trim()) payload.instructions = system;
 
-  const { body, status } = await post('/v1/responses', payload);
+  const { raw, status, contentType } = await post('/v1/responses', payload);
+
+  if (isSSE(raw, contentType)) {
+    const { text } = parseResponsesStream(raw);
+    if (!text && !statusOk(status)) throw new Error(`Free Claude Code (Codex): HTTP ${status}`);
+    return { text, usage: undefined as ChatResult['usage'] };
+  }
+
+  const body = tryParse(raw) ?? {};
   const errMsg = !statusOk(status) || body.error ? extractError(body, status) : null;
   if (errMsg) throw new Error(`Free Claude Code (Codex): ${errMsg}`);
 
-  // Prefer the convenience field, else walk the output items.
   let text = typeof body.output_text === 'string' ? (body.output_text as string) : '';
   if (!text) {
     const out = (body.output as ResponsesItem[] | undefined) ?? [];
@@ -163,10 +257,6 @@ async function callResponses(model: string, history: ChatTurn[], system?: string
       .join('\n');
   }
   return { text: text.trim(), usage: body.usage as ChatResult['usage'] };
-}
-
-function statusOk(status: number): boolean {
-  return status >= 200 && status < 300;
 }
 
 /** Run a turn for the given agent, dispatching to the right backend/transport. */
