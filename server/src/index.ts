@@ -17,6 +17,7 @@ import * as workspace from './services/workspace.js';
 import { listAgentViews, getAgent, resolveAgentIdentity } from './services/agents.js';
 import * as hermes from './services/hermes.js';
 import { runAgentic } from './services/agentic.js';
+import * as pipeline from './services/pipeline.js';
 import { attachTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -400,6 +401,42 @@ api.post('/workspace/file', (req, res) => {
   if (!rel) return res.status(400).json({ error: 'path required' });
   const file = workspace.writeFileContent(projectId, rel, String(req.body?.content ?? ''));
   res.json({ file });
+});
+
+// ── Pipeline (From Inbox to Shipped) ──────────────────────────────────────────
+api.get('/pipeline', (_req, res) => {
+  res.json({ items: pipeline.list() });
+});
+
+api.post('/pipeline/capture', (req, res) => {
+  const idea = String(req.body?.idea ?? '').trim();
+  if (!idea) return res.status(400).json({ error: 'idea required' });
+  res.json({ item: pipeline.capture(idea) });
+});
+
+api.post(
+  '/pipeline/:id/shape',
+  wrap(async (req, res) => {
+    const agentId = getAgent(String(req.body?.agentId ?? 'free-claude-code')).id;
+    res.json({ item: await pipeline.shape(req.params.id, agentId) });
+  })
+);
+
+api.post('/pipeline/:id/approve', (req, res) => {
+  res.json({ item: pipeline.approve(req.params.id) });
+});
+
+api.post(
+  '/pipeline/:id/execute',
+  wrap(async (req, res) => {
+    const agentId = getAgent(String(req.body?.agentId ?? 'free-claude-code')).id;
+    res.json({ item: await pipeline.execute(req.params.id, agentId) });
+  })
+);
+
+api.delete('/pipeline/:id', (req, res) => {
+  pipeline.remove(req.params.id);
+  res.json({ ok: true });
 });
 
 app.use('/api', api);

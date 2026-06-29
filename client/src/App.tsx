@@ -6,10 +6,11 @@ import { WorkspaceTab } from './components/WorkspaceTab';
 import { MemoryTab } from './components/MemoryTab';
 import { SettingsTab } from './components/SettingsTab';
 import { TerminalTab } from './components/TerminalTab';
+import { PipelineTab } from './components/PipelineTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
 
-export type Tab = 'chat' | 'workspace' | 'memory' | 'terminal' | 'settings';
+export type Tab = 'chat' | 'pipeline' | 'workspace' | 'memory' | 'terminal' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
@@ -147,6 +148,7 @@ export function App() {
               onAgentFromConversation={(id) => setActiveAgentId(id)}
             />
           )}
+          {tab === 'pipeline' && <PipelineTab />}
           {tab === 'workspace' && <WorkspaceTab activeProject={activeProject} />}
           {tab === 'memory' && <MemoryTab />}
           {tab === 'terminal' && <TerminalTab />}
@@ -169,6 +171,8 @@ function tabTitle(tab: Tab, agentLabel?: string): string {
   switch (tab) {
     case 'chat':
       return `${agentLabel ?? 'Free Claude Code'} — Chat`;
+    case 'pipeline':
+      return 'Pipeline — From Inbox to Shipped';
     case 'workspace':
       return 'Workspace';
     case 'memory':

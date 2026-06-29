@@ -98,6 +98,22 @@ export interface NoteSummary {
   modified: string;
 }
 
+export type PipelineStage = 'capture' | 'gate' | 'execute' | 'shipped';
+export interface PipelineItem {
+  id: string;
+  title: string;
+  raw: string;
+  stage: PipelineStage;
+  item_type: string;
+  tags: string[];
+  plan: string;
+  score: number;
+  deliverable: string;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const api = {
   authStatus: () => req<{ required: boolean }>('/api/auth/status'),
   login: (password: string) =>
@@ -172,4 +188,20 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ text }),
     }),
+
+  // Pipeline — From Inbox to Shipped
+  listPipeline: () => req<{ items: PipelineItem[] }>('/api/pipeline'),
+  capturePipeline: (idea: string) =>
+    req<{ item: PipelineItem }>('/api/pipeline/capture', {
+      method: 'POST',
+      body: JSON.stringify({ idea }),
+    }),
+  shapePipeline: (id: string) =>
+    req<{ item: PipelineItem }>(`/api/pipeline/${id}/shape`, { method: 'POST', body: '{}' }),
+  approvePipeline: (id: string) =>
+    req<{ item: PipelineItem }>(`/api/pipeline/${id}/approve`, { method: 'POST', body: '{}' }),
+  executePipeline: (id: string) =>
+    req<{ item: PipelineItem }>(`/api/pipeline/${id}/execute`, { method: 'POST', body: '{}' }),
+  deletePipeline: (id: string) =>
+    req<{ ok: boolean }>(`/api/pipeline/${id}`, { method: 'DELETE' }),
 };

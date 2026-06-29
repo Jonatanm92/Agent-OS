@@ -72,6 +72,21 @@ function initializeSchema(database: Database.Database): void {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL DEFAULT ''
     );
+
+    CREATE TABLE IF NOT EXISTS pipeline_items (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      raw TEXT NOT NULL DEFAULT '',
+      stage TEXT NOT NULL DEFAULT 'capture',
+      item_type TEXT NOT NULL DEFAULT 'idea',
+      tags TEXT NOT NULL DEFAULT '[]',
+      plan TEXT NOT NULL DEFAULT '',
+      score INTEGER NOT NULL DEFAULT 0,
+      deliverable TEXT NOT NULL DEFAULT '',
+      project_id TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 
   // ── Migrations ──────────────────────────────────────────────────────────

@@ -125,6 +125,29 @@ entry in `server/src/services/agents.ts`.
 
 ---
 
+## Pipeline — From Inbox to Shipped
+
+The **Pipeline** tab is a kanban that turns ideas into shipped deliverables with a
+single human checkpoint:
+
+```
+Capture → (agent Shapes it) → Human Gate (you approve) → Execute (agent builds) → Shipped & Filed
+```
+
+- **Capture** — drop any idea (project, thought, link) into the inbox.
+- **Shape it** — an agent classifies it (type, tags, a 0–100 score, and a short plan)
+  and moves it to the gate.
+- **Approve** — the one human checkpoint. One click sends it to execution.
+- **Build the deliverable** — the agent build loop writes real files into the active
+  Workspace project.
+- **Shipped & Filed** — every item is also written to your Obsidian vault under
+  `Pipeline/`, so the whole flow lives in your notes.
+
+This is the orchestration + handoff layer (Components 6 & 7): each stage hands a
+structured item to the next, with you in the loop exactly once.
+
+---
+
 ## CLI — one launcher for every agent
 
 Each agent also has a real terminal CLI. `agentos` is a single cross-platform
