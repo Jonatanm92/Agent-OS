@@ -144,10 +144,15 @@ function statusOk(status: number): boolean {
 // ── Anthropic Messages transport (Claude Code, Hermes) ──────────────────────
 interface AnthropicBlock { type: string; text?: string }
 
-/** Parse an Anthropic Messages SSE stream into final text + usage. */
-function parseMessagesStream(raw: string): { text: string; usage?: ChatResult['usage'] } {
+/** Parse an Anthropic Messages SSE stream into final text + usage + model. */
+function parseMessagesStream(raw: string): {
+  text: string;
+  usage?: ChatResult['usage'];
+  model?: string;
+} {
   let text = '';
   let usage: ChatResult['usage'] | undefined;
+  let model: string | undefined;
   for (const data of sseDataLines(raw)) {
     const ev = tryParse(data);
     if (!ev) continue;
@@ -159,8 +164,9 @@ function parseMessagesStream(raw: string): { text: string; usage?: ChatResult['u
       const block = ev.content_block as AnthropicBlock | undefined;
       if (block?.type === 'text' && typeof block.text === 'string') text += block.text;
     } else if (type === 'message_start') {
-      const u = (ev.message as { usage?: { input_tokens?: number } } | undefined)?.usage;
-      if (u) usage = { ...usage, input_tokens: u.input_tokens };
+      const msg = ev.message as { usage?: { input_tokens?: number }; model?: string } | undefined;
+      if (msg?.usage) usage = { ...usage, input_tokens: msg.usage.input_tokens };
+      if (typeof msg?.model === 'string') model = msg.model;
     } else if (type === 'message_delta') {
       const u = ev.usage as { output_tokens?: number } | undefined;
       if (u) usage = { ...usage, output_tokens: u.output_tokens };
@@ -169,7 +175,7 @@ function parseMessagesStream(raw: string): { text: string; usage?: ChatResult['u
       throw new Error(`Free Claude Code: ${e?.message || 'stream error'}`);
     }
   }
-  return { text: text.trim(), usage };
+  return { text: text.trim(), usage, model };
 }
 
 async function callMessages(model: string, history: ChatTurn[], system?: string) {
@@ -183,9 +189,9 @@ async function callMessages(model: string, history: ChatTurn[], system?: string)
   const { raw, status, contentType } = await post('/v1/messages', payload);
 
   if (isSSE(raw, contentType)) {
-    const { text, usage } = parseMessagesStream(raw);
-    if (!text && !statusOk(status)) throw new Error(`Free Claude Code: HTTP ${status}`);
-    return { text, usage };
+    const parsed = parseMessagesStream(raw);
+    if (!parsed.text && !statusOk(status)) throw new Error(`Free Claude Code: HTTP ${status}`);
+    return { text: parsed.text, usage: parsed.usage, model: parsed.model };
   }
 
   const body = tryParse(raw) ?? {};
@@ -198,33 +204,35 @@ async function callMessages(model: string, history: ChatTurn[], system?: string)
     .map((b) => b.text)
     .join('\n')
     .trim();
-  return { text, usage: body.usage as ChatResult['usage'] };
+  return { text, usage: body.usage as ChatResult['usage'], model: body.model as string | undefined };
 }
 
 // ── OpenAI Responses transport (Codex) ──────────────────────────────────────
 interface ResponsesItem { type?: string; content?: { type?: string; text?: string }[] }
 
-/** Parse an OpenAI Responses SSE stream into final text. */
-function parseResponsesStream(raw: string): { text: string } {
+/** Parse an OpenAI Responses SSE stream into final text + model. */
+function parseResponsesStream(raw: string): { text: string; model?: string } {
   let text = '';
   let done = '';
+  let model: string | undefined;
   for (const data of sseDataLines(raw)) {
     const ev = tryParse(data);
     if (!ev) continue;
     const type = (ev.type as string) || '';
+    const resp = ev.response as { output_text?: string; output?: ResponsesItem[]; model?: string } | undefined;
+    if (resp?.model && !model) model = resp.model;
     if (type.endsWith('output_text.delta') && typeof ev.delta === 'string') {
       text += ev.delta;
     } else if (type.endsWith('output_text.done') && typeof ev.text === 'string') {
       done = ev.text;
     } else if (type === 'response.completed' || type === 'response.done') {
-      const resp = ev.response as { output_text?: string; output?: ResponsesItem[] } | undefined;
       if (resp?.output_text) done = resp.output_text;
     } else if (type.includes('error')) {
       const e = (ev.error as { message?: string } | undefined)?.message || (ev.message as string);
       if (e) throw new Error(`Free Claude Code (Codex): ${e}`);
     }
   }
-  return { text: (text || done).trim() };
+  return { text: (text || done).trim(), model };
 }
 
 async function callResponses(model: string, history: ChatTurn[], system?: string) {
@@ -238,9 +246,9 @@ async function callResponses(model: string, history: ChatTurn[], system?: string
   const { raw, status, contentType } = await post('/v1/responses', payload);
 
   if (isSSE(raw, contentType)) {
-    const { text } = parseResponsesStream(raw);
-    if (!text && !statusOk(status)) throw new Error(`Free Claude Code (Codex): HTTP ${status}`);
-    return { text, usage: undefined as ChatResult['usage'] };
+    const parsed = parseResponsesStream(raw);
+    if (!parsed.text && !statusOk(status)) throw new Error(`Free Claude Code (Codex): HTTP ${status}`);
+    return { text: parsed.text, usage: undefined as ChatResult['usage'], model: parsed.model };
   }
 
   const body = tryParse(raw) ?? {};
@@ -256,7 +264,7 @@ async function callResponses(model: string, history: ChatTurn[], system?: string
       .map((c) => c.text)
       .join('\n');
   }
-  return { text: text.trim(), usage: body.usage as ChatResult['usage'] };
+  return { text: text.trim(), usage: body.usage as ChatResult['usage'], model: body.model as string | undefined };
 }
 
 /** Run a turn for the given agent, dispatching to the right backend/transport. */
@@ -275,9 +283,16 @@ export async function runAgent(
   }
 
   const model = resolveAgentModel(agentId);
-  const { text, usage } =
+  const result =
     agent.transport === 'responses'
       ? await callResponses(model, history, system)
       : await callMessages(model, history, system);
-  return { text: text || '(empty response)', usage, model, agentId };
+  // Prefer the model FCC actually used (e.g. "openrouter/owl-alpha") over the
+  // request label we sent (e.g. a Claude tier name).
+  return {
+    text: result.text || '(empty response)',
+    usage: result.usage,
+    model: result.model || model,
+    agentId,
+  };
 }

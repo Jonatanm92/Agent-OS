@@ -17,6 +17,7 @@ export function ChatTab({
   const [busy, setBusy] = useState(false);
   const [useMemory, setUseMemory] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastModel, setLastModel] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const agentId = activeAgent?.id ?? 'free-claude-code';
@@ -61,6 +62,7 @@ export function ChatTab({
     try {
       const res = await api.chat(text, agentId, activeId, useMemory);
       setActiveId(res.conversationId);
+      if (res.model) setLastModel(res.model);
       const { messages } = await api.getConversation(res.conversationId);
       setMessages(messages);
       await loadConversations();
@@ -123,15 +125,21 @@ export function ChatTab({
           </div>
         )}
 
+        {lastModel && (
+          <div className="model-chip" title="The model FCC actually routed to">
+            ⚙ running on <code>{lastModel}</code>
+          </div>
+        )}
+
         <div className="messages" ref={scrollRef}>
           {messages.length === 0 && !busy && (
             <div className="empty">
               <div className="agent-badge">{agentLabel}</div>
               <h2>Same engine. Free fuel.</h2>
               <p className="muted">
-                Talking to <strong>{agentLabel}</strong>
-                {activeAgent?.model && <> (model: <code>{activeAgent.model}</code>)</>}. Replies route
-                through your {activeAgent?.backend === 'cli' ? 'local Hermes runtime' : 'FCC proxy'}.
+                Talking to <strong>{agentLabel}</strong>. Replies route through your{' '}
+                {activeAgent?.backend === 'cli' ? 'local Hermes runtime' : 'FCC proxy'} to{' '}
+                <code>{lastModel || activeAgent?.model || 'your configured free model'}</code>.
               </p>
               <p className="muted small">
                 ◇ All agents share one memory — your Obsidian vault{' '}
