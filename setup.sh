@@ -84,7 +84,7 @@ cat <<EOF
 
   Next steps:
     1. Start Free Claude Code:   fcc-server
-       (configure OpenRouter + MODEL="open_router/openrouter/free" in its Admin UI)
+       (configure OpenRouter + MODEL="open_router/openrouter/owl-alpha" in its Admin UI)
     2. Start Agent OS:           npm start
     3. Open the dashboard:       http://127.0.0.1:3001
 

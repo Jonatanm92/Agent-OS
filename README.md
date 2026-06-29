@@ -7,7 +7,7 @@ This is an open implementation of the four-pillar "Sovereign Stack" idea:
 
 | Pillar | Component | What it is |
 |--------|-----------|------------|
-| **I — Brain** | A free model on **OpenRouter** | The LLM (e.g. a free agentic model) |
+| **I — Brain** | **[Owl Alpha](https://openrouter.ai/openrouter/owl-alpha)** on OpenRouter | Free 1M-context, tool-use model ($0/token) |
 | **II — CLI** | **[Free Claude Code](https://github.com/Alishahryar1/free-claude-code)** (FCC) | An MIT-licensed proxy that routes Claude Code / Codex traffic to any provider |
 | **III — Memory** | **Obsidian vault** (plain markdown) | Persistent context the agent reads and writes |
 | **IV — Command** | **Agent OS** (this repo) | The dashboard: chat, workspace preview, history, project scoping |
@@ -25,8 +25,8 @@ This is an open implementation of the four-pillar "Sovereign Stack" idea:
 # 0. Install + start Free Claude Code (the proxy)
 curl -fsSL "https://github.com/Alishahryar1/free-claude-code/blob/main/scripts/install.sh?raw=1" | sh
 fcc-server            # opens an Admin UI (default http://127.0.0.1:8082/admin)
-#   In the Admin UI: paste your OpenRouter key (openrouter.ai/keys) and set
-#   MODEL="open_router/openrouter/free"  (or any model you like)
+#   In the Admin UI: paste your free OpenRouter key (openrouter.ai/keys) and set
+#   MODEL="open_router/openrouter/owl-alpha"   # the article's free 1M-context Brain ($0/token)
 
 # 1. Set up + run Agent OS
 ./setup.sh
@@ -99,8 +99,10 @@ are stored in SQLite and take precedence over env vars.
 | `SCRATCH_DIR` | `~/freeclaude-scratch` | Root for project workspaces |
 
 > The `MODEL` value is a *Claude tier name*. FCC maps it to whatever provider you set
-> (`MODEL`, `MODEL_SONNET`, etc. in the FCC Admin UI), so the free OpenRouter route is
-> configured **in FCC**, not here.
+> in the FCC Admin UI. To use the article's free Brain, set
+> `MODEL="open_router/openrouter/owl-alpha"` there (Owl Alpha — 1M context, tool use,
+> $0/token). Owl Alpha is a *stealth* model and may be renamed later; if it disappears,
+> swap in any other `:free` slug and keep moving.
 
 ---
 
