@@ -1,0 +1,19 @@
+{
+  "//": "Claude Code MCP config wiring the official obsidian-mcp-server (cyanheads).",
+  "//1": "Copy this into your project's .mcp.json (or merge into ~/.claude.json) so that",
+  "//2": "Free Claude Code can read/write your Obsidian vault as a tool. Prerequisite:",
+  "//3": "install + enable the 'Local REST API' community plugin in Obsidian and copy its",
+  "//4": "API key into OBSIDIAN_API_KEY below. Optional scoping vars are documented in the",
+  "//5": "obsidian-mcp-server README (OBSIDIAN_READ_PATHS / OBSIDIAN_WRITE_PATHS / OBSIDIAN_READ_ONLY).",
+  "mcpServers": {
+    "obsidian": {
+      "command": "npx",
+      "args": ["-y", "obsidian-mcp-server@latest"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your-local-rest-api-key",
+        "OBSIDIAN_BASE_URL": "https://127.0.0.1:27124",
+        "OBSIDIAN_VERIFY_SSL": "false"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+server/dist/
+client/dist/
+*.tsbuildinfo
+
+# Local runtime data
+server/data/
+*.db
+*.db-shm
+*.db-wal
+
+# Local config (use .env.example as the template)
+.env
+
+# Logs / OS
+*.log
+.DS_Store

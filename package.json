@@ -1,0 +1,23 @@
+{
+  "name": "agent-os",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent OS — Mission Control for Free Claude Code (the Sovereign Stack 'Command' pillar)",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "build": "npm run build -w client && npm run build -w server",
+    "build:client": "npm run build -w client",
+    "build:server": "npm run build -w server",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "start": "npm start -w server",
+    "test": "npm test -w server"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
