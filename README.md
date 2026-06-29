@@ -121,6 +121,29 @@ entry in `server/src/services/agents.ts`.
 
 ---
 
+## CLI — one launcher for every agent
+
+Each agent also has a real terminal CLI. `agentos` is a single cross-platform
+launcher for all of them:
+
+```bash
+npm run cli            # interactive menu
+npm run cli claude     # -> fcc-claude  (Claude Code CLI via FCC)
+npm run cli codex      # -> fcc-codex   (Codex CLI via FCC)
+npm run cli hermes     # -> hermes      (Nous Research Hermes Agent)
+npm run cli -- --list  # list agents and the command each maps to
+```
+
+Extra args pass straight through, e.g. `npm run cli codex exec "hello"`. The
+`fcc-*` agents need the FCC proxy running (`fcc-server`) and a tool-capable
+model selected in the FCC Admin UI; `hermes` uses its own `hermes setup`.
+
+> This is the real, YouTube-style terminal experience — `fcc-claude` is the
+> actual Claude Code CLI. The dashboard's **🛠 build** mode is the in-app
+> equivalent that works with any model.
+
+---
+
 ## Configuration
 
 Copy `.env.example` to `.env` (the setup script does this). Settings edited in the UI

@@ -16,7 +16,11 @@
     "dev:client": "npm run dev -w client",
     "start": "npm run build && npm start -w server",
     "serve": "npm start -w server",
+    "cli": "node bin/agentos.mjs",
     "test": "npm test -w server"
+  },
+  "bin": {
+    "agentos": "bin/agentos.mjs"
   },
   "engines": {
     "node": ">=20"
