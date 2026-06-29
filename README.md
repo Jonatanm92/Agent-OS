@@ -118,6 +118,10 @@ entry in `server/src/services/agents.ts`.
   dashboard executes, then previews them in the Workspace tab. It's model-agnostic (works
   with Owl Alpha), so it doesn't depend on the provider's native tool-calling. This is the
   difference between an agent that *talks* about building and one that actually builds.
+- **Terminal tab** — a real shell embedded in the dashboard (xterm.js over a PTY bridge),
+  with one-click buttons to launch `agentos claude / codex / hermes`. Use the agent CLIs
+  from the browser — even on your phone. Needs the optional `node-pty` native module; if
+  it isn't built, the tab shows a one-line install hint and everything else keeps working.
 
 ---
 

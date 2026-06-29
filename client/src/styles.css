@@ -331,3 +331,14 @@ code {
   .settings { padding: 14px; max-width: none; }
   .preview-frame { min-height: 50vh; }
 }
+
+
+/* ── Terminal tab ── */
+.terminal-wrap { display: flex; flex-direction: column; height: 100%; background: #0d0f14; }
+.terminal-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.term-hint { margin-left: auto; }
+.terminal-host { flex: 1; min-height: 0; padding: 8px 6px 6px 12px; overflow: hidden; }
+.terminal-host .xterm { height: 100%; }

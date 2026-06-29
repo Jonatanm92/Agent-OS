@@ -5,10 +5,11 @@ import { ChatTab } from './components/ChatTab';
 import { WorkspaceTab } from './components/WorkspaceTab';
 import { MemoryTab } from './components/MemoryTab';
 import { SettingsTab } from './components/SettingsTab';
+import { TerminalTab } from './components/TerminalTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
 
-export type Tab = 'chat' | 'workspace' | 'memory' | 'settings';
+export type Tab = 'chat' | 'workspace' | 'memory' | 'terminal' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
@@ -148,6 +149,7 @@ export function App() {
           )}
           {tab === 'workspace' && <WorkspaceTab activeProject={activeProject} />}
           {tab === 'memory' && <MemoryTab />}
+          {tab === 'terminal' && <TerminalTab />}
           {tab === 'settings' && (
             <SettingsTab
               agents={agents}
@@ -171,6 +173,8 @@ function tabTitle(tab: Tab, agentLabel?: string): string {
       return 'Workspace';
     case 'memory':
       return 'Memory — Obsidian Vault';
+    case 'terminal':
+      return 'Terminal';
     case 'settings':
       return 'Settings';
   }

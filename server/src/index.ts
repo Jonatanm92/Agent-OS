@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { type Request, type Response, type NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
+import http from 'http';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -15,6 +16,7 @@ import * as workspace from './services/workspace.js';
 import { listAgentViews, getAgent, resolveAgentIdentity } from './services/agents.js';
 import * as hermes from './services/hermes.js';
 import { runAgentic } from './services/agentic.js';
+import { attachTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -393,7 +395,9 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 const { port } = resolveConfig();
-app.listen(port, () => {
+const httpServer = http.createServer(app);
+attachTerminal(httpServer); // in-dashboard terminal at /api/terminal (optional node-pty)
+httpServer.listen(port, () => {
   const cfg = resolveConfig();
   console.log(`\n  Agent OS — Mission Control`);
   console.log(`  ▸ Dashboard:  http://127.0.0.1:${port}`);
