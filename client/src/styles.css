@@ -70,6 +70,11 @@ code {
   display: flex; align-items: center; gap: 6px;
 }
 .model-chip code { color: var(--accent); background: var(--bg-3); }
+.chat-actions {
+  display: flex; align-items: center; gap: 10px; padding: 6px 24px 0; flex-wrap: wrap;
+}
+.small-btn { padding: 4px 10px; font-size: 12px; }
+.mem-msg { color: var(--green); }
 .nav-item {
   display: flex;
   align-items: center;

@@ -18,6 +18,8 @@ export function ChatTab({
   const [useMemory, setUseMemory] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastModel, setLastModel] = useState<string | null>(null);
+  const [savingMem, setSavingMem] = useState(false);
+  const [memMsg, setMemMsg] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const agentId = activeAgent?.id ?? 'free-claude-code';
@@ -77,6 +79,20 @@ export function ChatTab({
   const agentOf = (id: string) =>
     conversations.find((c) => c.id === id)?.agent_id ?? agentId;
 
+  const saveToMemory = async () => {
+    if (!activeId || savingMem) return;
+    setSavingMem(true);
+    setMemMsg(null);
+    try {
+      const { note } = await api.summarizeMemory(activeId);
+      setMemMsg(`✓ Saved to ${note.path} — all agents will recall this.`);
+    } catch (e) {
+      setMemMsg(e instanceof Error ? e.message : 'Could not save');
+    } finally {
+      setSavingMem(false);
+    }
+  };
+
   return (
     <div className="chat">
       <div className="chat-history">
@@ -128,6 +144,15 @@ export function ChatTab({
         {(lastModel || status?.routedModel) && (
           <div className="model-chip" title="The model FCC actually routes to">
             ⚙ running on <code>{lastModel || status?.routedModel}</code>
+          </div>
+        )}
+
+        {activeId && (
+          <div className="chat-actions">
+            <button className="ghost-btn small-btn" onClick={saveToMemory} disabled={savingMem}>
+              {savingMem ? 'Distilling…' : '🧠 Save chat to memory'}
+            </button>
+            {memMsg && <span className="muted tiny mem-msg">{memMsg}</span>}
           </div>
         )}
 

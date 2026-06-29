@@ -64,6 +64,11 @@ Then open **http://127.0.0.1:3001**.
   source, with a Preview/Source toggle.
 - **Memory tab** — a plain-markdown editor over your Obsidian vault. Notes are injected
   into chat as context (toggle per message). The same files open in Obsidian.
+- **Memory that compounds** — click **🧠 Save chat to memory** and the agent distils the
+  conversation into durable bullet-point facts written back to the vault
+  (`Memory/<date>-<title>.md`). Every agent reads those next time, so the *system* gets
+  more useful the more you use it. (The model isn't retrained — this is a memory loop, not
+  fine-tuning.)
 - **Active project pill** — scope each chat/workspace to a project; create new ones in
   one click.
 - **Settings** — point at your FCC proxy (base URL + auth token), pick the model name,

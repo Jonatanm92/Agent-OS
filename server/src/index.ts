@@ -255,6 +255,62 @@ api.get('/memory/search', (req, res) => {
   res.json({ hits: memory.searchNotes(String(req.query.q ?? '')) });
 });
 
+// ── Memory loop: distil a conversation into durable vault notes ───────────────
+// This is the real "gets smarter over time" mechanism: salient facts from chats
+// are written back into the shared Obsidian vault that every agent reads.
+function slugify(s: string): string {
+  return (
+    s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'chat'
+  );
+}
+
+api.post(
+  '/memory/summarize',
+  wrap(async (req, res) => {
+    const conversationId = String(req.body?.conversationId ?? '');
+    if (!conversationId) return res.status(400).json({ error: 'conversationId required' });
+    const convo = db
+      .prepare('SELECT * FROM conversations WHERE id = ?')
+      .get(conversationId) as { title?: string; agent_id?: string } | undefined;
+    if (!convo) return res.status(404).json({ error: 'conversation not found' });
+
+    const rows = db
+      .prepare('SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY created_at ASC')
+      .all(conversationId) as { role: string; content: string }[];
+    if (rows.length === 0) return res.status(400).json({ error: 'conversation is empty' });
+
+    const transcript = rows.map((r) => `${r.role}: ${r.content}`).join('\n');
+    const prompt =
+      'From the conversation below, extract durable facts worth remembering long-term ' +
+      'about the user, their projects, preferences, and decisions. Output 3-6 short markdown ' +
+      'bullet points only — no preamble, no headers.\n\nCONVERSATION:\n' +
+      transcript;
+
+    // Summaries must be reliable, so use an FCC-backed agent (never the CLI one).
+    const convoAgent = convo.agent_id && getAgent(convo.agent_id).backend === 'fcc'
+      ? convo.agent_id
+      : 'free-claude-code';
+    const result = await fcc.runAgent(convoAgent, [{ role: 'user', content: prompt }]);
+
+    const date = new Date().toISOString().slice(0, 10);
+    const notePath = `Memory/${date}-${slugify(convo.title ?? 'chat')}.md`;
+    const body =
+      `# ${convo.title ?? 'Conversation'}\n\n` +
+      `_Saved ${new Date().toISOString()} • distilled by ${convoAgent}_\n\n` +
+      `${result.text}\n`;
+    const note = memory.writeNote(notePath, body);
+    res.json({ note, summary: result.text });
+  })
+);
+
+// Quick "remember this" — append a fact to a running memory inbox note.
+api.post('/memory/remember', (req, res) => {
+  const text = String(req.body?.text ?? '').trim();
+  if (!text) return res.status(400).json({ error: 'text required' });
+  const note = memory.appendNote('Memory/Inbox.md', text);
+  res.json({ note });
+});
+
 // ── Workspace files ────────────────────────────────────────────────────────────
 api.get('/workspace/files', (req, res) => {
   const projectId = String(req.query.projectId ?? getAllSettings().active_project_id);

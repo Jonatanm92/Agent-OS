@@ -145,4 +145,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ path, content, append }),
     }),
+  summarizeMemory: (conversationId: string) =>
+    req<{ note: NoteSummary; summary: string }>('/api/memory/summarize', {
+      method: 'POST',
+      body: JSON.stringify({ conversationId }),
+    }),
+  remember: (text: string) =>
+    req<{ note: NoteSummary }>('/api/memory/remember', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }),
 };
