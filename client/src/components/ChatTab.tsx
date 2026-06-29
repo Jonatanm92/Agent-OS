@@ -125,9 +125,9 @@ export function ChatTab({
           </div>
         )}
 
-        {lastModel && (
-          <div className="model-chip" title="The model FCC actually routed to">
-            ⚙ running on <code>{lastModel}</code>
+        {(lastModel || status?.routedModel) && (
+          <div className="model-chip" title="The model FCC actually routes to">
+            ⚙ running on <code>{lastModel || status?.routedModel}</code>
           </div>
         )}
 
@@ -139,7 +139,7 @@ export function ChatTab({
               <p className="muted">
                 Talking to <strong>{agentLabel}</strong>. Replies route through your{' '}
                 {activeAgent?.backend === 'cli' ? 'local Hermes runtime' : 'FCC proxy'} to{' '}
-                <code>{lastModel || activeAgent?.model || 'your configured free model'}</code>.
+                <code>{lastModel || status?.routedModel || activeAgent?.model || 'your configured free model'}</code>.
               </p>
               <p className="muted small">
                 ◇ All agents share one memory — your Obsidian vault{' '}

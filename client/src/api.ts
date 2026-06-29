@@ -23,6 +23,7 @@ export interface FccStatus {
   baseUrl: string;
   model: string;
   models?: string[];
+  routedModel?: string;
   error?: string;
 }
 

@@ -36,6 +36,7 @@ export interface FccStatus {
   baseUrl: string;
   model: string;
   models?: string[];
+  routedModel?: string;
   error?: string;
 }
 
@@ -51,11 +52,17 @@ export async function getStatus(): Promise<FccStatus> {
       return { ok: false, baseUrl: cfg.fccBaseUrl, model: cfg.model, error: `FCC returned HTTP ${res.status}` };
     }
     const body = (await res.json()) as { data?: { id: string }[] };
+    const models = (body.data ?? []).map((m) => m.id);
+    // FCC encodes its configured route as ids like "anthropic/<MODEL>".
+    // Strip the client-type prefix to reveal the real model (e.g. Owl Alpha).
+    const anth = models.find((id) => id.startsWith('anthropic/'));
+    const routedModel = anth ? anth.slice('anthropic/'.length) : undefined;
     return {
       ok: true,
       baseUrl: cfg.fccBaseUrl,
       model: cfg.model,
-      models: (body.data ?? []).map((m) => m.id),
+      models,
+      routedModel,
     };
   } catch (err) {
     return {
