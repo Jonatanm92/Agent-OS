@@ -16,6 +16,7 @@ export function ChatTab({
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [useMemory, setUseMemory] = useState(true);
+  const [agentMode, setAgentMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastModel, setLastModel] = useState<string | null>(null);
   const [savingMem, setSavingMem] = useState(false);
@@ -62,7 +63,7 @@ export function ChatTab({
       { id: 'tmp-u', conversation_id: '', role: 'user', content: text, created_at: '' },
     ]);
     try {
-      const res = await api.chat(text, agentId, activeId, useMemory);
+      const res = await api.chat(text, agentId, activeId, useMemory, agentMode);
       setActiveId(res.conversationId);
       if (res.model) setLastModel(res.model);
       const { messages } = await api.getConversation(res.conversationId);
@@ -228,6 +229,14 @@ export function ChatTab({
               onChange={(e) => setUseMemory(e.target.checked)}
             />
             memory
+          </label>
+          <label className="memory-toggle" title="Agent mode: actually create/read files in the active project">
+            <input
+              type="checkbox"
+              checked={agentMode}
+              onChange={(e) => setAgentMode(e.target.checked)}
+            />
+            🛠 build
           </label>
           <textarea
             value={input}

@@ -129,10 +129,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ rating }),
     }),
-  chat: (message: string, agentId: string, conversationId?: string, useMemory = true) =>
+  chat: (message: string, agentId: string, conversationId?: string, useMemory = true, agentic = false) =>
     req<{ conversationId: string; agentId: string; reply: string; model: string }>('/api/chat', {
       method: 'POST',
-      body: JSON.stringify({ message, agentId, conversationId, useMemory }),
+      body: JSON.stringify({ message, agentId, conversationId, useMemory, agentic }),
     }),
 
   listAgents: () => req<{ agents: Agent[] }>('/api/agents'),

@@ -113,6 +113,11 @@ entry in `server/src/services/agents.ts`.
   auditable.
 - **Feedback loop** — 👍/👎 on any assistant reply is stored per message, giving you a
   signal to spot regressions over time.
+- **Agent mode (🛠 build)** — toggle it on in chat and the agent runs a real tool loop
+  against your active Workspace project: it writes/reads/lists files via JSON actions the
+  dashboard executes, then previews them in the Workspace tab. It's model-agnostic (works
+  with Owl Alpha), so it doesn't depend on the provider's native tool-calling. This is the
+  difference between an agent that *talks* about building and one that actually builds.
 
 ---
 

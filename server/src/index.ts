@@ -14,6 +14,7 @@ import * as memory from './services/memory.js';
 import * as workspace from './services/workspace.js';
 import { listAgentViews, getAgent, resolveAgentIdentity } from './services/agents.js';
 import * as hermes from './services/hermes.js';
+import { runAgentic } from './services/agentic.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -227,21 +228,47 @@ api.post(
     const memoryCtx = useMemory ? memory.buildMemoryContext() : '';
     const system = [identity, memoryCtx].filter((s) => s && s.trim()).join('\n\n') || undefined;
 
-    const result = await fcc.runAgent(agentId, history, system);
+    // Agent mode runs a real tool loop (write/read/list files) against the active
+    // project. Plain mode is a single chat turn.
+    const useAgentic = req.body?.agentic === true;
+    let replyText: string;
+    let usedModel: string;
+    let usage: { input_tokens?: number; output_tokens?: number } | undefined;
+
+    if (useAgentic) {
+      const projectId = getAllSettings().active_project_id || '';
+      const ar = await runAgentic(agentId, history, projectId, system);
+      usedModel = ar.model;
+      const log = ar.steps.length
+        ? '\n\n---\n**Actions taken:**\n' +
+          ar.steps
+            .map((s) => {
+              const p = (s.args as { path?: string }).path;
+              return `- \`${s.tool}\`${p ? ` ${p}` : ''} → ${s.result.split('\n')[0].slice(0, 100)}`;
+            })
+            .join('\n')
+        : '';
+      replyText = ar.reply + log;
+    } else {
+      const result = await fcc.runAgent(agentId, history, system);
+      replyText = result.text;
+      usedModel = result.model;
+      usage = result.usage;
+    }
 
     // Persist assistant reply
     const replyAt = new Date().toISOString();
     db.prepare(
       'INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)'
-    ).run(randomUUID(), conversationId, 'assistant', result.text, replyAt);
+    ).run(randomUUID(), conversationId, 'assistant', replyText, replyAt);
     db.prepare('UPDATE conversations SET updated_at = ? WHERE id = ?').run(replyAt, conversationId);
 
     res.json({
       conversationId,
       agentId,
-      reply: result.text,
-      usage: result.usage,
-      model: result.model,
+      reply: replyText,
+      usage,
+      model: usedModel,
     });
   })
 );
