@@ -1,8 +1,27 @@
 // Thin fetch wrapper around the Agent OS backend API.
 
+const TOKEN_KEY = 'agentos_token';
+export const auth = {
+  get: () => localStorage.getItem(TOKEN_KEY) || '',
+  set: (t: string) => localStorage.setItem(TOKEN_KEY, t),
+  clear: () => localStorage.removeItem(TOKEN_KEY),
+};
+
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function req<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = auth.get();
   const res = await fetch(url, {
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      ...(token ? { 'x-agentos-token': token } : {}),
+    },
     ...options,
   });
   if (!res.ok) {
@@ -13,7 +32,7 @@ async function req<T>(url: string, options?: RequestInit): Promise<T> {
     } catch {
       /* ignore */
     }
-    throw new Error(detail);
+    throw new ApiError(detail, res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -78,6 +97,13 @@ export interface NoteSummary {
 }
 
 export const api = {
+  authStatus: () => req<{ required: boolean }>('/api/auth/status'),
+  login: (password: string) =>
+    req<{ ok: boolean; token: string }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
+
   status: () => req<FccStatus>('/api/status'),
   getSettings: () =>
     req<{ settings: Record<string, string>; resolved: Record<string, string> }>('/api/settings'),

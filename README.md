@@ -115,6 +115,18 @@ are stored in SQLite and take precedence over env vars.
 | `MODEL` | `claude-sonnet-4-20250514` | Model name sent to FCC (it routes it) |
 | `OBSIDIAN_VAULT_PATH` | `~/freeclaude-vault` | Markdown memory folder |
 | `SCRATCH_DIR` | `~/freeclaude-scratch` | Root for project workspaces |
+| `AGENT_OS_PASSWORD` | _(blank)_ | If set, the dashboard requires this password to log in |
+
+### Mobile & remote access
+
+The dashboard is responsive, so it works on a phone. To reach it from your
+phone:
+
+- **Same Wi-Fi:** open `http://<your-computer-LAN-IP>:3001` (allow port 3001 through your firewall).
+- **Anywhere (private):** put your computer and phone on a [Tailscale](https://tailscale.com) network and use the computer's `100.x` address.
+
+If you expose it beyond a trusted network, **set `AGENT_OS_PASSWORD`** so a login
+is required. Leave it blank for a no-login local setup.
 
 > The `MODEL` value is a *Claude tier name*. FCC maps it to whatever provider you set
 > in the FCC Admin UI. To use the article's free Brain, set

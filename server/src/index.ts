@@ -42,6 +42,32 @@ const wrap =
     }
   };
 
+// ── Auth (opt-in via AGENT_OS_PASSWORD) ───────────────────────────────────────
+// When a password is configured, every /api route except the public ones below
+// requires a matching token header. When it's blank, auth is disabled entirely.
+const PUBLIC_PATHS = new Set(['/health', '/auth/status', '/auth/login']);
+
+api.use((req: Request, res: Response, next: NextFunction) => {
+  const { password } = resolveConfig();
+  if (!password) return next(); // auth disabled
+  if (PUBLIC_PATHS.has(req.path)) return next();
+  const token = req.header('x-agentos-token');
+  if (token && token === password) return next();
+  return res.status(401).json({ error: 'unauthorized' });
+});
+
+api.get('/auth/status', (_req, res) => {
+  res.json({ required: !!resolveConfig().password });
+});
+
+api.post('/auth/login', (req, res) => {
+  const { password } = resolveConfig();
+  if (!password) return res.json({ ok: true, token: '' }); // no auth needed
+  const supplied = String(req.body?.password ?? '');
+  if (supplied && supplied === password) return res.json({ ok: true, token: password });
+  return res.status(401).json({ error: 'invalid password' });
+});
+
 // ── Health & status ─────────────────────────────────────────────────────────
 api.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -277,7 +303,8 @@ app.listen(port, () => {
   console.log(`  ▸ Dashboard:  http://127.0.0.1:${port}`);
   console.log(`  ▸ FCC proxy:  ${cfg.fccBaseUrl}  (model: ${cfg.model})`);
   console.log(`  ▸ Vault:      ${cfg.vaultPath}`);
-  console.log(`  ▸ Scratch:    ${cfg.scratchDir}\n`);
+  console.log(`  ▸ Scratch:    ${cfg.scratchDir}`);
+  console.log(`  ▸ Auth:       ${cfg.password ? 'password required' : 'open (no password set)'}\n`);
 });
 
 export { app };

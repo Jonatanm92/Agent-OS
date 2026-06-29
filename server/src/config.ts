@@ -46,6 +46,7 @@ export interface ResolvedConfig {
   model: string;
   vaultPath: string;
   scratchDir: string;
+  password: string;
 }
 
 /**
@@ -71,5 +72,7 @@ export function resolveConfig(): ResolvedConfig {
     model: getSetting('model') || process.env.MODEL || 'claude-sonnet-4-20250514',
     vaultPath: expandHome(vaultRaw),
     scratchDir: expandHome(scratchRaw),
+    // Opt-in: when set, the dashboard requires this password to use the API.
+    password: process.env.AGENT_OS_PASSWORD || getSetting('agent_os_password') || '',
   };
 }
