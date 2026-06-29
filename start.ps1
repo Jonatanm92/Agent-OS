@@ -18,10 +18,12 @@ if (Get-Command fcc-server -ErrorAction SilentlyContinue) {
 # Give the proxy a few seconds to bind before the dashboard probes it
 Start-Sleep -Seconds 8
 
-# 2. Agent OS dashboard
+# 2. Agent OS dashboard (run in the script's own folder; -WorkingDirectory
+#    handles paths containing spaces/parentheses safely)
 Say "Starting Agent OS dashboard (npm start)..."
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-Start-Process powershell -ArgumentList '-NoExit','-Command',"cd `"$here`"; npm start"
+$here = $PSScriptRoot
+if (-not $here) { $here = Split-Path -Parent $MyInvocation.MyCommand.Path }
+Start-Process powershell -WorkingDirectory $here -ArgumentList '-NoExit','-Command','npm start'
 
 # 3. Open the dashboard
 Start-Sleep -Seconds 5
