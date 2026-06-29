@@ -29,8 +29,10 @@ export function SettingsTab({ agents, onSaved }: { agents: Agent[]; onSaved: () 
       hermes_provider: settings.hermes_provider ?? '',
     };
     for (const a of agents) {
-      const key = `agent_model_${a.id}`;
-      if (settings[key] !== undefined) payload[key] = settings[key];
+      const mk = `agent_model_${a.id}`;
+      if (settings[mk] !== undefined) payload[mk] = settings[mk];
+      const ik = `agent_identity_${a.id}`;
+      if (settings[ik] !== undefined) payload[ik] = settings[ik];
     }
     await api.saveSettings(payload);
     const { resolved } = await api.getSettings();
@@ -100,22 +102,34 @@ export function SettingsTab({ agents, onSaved }: { agents: Agent[]; onSaved: () 
           Override a model per agent (e.g. a free OpenRouter slug to stay $0).
         </p>
         {agents.map((a) => (
-          <label key={a.id}>
-            {a.label}{' '}
-            <span className="muted tiny">
-              ({a.backend === 'cli'
-                ? 'Hermes CLI'
-                : a.transport === 'responses'
-                ? 'OpenAI Responses'
-                : 'Anthropic Messages'}
-              {a.available === false ? ' • not installed' : ''})
-            </span>
-            <input
-              value={settings[`agent_model_${a.id}`] ?? ''}
-              placeholder={a.model || '(uses hermes setup / default)'}
-              onChange={(e) => set(`agent_model_${a.id}`, e.target.value)}
-            />
-          </label>
+          <div key={a.id} className="agent-config">
+            <label>
+              {a.label}{' '}
+              <span className="muted tiny">
+                ({a.backend === 'cli'
+                  ? 'Hermes CLI'
+                  : a.transport === 'responses'
+                  ? 'OpenAI Responses'
+                  : 'Anthropic Messages'}
+                {a.available === false ? ' • not installed' : ''})
+              </span>
+              <input
+                value={settings[`agent_model_${a.id}`] ?? ''}
+                placeholder={a.model || '(uses hermes setup / default)'}
+                onChange={(e) => set(`agent_model_${a.id}`, e.target.value)}
+              />
+            </label>
+            <label>
+              <span className="muted tiny">Identity (system prompt / persona)</span>
+              <textarea
+                className="identity-box"
+                rows={4}
+                value={settings[`agent_identity_${a.id}`] ?? ''}
+                placeholder={a.identity}
+                onChange={(e) => set(`agent_identity_${a.id}`, e.target.value)}
+              />
+            </label>
+          </div>
         ))}
         <label>
           Hermes provider (optional, e.g. <code>openrouter</code> or <code>nous</code>)

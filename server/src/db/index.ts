@@ -84,6 +84,14 @@ function initializeSchema(database: Database.Database): void {
       "ALTER TABLE conversations ADD COLUMN agent_id TEXT NOT NULL DEFAULT 'free-claude-code'"
     );
   }
+
+  // Component 8 — feedback: per-message rating (1 = up, -1 = down, 0 = none).
+  const msgCols = database
+    .prepare("PRAGMA table_info('messages')")
+    .all() as { name: string }[];
+  if (!msgCols.some((c) => c.name === 'rating')) {
+    database.exec('ALTER TABLE messages ADD COLUMN rating INTEGER NOT NULL DEFAULT 0');
+  }
 }
 
 export function closeDb(): void {

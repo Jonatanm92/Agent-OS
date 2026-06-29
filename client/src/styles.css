@@ -75,6 +75,21 @@ code {
 }
 .small-btn { padding: 4px 10px; font-size: 12px; }
 .mem-msg { color: var(--green); }
+.msg-rate { display: flex; gap: 6px; margin-top: 6px; }
+.msg-rate button {
+  background: transparent; border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px 7px; font-size: 12px; opacity: 0.6;
+}
+.msg-rate button:hover { opacity: 1; }
+.msg-rate button.on { opacity: 1; border-color: var(--accent); background: var(--bg-3); }
+.agent-config { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 8px; }
+.agent-config:first-of-type { border-top: none; }
+.identity-box {
+  background: var(--bg-3); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 11px; font-size: 12.5px; font-family: inherit;
+  resize: vertical; line-height: 1.45;
+}
+.identity-box:focus { outline: none; border-color: var(--accent); }
 .nav-item {
   display: flex;
   align-items: center;

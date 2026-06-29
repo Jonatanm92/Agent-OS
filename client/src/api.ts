@@ -69,6 +69,7 @@ export interface Agent {
   transport: 'messages' | 'responses';
   defaultModel: string;
   model: string;
+  identity: string;
   blurb: string;
   available?: boolean;
 }
@@ -79,6 +80,7 @@ export interface Message {
   role: string;
   content: string;
   created_at: string;
+  rating?: number;
 }
 
 export interface WorkspaceFile {
@@ -122,6 +124,11 @@ export const api = {
     req<{ conversation: Conversation; messages: Message[] }>(`/api/conversations/${id}`),
   deleteConversation: (id: string) =>
     req<{ ok: boolean }>(`/api/conversations/${id}`, { method: 'DELETE' }),
+  rateMessage: (id: string, rating: number) =>
+    req<{ ok: boolean }>(`/api/messages/${id}/rating`, {
+      method: 'POST',
+      body: JSON.stringify({ rating }),
+    }),
   chat: (message: string, agentId: string, conversationId?: string, useMemory = true) =>
     req<{ conversationId: string; agentId: string; reply: string; model: string }>('/api/chat', {
       method: 'POST',

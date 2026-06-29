@@ -93,6 +93,18 @@ export function ChatTab({
     }
   };
 
+  const rate = async (id: string, value: number) => {
+    if (!id || id.startsWith('tmp')) return;
+    const current = messages.find((m) => m.id === id)?.rating ?? 0;
+    const next = current === value ? 0 : value; // click again to clear
+    setMessages((ms) => ms.map((m) => (m.id === id ? { ...m, rating: next } : m)));
+    try {
+      await api.rateMessage(id, next);
+    } catch {
+      /* keep optimistic state; non-critical */
+    }
+  };
+
   return (
     <div className="chat">
       <div className="chat-history">
@@ -178,6 +190,24 @@ export function ChatTab({
                 {m.role === 'user' ? 'You' : activeId ? shortAgent(agentOf(activeId)) : agentLabel}
               </div>
               <div className="msg-body">{m.content}</div>
+              {m.role === 'assistant' && m.id && !m.id.startsWith('tmp') && (
+                <div className="msg-rate">
+                  <button
+                    className={m.rating === 1 ? 'on' : ''}
+                    title="Good answer"
+                    onClick={() => rate(m.id, 1)}
+                  >
+                    👍
+                  </button>
+                  <button
+                    className={m.rating === -1 ? 'on' : ''}
+                    title="Bad answer"
+                    onClick={() => rate(m.id, -1)}
+                  >
+                    👎
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {busy && (

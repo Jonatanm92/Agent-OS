@@ -12,7 +12,7 @@ import { resolveConfig, getAllSettings, setSetting } from './config.js';
 import * as fcc from './services/fcc.js';
 import * as memory from './services/memory.js';
 import * as workspace from './services/workspace.js';
-import { listAgentViews, getAgent } from './services/agents.js';
+import { listAgentViews, getAgent, resolveAgentIdentity } from './services/agents.js';
 import * as hermes from './services/hermes.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -98,7 +98,7 @@ api.post('/settings', (req, res) => {
   const allowed = ['fcc_base_url', 'fcc_auth_token', 'model', 'obsidian_vault_path', 'active_project_id', 'hermes_provider'];
   for (const [key, value] of Object.entries(updates)) {
     // Allow the fixed keys plus any per-agent model override (agent_model_<id>).
-    if (allowed.includes(key) || key.startsWith('agent_model_')) {
+    if (allowed.includes(key) || key.startsWith('agent_model_') || key.startsWith('agent_identity_')) {
       setSetting(key, String(value ?? ''));
     }
   }
@@ -172,6 +172,16 @@ api.delete('/conversations/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// Component 8 — feedback loop: rate an assistant message (1 up / -1 down / 0 clear).
+api.post('/messages/:id/rating', (req, res) => {
+  const rating = Number(req.body?.rating);
+  if (![1, 0, -1].includes(rating)) {
+    return res.status(400).json({ error: 'rating must be 1, 0, or -1' });
+  }
+  db.prepare('UPDATE messages SET rating = ? WHERE id = ?').run(rating, req.params.id);
+  res.json({ ok: true });
+});
+
 // ── Chat (routes through FCC) ─────────────────────────────────────────────────
 api.post(
   '/chat',
@@ -212,7 +222,10 @@ api.post(
       .filter((r) => r.role === 'user' || r.role === 'assistant')
       .map((r) => ({ role: r.role as 'user' | 'assistant', content: r.content }));
 
-    const system = useMemory ? memory.buildMemoryContext() : undefined;
+    // Compose the system prompt: identity (Component 1) + shared memory (Component 3).
+    const identity = resolveAgentIdentity(agentId);
+    const memoryCtx = useMemory ? memory.buildMemoryContext() : '';
+    const system = [identity, memoryCtx].filter((s) => s && s.trim()).join('\n\n') || undefined;
 
     const result = await fcc.runAgent(agentId, history, system);
 

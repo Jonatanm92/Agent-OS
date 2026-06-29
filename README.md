@@ -105,6 +105,15 @@ Each agent has a **backend**:
 Override any agent's model in **Settings → Agents**. Adding a new agent is a one-line
 entry in `server/src/services/agents.ts`.
 
+### Identity & feedback
+
+- **Identity files (per agent)** — each agent has an editable persona/system prompt
+  (role, principles, authority, how to handle ambiguity) in **Settings → Agents**. It's
+  injected into every request alongside the shared memory, so behavior is stable and
+  auditable.
+- **Feedback loop** — 👍/👎 on any assistant reply is stored per message, giving you a
+  signal to spot regressions over time.
+
 ---
 
 ## Configuration

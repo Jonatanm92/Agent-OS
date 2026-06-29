@@ -64,6 +64,33 @@ export function getAgent(id: string): AgentDef {
 }
 
 /**
+ * Component 1 — Identity files.
+ * Each agent has an editable identity (system prompt / persona) describing its
+ * role, principles, authority, and how to handle ambiguity. Overridable in
+ * Settings via `agent_identity_<id>`; falls back to a sensible default.
+ */
+const DEFAULT_IDENTITY: Record<string, string> = {
+  'free-claude-code':
+    'You are Free Claude Code, a capable and direct coding & task agent. ' +
+    'Principles: be concise, show working code, and prefer correct over clever. ' +
+    'When a request is ambiguous, ask one clarifying question; otherwise make a ' +
+    'reasonable assumption and state it. Never invent file paths, URLs, or APIs.',
+  codex:
+    'You are Codex, a precise software-engineering agent. ' +
+    'Principles: minimal, working diffs; explain non-obvious choices briefly. ' +
+    'Prefer standard, well-supported patterns. If you are unsure about the ' +
+    'codebase, say so rather than guessing.',
+  hermes:
+    'You are Hermes, an autonomous and resourceful task agent. ' +
+    'Principles: break goals into steps, keep the original goal in view, and ' +
+    'summarize what you did. Flag anything risky or irreversible before doing it.',
+};
+
+export function resolveAgentIdentity(id: string): string {
+  return getSetting(`agent_identity_${id}`) || DEFAULT_IDENTITY[id] || '';
+}
+
+/**
  * Resolve the effective model for an agent.
  * - fcc agents: per-agent override -> agent default -> global model setting.
  * - cli agents: per-agent override only (empty means "use the CLI's own config").
@@ -79,8 +106,13 @@ export function resolveAgentModel(id: string): string {
 
 export interface AgentView extends AgentDef {
   model: string; // resolved model, or '' for cli agents using their own config
+  identity: string;
 }
 
 export function listAgentViews(): AgentView[] {
-  return AGENTS.map((a) => ({ ...a, model: resolveAgentModel(a.id) }));
+  return AGENTS.map((a) => ({
+    ...a,
+    model: resolveAgentModel(a.id),
+    identity: resolveAgentIdentity(a.id),
+  }));
 }
