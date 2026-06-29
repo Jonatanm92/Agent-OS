@@ -21,6 +21,24 @@ This is an open implementation of the four-pillar "Sovereign Stack" idea:
 
 ## Quick start
 
+### Windows (one command)
+
+In **PowerShell**, from the cloned repo folder:
+
+```powershell
+# 1. set up everything (installs uv + FCC, configures Owl Alpha + your key, builds the app)
+powershell -ExecutionPolicy Bypass -File .\setup.ps1
+# 2. start the proxy + dashboard and open it in your browser
+powershell -ExecutionPolicy Bypass -File .\start.ps1
+```
+
+`setup.ps1` will prompt you to paste your free OpenRouter key (from
+[openrouter.ai/keys](https://openrouter.ai/keys)) and wires it to **Owl Alpha**
+automatically. If a command isn't found right after install, close and reopen
+PowerShell once, then re-run.
+
+### macOS / Linux
+
 ```bash
 # 0. Install + start Free Claude Code (the proxy)
 curl -fsSL "https://github.com/Alishahryar1/free-claude-code/blob/main/scripts/install.sh?raw=1" | sh
