@@ -6,6 +6,7 @@ import http from 'http';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import os from 'os';
 
 import { getDb } from './db/index.js';
 import { seedDefaults } from './db/seed.js';
@@ -81,6 +82,31 @@ api.get(
     res.json(status);
   })
 );
+
+// Claude Code readiness: does this model's tool-calling work through FCC?
+api.post(
+  '/fcc/probe',
+  wrap(async (req, res) => {
+    const model = req.body?.model ? String(req.body.model) : undefined;
+    res.json(await fcc.probeToolSupport(model));
+  })
+);
+
+// One-click: set FCC's MODEL by writing ~/.fcc/.env (then user restarts fcc-server).
+api.post('/fcc/set-model', (req, res) => {
+  const model = String(req.body?.model ?? '').trim();
+  if (!model) return res.status(400).json({ error: 'model required' });
+  const fccEnv = path.join(os.homedir(), '.fcc', '.env');
+  fs.mkdirSync(path.dirname(fccEnv), { recursive: true });
+  const existing = fs.existsSync(fccEnv) ? fs.readFileSync(fccEnv, 'utf8').split(/\r?\n/) : [];
+  let found = false;
+  const updated = existing
+    .filter((l) => l !== '')
+    .map((l) => (/^MODEL=/.test(l) ? ((found = true), `MODEL=${model}`) : l));
+  if (!found) updated.push(`MODEL=${model}`);
+  fs.writeFileSync(fccEnv, updated.join('\n') + '\n', 'utf8');
+  res.json({ ok: true, path: fccEnv, note: 'Saved. Restart fcc-server for this to take effect.' });
+});
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 api.get('/settings', (_req, res) => {

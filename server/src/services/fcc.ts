@@ -274,7 +274,89 @@ async function callResponses(model: string, history: ChatTurn[], system?: string
   return { text: text.trim(), usage: body.usage as ChatResult['usage'], model: body.model as string | undefined };
 }
 
-/** Run a turn for the given agent, dispatching to the right backend/transport. */
+/**
+ * Claude Code readiness probe.
+ *
+ * Sends a real Anthropic Messages request WITH a tool definition and checks
+ * whether the model returns a structured `tool_use` (works with Claude Code) or
+ * just leaks tool-call text (won't work through FCC). This is the definitive
+ * test for "can I code with Claude Code on this free model?".
+ */
+export interface ToolProbe {
+  supported: boolean;
+  model: string;
+  detail: string;
+}
+
+export async function probeToolSupport(modelOverride?: string): Promise<ToolProbe> {
+  const cfg = resolveConfig();
+  const model = modelOverride || cfg.model;
+  const payload = {
+    model,
+    max_tokens: 512,
+    tools: [
+      {
+        name: 'get_weather',
+        description: 'Get the current weather for a city',
+        input_schema: {
+          type: 'object',
+          properties: { city: { type: 'string' } },
+          required: ['city'],
+        },
+      },
+    ],
+    messages: [
+      { role: 'user', content: 'Use the get_weather tool to check the weather in Paris.' },
+    ],
+  };
+
+  let raw: string, status: number, contentType: string;
+  try {
+    ({ raw, status, contentType } = await post('/v1/messages', payload));
+  } catch (e) {
+    return { supported: false, model, detail: e instanceof Error ? e.message : 'request failed' };
+  }
+
+  let toolUse = false;
+  let leaked = '';
+
+  if (isSSE(raw, contentType)) {
+    for (const d of sseDataLines(raw)) {
+      const ev = tryParse(d);
+      if (!ev) continue;
+      const type = ev.type as string;
+      if (type === 'content_block_start') {
+        const b = ev.content_block as { type?: string } | undefined;
+        if (b?.type === 'tool_use') toolUse = true;
+      } else if (type === 'content_block_delta') {
+        const del = ev.delta as { type?: string; text?: string } | undefined;
+        if (del?.type === 'input_json_delta') toolUse = true;
+        if (del?.type === 'text_delta' && typeof del.text === 'string') leaked += del.text;
+      } else if (type === 'message_delta') {
+        const d2 = ev.delta as { stop_reason?: string } | undefined;
+        if (d2?.stop_reason === 'tool_use') toolUse = true;
+      }
+    }
+  } else {
+    const body = tryParse(raw) ?? {};
+    if (!statusOk(status) || body.error || body.detail) {
+      return { supported: false, model, detail: extractError(body, status) || `HTTP ${status}` };
+    }
+    const content = (body.content as { type?: string; text?: string }[] | undefined) ?? [];
+    if (content.some((b) => b.type === 'tool_use')) toolUse = true;
+    if ((body as { stop_reason?: string }).stop_reason === 'tool_use') toolUse = true;
+    leaked = content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('');
+  }
+
+  const leakSuspect = /tool_call|<\|?\s*tool|function_call|longcat/i.test(leaked);
+  const detail = toolUse
+    ? '✅ Returned a proper tool_use call — this model works with Claude Code.'
+    : leakSuspect
+    ? '⚠️ The model emitted tool-call TEXT instead of a structured call. Claude Code tools will not work with this model through FCC — pick a tool-capable model.'
+    : 'No tool_use returned. Tools likely will not work here — try a tool-capable model.';
+
+  return { supported: toolUse, model, detail };
+}
 export async function runAgent(
   agentId: string,
   history: ChatTurn[],

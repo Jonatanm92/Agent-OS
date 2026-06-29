@@ -7,6 +7,41 @@ export function SettingsTab({ agents, onSaved }: { agents: Agent[]; onSaved: () 
   const [saved, setSaved] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  // Claude Code readiness
+  const [ccModel, setCcModel] = useState('');
+  const [probing, setProbing] = useState(false);
+  const [probe, setProbe] = useState<{ supported: boolean; detail: string } | null>(null);
+  const [ccMsg, setCcMsg] = useState<string | null>(null);
+
+  const SUGGESTED = [
+    'open_router/qwen/qwen3-coder:free',
+    'open_router/deepseek/deepseek-chat-v3-0324:free',
+    'nvidia_nim/nvidia/nemotron-3-super-120b-a12b',
+  ];
+
+  const runProbe = async () => {
+    setProbing(true);
+    setProbe(null);
+    try {
+      const r = await api.probeTools(ccModel || undefined);
+      setProbe({ supported: r.supported, detail: r.detail });
+    } catch (e) {
+      setProbe({ supported: false, detail: e instanceof Error ? e.message : 'failed' });
+    } finally {
+      setProbing(false);
+    }
+  };
+
+  const applyCc = async () => {
+    if (!ccModel) return;
+    setCcMsg(null);
+    try {
+      const r = await api.setFccModel(ccModel);
+      setCcMsg(`Saved to ${r.path}. Restart fcc-server for it to take effect.`);
+    } catch (e) {
+      setCcMsg(e instanceof Error ? e.message : 'failed');
+    }
+  };
 
   useEffect(() => {
     api.getSettings().then(({ settings, resolved }) => {
@@ -92,6 +127,45 @@ export function SettingsTab({ agents, onSaved }: { agents: Agent[]; onSaved: () 
           {testing ? 'Testing…' : 'Test connection'}
         </button>
         {testResult && <p className="test-result">{testResult}</p>}
+      </section>
+
+      <section className="card">
+        <h3>🧩 Claude Code — free coding readiness</h3>
+        <p className="muted small">
+          Test whether a free model's <strong>tools actually work with Claude Code</strong> (Owl
+          Alpha's don't round-trip through FCC). Pick a model, test it, then set it as FCC's model.
+        </p>
+        <label>
+          Model to test / use
+          <input
+            value={ccModel}
+            placeholder="open_router/qwen/qwen3-coder:free"
+            onChange={(e) => setCcModel(e.target.value)}
+          />
+        </label>
+        <div className="chips">
+          {SUGGESTED.map((m) => (
+            <button key={m} className="chip" onClick={() => setCcModel(m)} type="button">
+              {m}
+            </button>
+          ))}
+        </div>
+        <div className="row-btns">
+          <button className="ghost-btn" onClick={runProbe} disabled={probing} type="button">
+            {probing ? 'Testing tools…' : 'Test tool support'}
+          </button>
+          <button className="ghost-btn" onClick={applyCc} disabled={!ccModel} type="button">
+            Set as FCC model
+          </button>
+        </div>
+        {probe && (
+          <p className={`test-result ${probe.supported ? 'ok' : 'bad'}`}>{probe.detail}</p>
+        )}
+        {ccMsg && <p className="muted small">{ccMsg}</p>}
+        <p className="muted tiny">
+          Browse free models at openrouter.ai/models?max_price=0. NVIDIA NIM models need a (free)
+          NVIDIA key in the FCC Admin UI.
+        </p>
       </section>
 
       <section className="card">

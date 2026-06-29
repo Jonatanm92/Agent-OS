@@ -146,6 +146,17 @@ model selected in the FCC Admin UI; `hermes` uses its own `hermes setup`.
 > actual Claude Code CLI. The dashboard's **🛠 build** mode is the in-app
 > equivalent that works with any model.
 
+### Will Claude Code work on my free model?
+
+Owl Alpha is great for chat but its tool calls don't round-trip through FCC, so
+Claude Code's file tools silently fail on it. **Settings → 🧩 Claude Code — free
+coding readiness** removes the guesswork: enter a model, click **Test tool
+support**, and it sends a real tool-use probe through FCC and tells you
+definitively whether that model works with Claude Code. Click **Set as FCC
+model** to write it to `~/.fcc/.env` (then restart `fcc-server`). Good free
+picks to try: `open_router/qwen/qwen3-coder:free`,
+`open_router/deepseek/deepseek-chat-v3-0324:free`, or NVIDIA NIM's nemotron.
+
 ---
 
 ## Configuration

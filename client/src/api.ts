@@ -107,6 +107,16 @@ export const api = {
     }),
 
   status: () => req<FccStatus>('/api/status'),
+  probeTools: (model?: string) =>
+    req<{ supported: boolean; model: string; detail: string }>('/api/fcc/probe', {
+      method: 'POST',
+      body: JSON.stringify({ model }),
+    }),
+  setFccModel: (model: string) =>
+    req<{ ok: boolean; path: string; note: string }>('/api/fcc/set-model', {
+      method: 'POST',
+      body: JSON.stringify({ model }),
+    }),
   getSettings: () =>
     req<{ settings: Record<string, string>; resolved: Record<string, string> }>('/api/settings'),
   saveSettings: (settings: Record<string, string>) =>
