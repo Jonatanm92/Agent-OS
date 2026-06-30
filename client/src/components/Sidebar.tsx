@@ -8,6 +8,7 @@ const TOOLS: { id: string; label: string; tab: Tab }[] = [
   { id: 'workspace', label: 'Workspace', tab: 'workspace' },
   { id: 'memory', label: 'Memory', tab: 'memory' },
   { id: 'terminal', label: 'Terminal', tab: 'terminal' },
+  { id: 'tuning', label: 'Tuning', tab: 'tuning' },
 ];
 
 export function Sidebar({

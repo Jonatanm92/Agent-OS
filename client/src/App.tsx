@@ -9,10 +9,11 @@ import { TerminalTab } from './components/TerminalTab';
 import { PipelineTab } from './components/PipelineTab';
 import { MissionControlTab } from './components/MissionControlTab';
 import { StudioTab } from './components/StudioTab';
+import { TuningTab } from './components/TuningTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
 
-export type Tab = 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'terminal' | 'settings';
+export type Tab = 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'terminal' | 'tuning' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
@@ -171,6 +172,7 @@ export function App() {
           {tab === 'studio' && <StudioTab agents={agents} />}
           {tab === 'memory' && <MemoryTab />}
           {tab === 'terminal' && <TerminalTab />}
+          {tab === 'tuning' && <TuningTab />}
           {tab === 'settings' && (
             <SettingsTab
               agents={agents}
@@ -202,6 +204,8 @@ function tabTitle(tab: Tab, agentLabel?: string): string {
       return 'Memory — Obsidian Vault';
     case 'terminal':
       return 'Terminal';
+    case 'tuning':
+      return 'Tuning Reference';
     case 'settings':
       return 'Settings';
   }

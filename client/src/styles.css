@@ -515,3 +515,20 @@ code {
 .tpl-name { font-weight: 600; font-size: 13px; }
 .tpl-desc { font-size: 11px; color: var(--muted); }
 .project-pill { position: relative; }
+
+/* ── Tuning reference ── */
+.tuning-tab { padding: 22px; overflow-y: auto; height: 100%; }
+.tuning-head h3 { margin: 0 0 4px; }
+.tuning-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin: 16px 0; }
+.tuning-card { text-align: left; background: linear-gradient(135deg, var(--bg-2), var(--bg-3)); border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: var(--text); cursor: pointer; transition: border-color 0.15s; }
+.tuning-card:hover, .tuning-card.active { border-color: var(--accent); box-shadow: 0 0 12px var(--glow); }
+.tuning-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.tuning-notes { font-family: ui-monospace, monospace; font-size: 12px; color: var(--accent-2); }
+.tuning-semi { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.tuning-detail { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 12px; }
+.tuning-detail h4 { margin: 0 0 10px; }
+.tuning-strings { display: flex; flex-direction: column; gap: 6px; }
+.tuning-string { display: flex; align-items: center; gap: 10px; }
+.tuning-str-num { font-size: 11px; color: var(--muted); width: 14px; }
+.tuning-str-note { font-family: monospace; font-weight: 600; width: 36px; color: var(--accent-2); }
+.tuning-str-bar { height: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 2px; }
