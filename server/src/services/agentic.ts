@@ -2,6 +2,7 @@ import * as fcc from './fcc.js';
 import type { ChatTurn } from './fcc.js';
 import * as workspace from './workspace.js';
 import { execSync } from 'node:child_process';
+import * as toolRegistry from './tool-registry.js';
 
 /**
  * Component 4/5 — a model-agnostic tool loop (ReAct style).
@@ -22,6 +23,7 @@ nothing else (no prose, no markdown fences):
   {"tool":"read_file","args":{"path":"index.html"}}
   {"tool":"list_files","args":{}}
   {"tool":"run_command","args":{"command":"npm install && npm test"}}
+  {"tool":"<custom_tool>","args":{"input":"..."}}
 
 When the task is fully complete, reply with:
 
@@ -31,6 +33,7 @@ Rules:
 - Output ONLY the JSON object. No explanations around it.
 - Paths are relative to the project root; commands run in the project root.
 - Use run_command to install deps, build, run, or test code, then read the output.
+- Custom tools from tools.json are also available (grep, tree, cargo_check, npm_test, etc.).
 - Do one action per reply; you'll get the result before your next step.
 - Prefer writing complete, working files in one write_file call.
 `.trim();
@@ -100,6 +103,12 @@ function executeTool(projectId: string, action: Action): string {
         const combined = `${err.stdout ?? ''}${err.stderr ?? ''}` || err.message || 'unknown error';
         return `EXIT ${err.status ?? '?'}: ${combined.toString().slice(0, 4000)}`;
       }
+    }
+    // Check the extensible tool registry (tools.json).
+    const customTool = toolRegistry.findTool(action.tool);
+    if (customTool) {
+      const project = workspace.getProject(projectId);
+      return toolRegistry.executeTool(customTool, args, project?.path ?? process.cwd());
     }
     return `ERROR: unknown tool "${action.tool}"`;
   } catch (e) {

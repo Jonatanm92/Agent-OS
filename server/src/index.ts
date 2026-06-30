@@ -17,6 +17,7 @@ import * as workspace from './services/workspace.js';
 import { listAgentViews, getAgent, resolveAgentIdentity } from './services/agents.js';
 import * as hermes from './services/hermes.js';
 import { runAgentic } from './services/agentic.js';
+import * as context from './services/context.js';
 import * as pipeline from './services/pipeline.js';
 import * as runner from './services/runner.js';
 import * as studio from './services/studio.js';
@@ -352,6 +353,9 @@ api.post(
       'INSERT INTO messages (id, conversation_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)'
     ).run(randomUUID(), conversationId, 'assistant', replyText, replyAt);
     db.prepare('UPDATE conversations SET updated_at = ? WHERE id = ?').run(replyAt, conversationId);
+
+    // Auto-compress long conversations (Primitive #3: context management).
+    await context.autoCompress(conversationId, agentId);
 
     res.json({
       conversationId,

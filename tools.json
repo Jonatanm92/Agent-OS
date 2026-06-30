@@ -1,0 +1,26 @@
+[
+  {
+    "name": "grep",
+    "description": "Search for a pattern in project files. Input: the search term.",
+    "type": "shell",
+    "command": "grep -rn \"{{input}}\" . --include='*.rs' --include='*.ts' --include='*.cpp' --include='*.h' --include='*.js' --include='*.json' --include='*.toml' | head -30"
+  },
+  {
+    "name": "tree",
+    "description": "Show the project file tree.",
+    "type": "shell",
+    "command": "find . -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/target/*' | head -50"
+  },
+  {
+    "name": "cargo_check",
+    "description": "Run cargo check on a Rust project to find compile errors.",
+    "type": "shell",
+    "command": "cargo check 2>&1 | head -40"
+  },
+  {
+    "name": "npm_test",
+    "description": "Run npm test in the project.",
+    "type": "shell",
+    "command": "npm test 2>&1 | tail -30"
+  }
+]

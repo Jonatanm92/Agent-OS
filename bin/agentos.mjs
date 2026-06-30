@@ -19,6 +19,7 @@ const AGENTS = [
   { key: 'claude', aliases: ['fcc', 'free-claude-code', 'cc'], cmd: 'fcc-claude', label: 'Free Claude Code (Claude Code CLI via FCC)' },
   { key: 'codex', aliases: [], cmd: 'fcc-codex', label: 'Codex (Codex CLI via FCC)' },
   { key: 'hermes', aliases: ['herm'], cmd: 'hermes', label: 'Hermes (Nous Research Hermes Agent)' },
+  { key: 'deep', aliases: ['deepagents', 'langchain'], cmd: 'deep', label: 'Deep Agents Code (LangChain — any model, local or cloud)' },
 ];
 
 const C = {
@@ -61,6 +62,8 @@ function launch(agent, passthrough, dry) {
       console.error(C.dim('  Also make sure the proxy is running in another window:  fcc-server'));
     } else if (agent.cmd === 'hermes') {
       console.error(C.dim('  Install Hermes Agent: curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash  (then: hermes setup --portal)'));
+    } else if (agent.cmd === 'deep') {
+      console.error(C.dim('  Install Deep Agents Code: curl -LsSf https://langch.in/dcode | bash'));
     }
     process.exit(1);
   });
