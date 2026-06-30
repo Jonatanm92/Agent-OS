@@ -22,6 +22,7 @@ import * as runner from './services/runner.js';
 import * as studio from './services/studio.js';
 import * as templates from './services/templates.js';
 import * as git from './services/git.js';
+import * as orchestrator from './services/orchestrator.js';
 import { attachTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -603,6 +604,17 @@ const TUNINGS: Record<string, { notes: string[]; semitones: number }> = {
   'Meshuggah (F)': { notes: ['F1','Bb1','Eb2','Ab2','C3','F3','Bb3','Eb4'], semitones: -11 },
 };
 api.get('/tools/tunings', (_req, res) => res.json({ tunings: TUNINGS }));
+
+// ── Orchestrator (auto-chain the squad) ───────────────────────────────────────
+api.post(
+  '/orchestrator/run',
+  wrap(async (req, res) => {
+    const goal = String(req.body?.goal ?? '').trim();
+    if (!goal) return res.status(400).json({ error: 'goal required' });
+    const result = await orchestrator.runChain(goal);
+    res.json(result);
+  })
+);
 
 app.use('/api', api);
 

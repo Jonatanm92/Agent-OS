@@ -309,4 +309,12 @@ export const api = {
 
   // Guitar tools
   tunings: () => req<{ tunings: Record<string, { notes: string[]; semitones: number }> }>('/api/tools/tunings'),
+
+  // Orchestrator — auto-chain the squad
+  runSquad: (goal: string) =>
+    req<{
+      goal: string;
+      steps: { step: number; agentId: string; agentLabel: string; brief: string; deliverable: string; status: string }[];
+      finalVerdict: string;
+    }>('/api/orchestrator/run', { method: 'POST', body: JSON.stringify({ goal }) }),
 };

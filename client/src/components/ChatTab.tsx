@@ -22,6 +22,11 @@ export function ChatTab({
   const [savingMem, setSavingMem] = useState(false);
   const [memMsg, setMemMsg] = useState<string | null>(null);
   const [fileMsg, setFileMsg] = useState<Record<string, string>>({});
+  const [squadResult, setSquadResult] = useState<{
+    steps: { step: number; agentLabel: string; deliverable: string; status: string }[];
+    finalVerdict: string;
+  } | null>(null);
+  const [squadRunning, setSquadRunning] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const agentId = activeAgent?.id ?? 'free-claude-code';
@@ -63,6 +68,31 @@ export function ChatTab({
       ...m,
       { id: 'tmp-u', conversation_id: '', role: 'user', content: text, created_at: '' },
     ]);
+
+    // If talking to Orchestrator, run the full squad chain instead of a single chat.
+    if (agentId === 'orchestrator') {
+      setSquadRunning(true);
+      try {
+        const result = await api.runSquad(text);
+        setSquadResult({ steps: result.steps, finalVerdict: result.finalVerdict });
+        const summary = result.steps
+          .map((s) => `**Step ${s.step} — ${s.agentLabel}:**\n${s.deliverable}`)
+          .join('\n\n---\n\n');
+        setMessages((m) => [
+          ...m.filter((x) => x.id !== 'tmp-u'),
+          { id: 'squad-u', conversation_id: '', role: 'user', content: text, created_at: '' },
+          { id: 'squad-a', conversation_id: '', role: 'assistant', content: summary, created_at: '' },
+        ]);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Squad run failed');
+        setMessages((m) => m.filter((x) => x.id !== 'tmp-u'));
+      } finally {
+        setSquadRunning(false);
+        setBusy(false);
+      }
+      return;
+    }
+
     try {
       const res = await api.chat(text, agentId, activeId, useMemory, agentMode);
       setActiveId(res.conversationId);
@@ -194,6 +224,9 @@ export function ChatTab({
                 Talking to <strong>{agentLabel}</strong>. Replies route through your{' '}
                 {activeAgent?.backend === 'cli' ? 'local Hermes runtime' : 'FCC proxy'} to{' '}
                 <code>{lastModel || status?.routedModel || activeAgent?.model || 'your configured free model'}</code>.
+                {agentId === 'orchestrator' && (
+                  <><br /><strong>🚀 The Orchestrator auto-chains the squad</strong> — give it a goal and it plans, delegates to specialists in order, and gates via Reality Checker.</>
+                )}
               </p>
               <p className="muted small">
                 ◇ All agents share one memory — your Obsidian vault{' '}
@@ -240,7 +273,9 @@ export function ChatTab({
           {busy && (
             <div className="msg assistant">
               <div className="msg-role">{agentLabel}</div>
-              <div className="msg-body thinking">…thinking</div>
+              <div className="msg-body thinking">
+                {squadRunning ? '🚀 Running the squad — calling agents in sequence…' : '…thinking'}
+              </div>
             </div>
           )}
         </div>
