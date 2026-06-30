@@ -89,6 +89,10 @@ Each agent has a **backend**:
 | **Free Claude Code** | FCC proxy | Anthropic Messages → `/v1/messages` | `claude-sonnet-4-20250514` |
 | **Codex** | FCC proxy | OpenAI Responses → `/v1/responses` | `gpt-5.3-codex` |
 | **Hermes** | local CLI | `hermes chat -q … -Q --yolo` ([Hermes Agent](https://hermes-agent.nousresearch.com)) | uses your `hermes setup` |
+| **Kimi Code** | FCC proxy | Messages → `/v1/messages` | `open_router/moonshotai/kimi-k2` |
+| **GLM** | FCC proxy | Messages → `/v1/messages` | `open_router/z-ai/glm-4.6` |
+| **Grok Build** | FCC proxy | Messages → `/v1/messages` | `open_router/x-ai/grok-code-fast-1` |
+| **Local** | FCC proxy | Messages → `/v1/messages` | `ollama/llama3.1` (offline, $0) |
 
 - **FCC agents** (Free Claude Code, Codex) route through the proxy you already run — FCC
   decides the provider/free model.

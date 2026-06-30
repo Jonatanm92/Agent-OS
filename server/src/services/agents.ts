@@ -57,6 +57,38 @@ export const AGENTS: AgentDef[] = [
     defaultModel: '', // empty => use whatever `hermes setup`/`hermes model` configured
     blurb: 'Nous Research Hermes Agent (free, open-source) driven as a local CLI.',
   },
+  {
+    id: 'kimi-code',
+    label: 'Kimi Code',
+    backend: 'fcc',
+    transport: 'messages',
+    defaultModel: 'open_router/moonshotai/kimi-k2',
+    blurb: 'Moonshot Kimi — strong agentic coding model, via FCC.',
+  },
+  {
+    id: 'glm',
+    label: 'GLM',
+    backend: 'fcc',
+    transport: 'messages',
+    defaultModel: 'open_router/z-ai/glm-4.6',
+    blurb: 'Z.ai GLM — capable agentic/coding model, via FCC.',
+  },
+  {
+    id: 'grok-build',
+    label: 'Grok Build',
+    backend: 'fcc',
+    transport: 'messages',
+    defaultModel: 'open_router/x-ai/grok-code-fast-1',
+    blurb: 'xAI Grok — fast coding model (usually paid), via FCC.',
+  },
+  {
+    id: 'local',
+    label: 'Local',
+    backend: 'fcc',
+    transport: 'messages',
+    defaultModel: 'ollama/llama3.1',
+    blurb: 'Fully local & offline via Ollama — $0. Needs Ollama running + OLLAMA_BASE_URL in FCC.',
+  },
 ];
 
 export function getAgent(id: string): AgentDef {
@@ -84,6 +116,18 @@ const DEFAULT_IDENTITY: Record<string, string> = {
     'You are Hermes, an autonomous and resourceful task agent. ' +
     'Principles: break goals into steps, keep the original goal in view, and ' +
     'summarize what you did. Flag anything risky or irreversible before doing it.',
+  'kimi-code':
+    'You are Kimi Code, a strong coding agent. Principles: write complete, working ' +
+    'code; explain briefly; prefer well-supported libraries. Ask only when truly blocked.',
+  glm:
+    'You are GLM, a capable coding and reasoning agent. Principles: be precise, show ' +
+    'working code, and keep changes minimal and well-structured.',
+  'grok-build':
+    'You are Grok Build, a fast, pragmatic build agent. Principles: ship working code ' +
+    'quickly, prefer simple solutions, and call out trade-offs in one line.',
+  local:
+    'You are a local model running on the user\'s machine. Principles: be concise and ' +
+    'practical; you may be smaller than cloud models, so keep answers focused and correct.',
 };
 
 export function resolveAgentIdentity(id: string): string {
