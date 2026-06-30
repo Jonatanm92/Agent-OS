@@ -31,6 +31,17 @@ export function Sidebar({
         <span className="brand-name">Agent OS</span>
       </div>
 
+      <div className="nav-section-label">Mission</div>
+      <nav className="nav">
+        <button
+          className={`nav-item ${tab === 'mission' ? 'active' : ''}`}
+          onClick={() => setTab('mission')}
+        >
+          <span className="nav-dot" />
+          <span className="nav-label">Mission Control</span>
+        </button>
+      </nav>
+
       <div className="nav-section-label">Agents</div>
       <nav className="nav">
         {agents.map((a) => (

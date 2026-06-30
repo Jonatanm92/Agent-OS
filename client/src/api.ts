@@ -43,6 +43,7 @@ export interface FccStatus {
   model: string;
   models?: string[];
   routedModel?: string;
+  latencyMs?: number;
   error?: string;
 }
 
@@ -123,6 +124,13 @@ export const api = {
     }),
 
   status: () => req<FccStatus>('/api/status'),
+  overview: () =>
+    req<{
+      status: FccStatus;
+      agents: Agent[];
+      stats: { conversations: number; messages: number; pipeline: number; notes: number; projects: number };
+      time: string;
+    }>('/api/overview'),
   probeTools: (model?: string) =>
     req<{ supported: boolean; model: string; detail: string }>('/api/fcc/probe', {
       method: 'POST',

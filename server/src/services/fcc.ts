@@ -37,24 +37,25 @@ export interface FccStatus {
   model: string;
   models?: string[];
   routedModel?: string;
+  latencyMs?: number;
   error?: string;
 }
 
 /** Check whether FCC is reachable and list available model ids. */
 export async function getStatus(): Promise<FccStatus> {
   const cfg = resolveConfig();
+  const t0 = Date.now();
   try {
     const res = await fetch(`${cfg.fccBaseUrl}/v1/models`, {
       headers: authHeaders(cfg.fccAuthToken),
       signal: AbortSignal.timeout(6000),
     });
+    const latencyMs = Date.now() - t0;
     if (!res.ok) {
-      return { ok: false, baseUrl: cfg.fccBaseUrl, model: cfg.model, error: `FCC returned HTTP ${res.status}` };
+      return { ok: false, baseUrl: cfg.fccBaseUrl, model: cfg.model, latencyMs, error: `FCC returned HTTP ${res.status}` };
     }
     const body = (await res.json()) as { data?: { id: string }[] };
     const models = (body.data ?? []).map((m) => m.id);
-    // FCC encodes its configured route as ids like "anthropic/<MODEL>".
-    // Strip the client-type prefix to reveal the real model (e.g. Owl Alpha).
     const anth = models.find((id) => id.startsWith('anthropic/'));
     const routedModel = anth ? anth.slice('anthropic/'.length) : undefined;
     return {
@@ -63,12 +64,14 @@ export async function getStatus(): Promise<FccStatus> {
       model: cfg.model,
       models,
       routedModel,
+      latencyMs,
     };
   } catch (err) {
     return {
       ok: false,
       baseUrl: cfg.fccBaseUrl,
       model: cfg.model,
+      latencyMs: Date.now() - t0,
       error:
         err instanceof Error
           ? `Cannot reach FCC at ${cfg.fccBaseUrl} — is fcc-server running? (${err.message})`

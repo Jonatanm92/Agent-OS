@@ -84,6 +84,38 @@ api.get(
   })
 );
 
+// Mission Control: one snapshot of every agent, signal, and stat.
+api.get(
+  '/overview',
+  wrap(async (_req, res) => {
+    const status = await fcc.getStatus();
+    const hermesUp = await hermes.isAvailable();
+    const agents = listAgentViews().map((a) => ({
+      ...a,
+      available: a.backend === 'cli' ? hermesUp : status.ok,
+    }));
+    const count = (sql: string) => (db.prepare(sql).get() as { c: number }).c;
+    let notes = 0;
+    try {
+      notes = memory.listNotes().length;
+    } catch {
+      notes = 0;
+    }
+    res.json({
+      status,
+      agents,
+      stats: {
+        conversations: count('SELECT COUNT(*) c FROM conversations'),
+        messages: count('SELECT COUNT(*) c FROM messages'),
+        pipeline: pipeline.list().length,
+        notes,
+        projects: workspace.listProjects().length,
+      },
+      time: new Date().toISOString(),
+    });
+  })
+);
+
 // Claude Code readiness: does this model's tool-calling work through FCC?
 api.post(
   '/fcc/probe',

@@ -7,16 +7,17 @@ import { MemoryTab } from './components/MemoryTab';
 import { SettingsTab } from './components/SettingsTab';
 import { TerminalTab } from './components/TerminalTab';
 import { PipelineTab } from './components/PipelineTab';
+import { MissionControlTab } from './components/MissionControlTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
 
-export type Tab = 'chat' | 'pipeline' | 'workspace' | 'memory' | 'terminal' | 'settings';
+export type Tab = 'mission' | 'chat' | 'pipeline' | 'workspace' | 'memory' | 'terminal' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
 export function App() {
   const [gate, setGate] = useState<Gate>('loading');
-  const [tab, setTab] = useState<Tab>('chat');
+  const [tab, setTab] = useState<Tab>('mission');
   const [status, setStatus] = useState<FccStatus | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string>('');
@@ -141,6 +142,14 @@ export function App() {
         </header>
 
         <section className="content">
+          {tab === 'mission' && (
+            <MissionControlTab
+              onOpenAgent={(id) => {
+                setActiveAgentId(id);
+                setTab('chat');
+              }}
+            />
+          )}
           {tab === 'chat' && (
             <ChatTab
               status={status}
@@ -177,6 +186,8 @@ export function App() {
 
 function tabTitle(tab: Tab, agentLabel?: string): string {
   switch (tab) {
+    case 'mission':
+      return 'Mission Control';
     case 'chat':
       return `${agentLabel ?? 'Free Claude Code'} — Chat`;
     case 'pipeline':

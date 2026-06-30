@@ -414,3 +414,33 @@ code {
 }
 .pipe-shipped-actions { display: flex; flex-direction: column; gap: 6px; }
 .pipe-action.open { color: var(--green); }
+
+
+/* ── Mission Control ── */
+.mission { padding: 22px; overflow-y: auto; height: 100%; }
+.mission-head h2 { margin: 0; font-size: 26px; font-weight: 700; }
+.mission-head p { margin: 4px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+.tile { background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.tile-label { display: flex; align-items: center; gap: 7px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); }
+.tile-led { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.tile.ok .tile-led { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.tile.down .tile-led { background: var(--red); }
+.tile-value { font-size: 20px; font-weight: 600; margin-top: 8px; }
+.tile.down .tile-value { color: var(--red); }
+.tile-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; word-break: break-word; }
+.section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin: 18px 0 10px; font-weight: 600; }
+.agent-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.agent-card { text-align: left; background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 15px; color: var(--text); cursor: pointer; }
+.agent-card:hover { border-color: var(--accent); }
+.agent-card-top { display: flex; justify-content: space-between; align-items: center; }
+.agent-card-name { font-weight: 600; }
+.agent-pill { font-size: 10px; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; border: 1px solid var(--border); }
+.agent-pill.on { color: var(--green); border-color: #2c5; }
+.agent-pill.off { color: var(--muted); }
+.agent-card-blurb { font-size: 12.5px; color: var(--muted); margin: 8px 0; line-height: 1.4; }
+.agent-card-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); gap: 8px; }
+.agent-card-model { color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 22px; padding: 4px 2px 20px; }
+.stat-n { font-size: 22px; font-weight: 700; }
+.stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
