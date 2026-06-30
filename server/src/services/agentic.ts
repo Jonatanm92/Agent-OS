@@ -1,6 +1,7 @@
 import * as fcc from './fcc.js';
 import type { ChatTurn } from './fcc.js';
 import * as workspace from './workspace.js';
+import { execSync } from 'node:child_process';
 
 /**
  * Component 4/5 — a model-agnostic tool loop (ReAct style).
@@ -20,6 +21,7 @@ nothing else (no prose, no markdown fences):
   {"tool":"write_file","args":{"path":"index.html","content":"<file contents>"}}
   {"tool":"read_file","args":{"path":"index.html"}}
   {"tool":"list_files","args":{}}
+  {"tool":"run_command","args":{"command":"npm install && npm test"}}
 
 When the task is fully complete, reply with:
 
@@ -27,7 +29,8 @@ When the task is fully complete, reply with:
 
 Rules:
 - Output ONLY the JSON object. No explanations around it.
-- Paths are relative to the project root.
+- Paths are relative to the project root; commands run in the project root.
+- Use run_command to install deps, build, run, or test code, then read the output.
 - Do one action per reply; you'll get the result before your next step.
 - Prefer writing complete, working files in one write_file call.
 `.trim();
@@ -76,6 +79,27 @@ function executeTool(projectId: string, action: Action): string {
     if (action.tool === 'list_files') {
       const files = workspace.listFiles(projectId);
       return files.length ? files.map((f) => f.path).join('\n') : '(project is empty)';
+    }
+    if (action.tool === 'run_command') {
+      const project = workspace.getProject(projectId);
+      if (!project) return 'ERROR: no active project';
+      const command = String(args.command ?? '').trim();
+      if (!command) return 'ERROR: command required';
+      try {
+        const out = execSync(command, {
+          cwd: project.path,
+          timeout: 90000,
+          maxBuffer: 8 * 1024 * 1024,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        const s = out || '(command finished, no output)';
+        return s.length > 4000 ? s.slice(0, 4000) + '\n...[truncated]' : s;
+      } catch (e) {
+        const err = e as { status?: number; stdout?: string; stderr?: string; message?: string };
+        const combined = `${err.stdout ?? ''}${err.stderr ?? ''}` || err.message || 'unknown error';
+        return `EXIT ${err.status ?? '?'}: ${combined.toString().slice(0, 4000)}`;
+      }
     }
     return `ERROR: unknown tool "${action.tool}"`;
   } catch (e) {

@@ -148,7 +148,15 @@ export function App() {
               onAgentFromConversation={(id) => setActiveAgentId(id)}
             />
           )}
-          {tab === 'pipeline' && <PipelineTab />}
+          {tab === 'pipeline' && (
+            <PipelineTab
+              onOpenProject={async (pid) => {
+                await api.activateProject(pid);
+                await refreshProjects();
+                setTab('workspace');
+              }}
+            />
+          )}
           {tab === 'workspace' && <WorkspaceTab activeProject={activeProject} />}
           {tab === 'memory' && <MemoryTab />}
           {tab === 'terminal' && <TerminalTab />}

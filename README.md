@@ -114,10 +114,12 @@ entry in `server/src/services/agents.ts`.
 - **Feedback loop** — 👍/👎 on any assistant reply is stored per message, giving you a
   signal to spot regressions over time.
 - **Agent mode (🛠 build)** — toggle it on in chat and the agent runs a real tool loop
-  against your active Workspace project: it writes/reads/lists files via JSON actions the
-  dashboard executes, then previews them in the Workspace tab. It's model-agnostic (works
-  with Owl Alpha), so it doesn't depend on the provider's native tool-calling. This is the
-  difference between an agent that *talks* about building and one that actually builds.
+  against your active Workspace project: it **writes/reads/lists files and runs commands**
+  (`run_command` — `npm install`, run tests, execute scripts) via JSON actions the dashboard
+  executes, reading the output back each step. So it can actually build and run code, not
+  just talk about it. Model-agnostic (works with Owl Alpha).
+- **Editable Workspace** — open any file in the Workspace tab to **edit and save** it, or
+  create new files. Real coding, in the browser (and on mobile).
 - **Terminal tab** — a real shell embedded in the dashboard (xterm.js over a PTY bridge),
   with one-click buttons to launch `agentos claude / codex / hermes`. Use the agent CLIs
   from the browser — even on your phone. Needs the optional `node-pty` native module; if
@@ -144,7 +146,9 @@ Capture → (agent Shapes it) → Human Gate (you approve) → Execute (agent bu
   `Pipeline/`, so the whole flow lives in your notes.
 
 This is the orchestration + handoff layer (Components 6 & 7): each stage hands a
-structured item to the next, with you in the loop exactly once.
+structured item to the next, with you in the loop exactly once. Each shipped item gets
+its **own isolated project folder**, the plan is shown on the gate card before you
+approve, and shipped cards have **Open in Workspace** to jump straight to the files.
 
 ---
 

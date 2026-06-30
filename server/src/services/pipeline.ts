@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto';
 import { getDb } from '../db/index.js';
-import { getAllSettings } from '../config.js';
 import * as fcc from './fcc.js';
 import * as memory from './memory.js';
+import * as workspace from './workspace.js';
 import { runAgentic } from './agentic.js';
 import { resolveAgentIdentity } from './agents.js';
 
@@ -175,7 +175,12 @@ export function approve(id: string): PipelineItem {
 export async function execute(id: string, agentId = 'free-claude-code'): Promise<PipelineItem> {
   const item = get(id);
   if (!item) throw new Error('item not found');
-  const projectId = item.project_id || getAllSettings().active_project_id || '';
+  // Each shipped item gets its own isolated project folder.
+  let projectId = item.project_id || '';
+  if (!projectId) {
+    const proj = workspace.createProject(item.title || item.raw.slice(0, 40) || 'pipeline-item');
+    projectId = proj.id;
+  }
   const goal =
     `Build the deliverable for this task. Create the necessary files in the project.\n\n` +
     `TITLE: ${item.title}\nPLAN:\n${item.plan || '(no plan; use your judgement)'}\n\nIDEA:\n${item.raw}`;

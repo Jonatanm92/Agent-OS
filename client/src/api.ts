@@ -169,6 +169,11 @@ export const api = {
     ),
   fileUrl: (projectId: string, path: string) =>
     `/api/workspace/file?projectId=${encodeURIComponent(projectId)}&path=${encodeURIComponent(path)}`,
+  writeFile: (projectId: string, path: string, content: string) =>
+    req<{ file: WorkspaceFile }>('/api/workspace/file', {
+      method: 'POST',
+      body: JSON.stringify({ projectId, path, content }),
+    }),
 
   listNotes: () => req<{ notes: NoteSummary[] }>('/api/memory/notes'),
   readNote: (path: string) =>

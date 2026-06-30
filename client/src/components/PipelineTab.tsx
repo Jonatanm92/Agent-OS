@@ -8,7 +8,7 @@ const COLUMNS: { stage: PipelineStage; label: string; sub: string }[] = [
   { stage: 'shipped', label: 'Shipped & Filed', sub: 'Done — in your vault' },
 ];
 
-export function PipelineTab() {
+export function PipelineTab({ onOpenProject }: { onOpenProject?: (projectId: string) => void }) {
   const [items, setItems] = useState<PipelineItem[]>([]);
   const [idea, setIdea] = useState('');
   const [busy, setBusy] = useState<Record<string, boolean>>({});
@@ -111,9 +111,12 @@ export function PipelineTab() {
                       </button>
                     )}
                     {col.stage === 'gate' && (
-                      <button className="pipe-action approve" disabled={busy[it.id]} onClick={() => act(it.id, api.approvePipeline)}>
-                        ✓ Approve
-                      </button>
+                      <>
+                        {it.plan && <pre className="pipe-plan">{it.plan}</pre>}
+                        <button className="pipe-action approve" disabled={busy[it.id]} onClick={() => act(it.id, api.approvePipeline)}>
+                          ✓ Approve
+                        </button>
+                      </>
                     )}
                     {col.stage === 'execute' && (
                       <button className="pipe-action build" disabled={busy[it.id]} onClick={() => act(it.id, api.executePipeline)}>
@@ -121,9 +124,16 @@ export function PipelineTab() {
                       </button>
                     )}
                     {col.stage === 'shipped' && (
-                      <button className="pipe-action view" onClick={() => setViewing(it)}>
-                        ▸ View what was built
-                      </button>
+                      <div className="pipe-shipped-actions">
+                        <button className="pipe-action view" onClick={() => setViewing(it)}>
+                          ▸ View what was built
+                        </button>
+                        {it.project_id && onOpenProject && (
+                          <button className="pipe-action open" onClick={() => onOpenProject(it.project_id!)}>
+                            ⇢ Open in Workspace
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
