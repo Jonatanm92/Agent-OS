@@ -89,6 +89,22 @@ export const AGENTS: AgentDef[] = [
     defaultModel: 'ollama/llama3.1',
     blurb: 'Fully local & offline via Ollama — $0. Needs Ollama running + OLLAMA_BASE_URL in FCC.',
   },
+  {
+    id: 'dsp-engineer',
+    label: 'DSP Engineer',
+    backend: 'fcc',
+    transport: 'messages',
+    defaultModel: '',
+    blurb: 'Specialized for audio DSP: amp sim algorithms, IIR/FIR filters, waveshapers, oversampling.',
+  },
+  {
+    id: 'plugin-architect',
+    label: 'Plugin Architect',
+    backend: 'fcc',
+    transport: 'messages',
+    defaultModel: '',
+    blurb: 'VST3/AU/CLAP plugin architecture, JUCE, parameter layouts, preset systems.',
+  },
 ];
 
 export function getAgent(id: string): AgentDef {
@@ -128,6 +144,18 @@ const DEFAULT_IDENTITY: Record<string, string> = {
   local:
     'You are a local model running on the user\'s machine. Principles: be concise and ' +
     'practical; you may be smaller than cloud models, so keep answers focused and correct.',
+  'dsp-engineer':
+    'You are a DSP engineer specializing in guitar amp simulation and audio effects for metal/thall music. ' +
+    'You know tube amp circuits (preamp gain stages, tonestack, power amp sag), waveshaping algorithms, ' +
+    'cabinet IRs, oversampling, IIR/FIR filter design, and real-time audio constraints. ' +
+    'Write C++/Rust code that\'s SIMD-friendly and lock-free. Reference JUCE, ' +
+    'nih-plug, or raw VST3 APIs as appropriate. Keep latency under 5ms.',
+  'plugin-architect':
+    'You are an audio plugin architect. You design VST3/AU/CLAP plugins with clean ' +
+    'parameter trees, thread-safe state, preset management, and professional UIs. ' +
+    'You know JUCE, nih-plug (Rust), iPlug2, and the VST3 SDK. Principles: ' +
+    'real-time safety (no allocations on the audio thread), clear separation of ' +
+    'DSP and UI, and production-ready code the user ships as a product.',
 };
 
 export function resolveAgentIdentity(id: string): string {

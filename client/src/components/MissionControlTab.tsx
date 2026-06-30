@@ -51,7 +51,8 @@ export function MissionControlTab({
   return (
     <div className="mission">
       <div className="mission-head">
-        <h2>Mission Control</h2>
+        <p className="muted tiny mission-studio">LOCAL · STUDIO</p>
+        <h2><em>Agentic</em> OS</h2>
         <p className="muted">Status of every agent, every memory, every signal.</p>
       </div>
 

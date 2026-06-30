@@ -33,6 +33,30 @@ if (!getAllSettings().active_project_id) {
   setSetting('active_project_id', defaultProject.id);
 }
 
+// Seed default music-dev skills on first boot.
+if (studio.listSkills().length === 0) {
+  studio.createSkill({
+    name: 'DSP: Design a waveshaper',
+    prompt: 'Design a guitar amp waveshaper function. Input: {{input}}. Output: C++ or Rust code with explanation of the harmonic content and how it suits modern metal/thall tones.',
+    agent_id: 'dsp-engineer',
+  });
+  studio.createSkill({
+    name: 'Plugin: Scaffold JUCE project',
+    prompt: 'Generate the folder structure and key files (PluginProcessor, PluginEditor, CMakeLists) for a JUCE audio plugin called "{{input}}". Use best practices for VST3/AU. Output as named code blocks.',
+    agent_id: 'plugin-architect',
+  });
+  studio.createSkill({
+    name: 'YouTube: Video title ideas',
+    prompt: 'Generate 10 YouTube title ideas for a guitar cover video of "{{input}}". The channel is modern metal/thall focused. Make them SEO-friendly and attention-grabbing.',
+    agent_id: 'free-claude-code',
+  });
+  studio.createSkill({
+    name: 'Song: Chord progression for metal',
+    prompt: 'Write a djent/thall chord progression in {{input}} tuning. Include tab notation, rhythmic pattern (polyrhythmic preferred), and suggest a tempo. Think Meshuggah, Periphery, Vildhjarta.',
+    agent_id: 'free-claude-code',
+  });
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));

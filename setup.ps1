@@ -68,11 +68,21 @@ New-Item -ItemType Directory -Force -Path $vault | Out-Null
 $welcome = Join-Path $vault "Welcome.md"
 if (-not (Test-Path $welcome)) {
 @"
-# Welcome to your Sovereign Stack memory
+# Agentic OS — Music Dev Studio
 
-Notes in this folder are SHARED MEMORY for every agent (Free Claude Code,
-Codex, Hermes). Add notes about you, your business, your clients, your voice.
-Open this same folder in Obsidian to edit with the full app.
+I build guitar amp simulators, songwriting tools, and audio plugins.
+My target genre: modern metal / thall (Meshuggah, Periphery, Vildhjarta).
+I also run a YouTube channel for guitar covers.
+
+## Tech stack
+- Audio DSP: Rust (nih-plug), C++ (JUCE), VST3/AU/CLAP
+- Web: Node/TypeScript/React
+- Video: DaVinci Resolve, HyperFrames
+
+## Principles
+- Tone is everything. Every DSP decision should serve the low-tuned, tight, articulate sound.
+- Ship plugins that are CPU-efficient and latency-free.
+- Keep it direct.
 "@ | Set-Content -Path $welcome -Encoding utf8
 }
 Ok "Vault ready at $vault"
