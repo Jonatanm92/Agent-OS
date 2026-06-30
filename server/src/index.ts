@@ -20,6 +20,8 @@ import { runAgentic } from './services/agentic.js';
 import * as pipeline from './services/pipeline.js';
 import * as runner from './services/runner.js';
 import * as studio from './services/studio.js';
+import * as templates from './services/templates.js';
+import * as git from './services/git.js';
 import { attachTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -555,6 +557,52 @@ api.post(
 );
 
 api.get('/audit', (_req, res) => res.json({ entries: studio.listAudit(Number(_req.query.limit) || 50) }));
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+api.get('/templates', (_req, res) => res.json({ templates: templates.listTemplates() }));
+api.post('/templates/scaffold', (req, res) => {
+  const id = String(req.body?.templateId ?? '');
+  const name = String(req.body?.name ?? '');
+  res.json(templates.scaffold(id, name));
+});
+
+// ── Git panel ─────────────────────────────────────────────────────────────────
+api.get('/git/:projectId/status', (req, res) => {
+  try { res.json(git.status(req.params.projectId)); }
+  catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : 'failed' }); }
+});
+api.post('/git/:projectId/init', (req, res) => {
+  res.json({ output: git.init(req.params.projectId) });
+});
+api.get('/git/:projectId/diff', (req, res) => {
+  res.json({ diff: git.diff(req.params.projectId) });
+});
+api.post('/git/:projectId/commit', (req, res) => {
+  const msg = String(req.body?.message ?? 'update');
+  try { res.json({ output: git.commit(req.params.projectId, msg) }); }
+  catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : 'failed' }); }
+});
+api.post('/git/:projectId/push', (req, res) => {
+  try { res.json({ output: git.push(req.params.projectId, req.body?.remote, req.body?.branch) }); }
+  catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : 'failed' }); }
+});
+
+// ── Guitar reference tools ────────────────────────────────────────────────────
+const TUNINGS: Record<string, { notes: string[]; semitones: number }> = {
+  'Standard': { notes: ['E2','A2','D3','G3','B3','E4'], semitones: 0 },
+  'Drop D': { notes: ['D2','A2','D3','G3','B3','E4'], semitones: -2 },
+  'Drop C': { notes: ['C2','G2','C3','F3','A3','D4'], semitones: -4 },
+  'Drop B': { notes: ['B1','F#2','B2','E3','G#3','C#4'], semitones: -5 },
+  'Drop A': { notes: ['A1','E2','A2','D3','F#3','B3'], semitones: -7 },
+  'Drop G#': { notes: ['G#1','D#2','G#2','C#3','F3','A#3'], semitones: -8 },
+  'Drop G': { notes: ['G1','D2','G2','C3','E3','A3'], semitones: -9 },
+  'Drop F': { notes: ['F1','C2','F2','Bb2','D3','G3'], semitones: -11 },
+  'Standard 7 (B)': { notes: ['B1','E2','A2','D3','G3','B3','E4'], semitones: -5 },
+  'Drop A 7-string': { notes: ['A1','E2','A2','D3','G3','B3','E4'], semitones: -7 },
+  'Standard 8 (F#)': { notes: ['F#1','B1','E2','A2','D3','G3','B3','E4'], semitones: -10 },
+  'Meshuggah (F)': { notes: ['F1','Bb1','Eb2','Ab2','C3','F3','Bb3','Eb4'], semitones: -11 },
+};
+api.get('/tools/tunings', (_req, res) => res.json({ tunings: TUNINGS }));
 
 app.use('/api', api);
 
