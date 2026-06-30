@@ -1,0 +1,15 @@
+[package]
+name = "erra-amp-sim"
+version = "0.1.0"
+edition = "2021"
+description = "ERRA-tone guitar amp simulator — tight, articulate modern high-gain"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", features = ["standalone"] }
+
+[profile.release]
+lto = "thin"
+opt-level = 3

@@ -59,6 +59,21 @@ if (studio.listSkills().length === 0) {
     prompt: 'Write a djent/thall chord progression in {{input}} tuning. Include tab notation, rhythmic pattern (polyrhythmic preferred), and suggest a tempo. Think Meshuggah, Periphery, Vildhjarta.',
     agent_id: 'free-claude-code',
   });
+  studio.createSkill({
+    name: 'YouTube: Cover video plan',
+    prompt: 'Plan a guitar cover video for "{{input}}". Include: 1) Which tuning/guitar to use 2) Tone settings (amp/pedals) to match the original 3) Camera angles (2-3 recommended) 4) Thumbnail concept 5) Description with SEO keywords for modern metal/thall/djent audience.',
+    agent_id: 'content-creator',
+  });
+  studio.createSkill({
+    name: 'YouTube: Description + tags',
+    prompt: 'Write a YouTube description and 15 SEO tags for my guitar cover of "{{input}}". My channel is modern metal/thall focused. Include timestamps placeholder, gear section, and a call-to-action for subscribe. Make it rank for guitar cover + the song name + the genre.',
+    agent_id: 'content-creator',
+  });
+  studio.createSkill({
+    name: 'YouTube: 2-week content calendar',
+    prompt: 'Build a 2-week YouTube content calendar for my guitar channel. I cover modern metal/thall bands (ERRA, Periphery, Vildhjarta, Meshuggah, Architects, Polaris). Current focus: {{input}}. Include: video titles, upload days (2-3/week), shorts ideas, community posts, and cross-platform hooks for IG Reels.',
+    agent_id: 'content-creator',
+  });
 }
 
 const app = express();
