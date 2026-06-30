@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, type Project, type WorkspaceFile } from '../api';
+import { GitPanel } from './GitPanel';
 
 export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
@@ -176,6 +177,8 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
             <pre className="run-logs">{runLogs.length ? runLogs.join('\n') : '(no output yet)'}</pre>
           )}
         </div>
+
+        {activeProject && <GitPanel projectId={activeProject.id} />}
         <div className="ws-file-list">
           {files.map((f) => (
             <div

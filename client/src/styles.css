@@ -493,3 +493,25 @@ code {
 .mission-head h2 em { font-style: italic; font-weight: 300; }
 .topbar { background: linear-gradient(90deg, var(--bg) 0%, var(--bg-2) 100%); }
 .primary-btn { box-shadow: 0 2px 12px var(--glow); }
+
+/* ── Git panel ── */
+.git-panel { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+.git-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin-bottom: 6px; }
+.git-icon { color: var(--accent); }
+.git-branch { font-weight: 600; }
+.git-files { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; max-height: 100px; overflow-y: auto; }
+.git-file { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.git-st { color: var(--green); font-family: monospace; width: 18px; }
+.git-fp { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.git-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.git-actions input { flex: 1; min-width: 100px; background: var(--bg-3); color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 5px 8px; font-size: 12px; }
+.git-diff { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 8px; margin-top: 6px; font-size: 11px; max-height: 150px; overflow: auto; white-space: pre-wrap; }
+.git-log { margin-top: 6px; }
+
+/* ── Template picker dropdown ── */
+.tpl-dropdown { position: absolute; top: 100%; right: 0; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 6px; z-index: 20; min-width: 260px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.tpl-item { display: flex; flex-direction: column; gap: 2px; text-align: left; width: 100%; background: transparent; border: none; color: var(--text); padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+.tpl-item:hover { background: var(--bg-3); }
+.tpl-name { font-weight: 600; font-size: 13px; }
+.tpl-desc { font-size: 11px; color: var(--muted); }
+.project-pill { position: relative; }

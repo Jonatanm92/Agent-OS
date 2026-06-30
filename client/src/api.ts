@@ -281,4 +281,32 @@ export const api = {
     req<{ loop: Loop }>(`/api/loops/${id}/toggle`, { method: 'POST', body: JSON.stringify({ enabled }) }),
   runLoop: (id: string) => req<{ output: string }>(`/api/loops/${id}/run`, { method: 'POST', body: '{}' }),
   listAudit: () => req<{ entries: AuditEntry[] }>('/api/audit'),
+
+  // Templates
+  listTemplates: () =>
+    req<{ templates: { id: string; name: string; description: string }[] }>('/api/templates'),
+  scaffold: (templateId: string, name: string) =>
+    req<{ projectId: string; files: string[] }>('/api/templates/scaffold', {
+      method: 'POST',
+      body: JSON.stringify({ templateId, name }),
+    }),
+
+  // Git
+  gitStatus: (projectId: string) =>
+    req<{ initialized: boolean; branch: string; files: { path: string; status: string }[]; log: string[]; remotes: string[] }>(
+      `/api/git/${projectId}/status`
+    ),
+  gitInit: (projectId: string) =>
+    req<{ output: string }>(`/api/git/${projectId}/init`, { method: 'POST', body: '{}' }),
+  gitDiff: (projectId: string) => req<{ diff: string }>(`/api/git/${projectId}/diff`),
+  gitCommit: (projectId: string, message: string) =>
+    req<{ output: string }>(`/api/git/${projectId}/commit`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+  gitPush: (projectId: string) =>
+    req<{ output: string }>(`/api/git/${projectId}/push`, { method: 'POST', body: '{}' }),
+
+  // Guitar tools
+  tunings: () => req<{ tunings: Record<string, { notes: string[]; semitones: number }> }>('/api/tools/tunings'),
 };
