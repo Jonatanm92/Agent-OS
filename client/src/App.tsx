@@ -8,10 +8,11 @@ import { SettingsTab } from './components/SettingsTab';
 import { TerminalTab } from './components/TerminalTab';
 import { PipelineTab } from './components/PipelineTab';
 import { MissionControlTab } from './components/MissionControlTab';
+import { StudioTab } from './components/StudioTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
 
-export type Tab = 'mission' | 'chat' | 'pipeline' | 'workspace' | 'memory' | 'terminal' | 'settings';
+export type Tab = 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'terminal' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
@@ -167,6 +168,7 @@ export function App() {
             />
           )}
           {tab === 'workspace' && <WorkspaceTab activeProject={activeProject} />}
+          {tab === 'studio' && <StudioTab agents={agents} />}
           {tab === 'memory' && <MemoryTab />}
           {tab === 'terminal' && <TerminalTab />}
           {tab === 'settings' && (
@@ -192,6 +194,8 @@ function tabTitle(tab: Tab, agentLabel?: string): string {
       return `${agentLabel ?? 'Free Claude Code'} — Chat`;
     case 'pipeline':
       return 'Pipeline — From Inbox to Shipped';
+    case 'studio':
+      return 'Studio — Skills, Loops & Audit';
     case 'workspace':
       return 'Workspace';
     case 'memory':

@@ -19,6 +19,7 @@ import * as hermes from './services/hermes.js';
 import { runAgentic } from './services/agentic.js';
 import * as pipeline from './services/pipeline.js';
 import * as runner from './services/runner.js';
+import * as studio from './services/studio.js';
 import { attachTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -499,6 +500,38 @@ api.delete('/pipeline/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Studio: Skills + Loops (automation) + Audit (Level 1) ─────────────────────
+api.get('/skills', (_req, res) => res.json({ skills: studio.listSkills() }));
+api.post('/skills', (req, res) => res.json({ skill: studio.createSkill(req.body ?? {}) }));
+api.delete('/skills/:id', (req, res) => {
+  studio.deleteSkill(req.params.id);
+  res.json({ ok: true });
+});
+api.post(
+  '/skills/:id/run',
+  wrap(async (req, res) => {
+    res.json(await studio.runSkill(req.params.id, String(req.body?.input ?? '')));
+  })
+);
+
+api.get('/loops', (_req, res) => res.json({ loops: studio.listLoops() }));
+api.post('/loops', (req, res) => res.json({ loop: studio.createLoop(req.body ?? {}) }));
+api.delete('/loops/:id', (req, res) => {
+  studio.deleteLoop(req.params.id);
+  res.json({ ok: true });
+});
+api.post('/loops/:id/toggle', (req, res) => {
+  res.json({ loop: studio.setLoopEnabled(req.params.id, req.body?.enabled !== false) });
+});
+api.post(
+  '/loops/:id/run',
+  wrap(async (req, res) => {
+    res.json(await studio.runLoop(req.params.id));
+  })
+);
+
+api.get('/audit', (_req, res) => res.json({ entries: studio.listAudit(Number(_req.query.limit) || 50) }));
+
 app.use('/api', api);
 
 // ── Static client (production build) ────────────────────────────────────────────
@@ -520,6 +553,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 const { port } = resolveConfig();
 const httpServer = http.createServer(app);
 attachTerminal(httpServer); // in-dashboard terminal at /api/terminal (optional node-pty)
+studio.startScheduler(); // runs due automation loops every 30s
 httpServer.listen(port, () => {
   const cfg = resolveConfig();
   console.log(`\n  Agent OS — Mission Control`);

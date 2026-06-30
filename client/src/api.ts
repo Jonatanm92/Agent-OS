@@ -115,6 +115,37 @@ export interface PipelineItem {
   updated_at: string;
 }
 
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  prompt: string;
+  agent_id: string;
+  created_at: string;
+}
+
+export interface Loop {
+  id: string;
+  name: string;
+  prompt: string;
+  agent_id: string;
+  interval_minutes: number;
+  enabled: number;
+  last_run: string | null;
+  next_run: string | null;
+  created_at: string;
+}
+
+export interface AuditEntry {
+  id: string;
+  ts: string;
+  kind: string;
+  agent: string;
+  title: string;
+  detail: string;
+  status: string;
+}
+
 export const api = {
   authStatus: () => req<{ required: boolean }>('/api/auth/status'),
   login: (password: string) =>
@@ -234,4 +265,20 @@ export const api = {
     req<{ item: PipelineItem }>(`/api/pipeline/${id}/execute`, { method: 'POST', body: '{}' }),
   deletePipeline: (id: string) =>
     req<{ ok: boolean }>(`/api/pipeline/${id}`, { method: 'DELETE' }),
+
+  // Studio — Skills + Loops (automation) + Audit
+  listSkills: () => req<{ skills: Skill[] }>('/api/skills'),
+  createSkill: (s: Partial<Skill>) =>
+    req<{ skill: Skill }>('/api/skills', { method: 'POST', body: JSON.stringify(s) }),
+  deleteSkill: (id: string) => req<{ ok: boolean }>(`/api/skills/${id}`, { method: 'DELETE' }),
+  runSkill: (id: string, input: string) =>
+    req<{ output: string }>(`/api/skills/${id}/run`, { method: 'POST', body: JSON.stringify({ input }) }),
+  listLoops: () => req<{ loops: Loop[] }>('/api/loops'),
+  createLoop: (l: Partial<Loop>) =>
+    req<{ loop: Loop }>('/api/loops', { method: 'POST', body: JSON.stringify(l) }),
+  deleteLoop: (id: string) => req<{ ok: boolean }>(`/api/loops/${id}`, { method: 'DELETE' }),
+  toggleLoop: (id: string, enabled: boolean) =>
+    req<{ loop: Loop }>(`/api/loops/${id}/toggle`, { method: 'POST', body: JSON.stringify({ enabled }) }),
+  runLoop: (id: string) => req<{ output: string }>(`/api/loops/${id}/run`, { method: 'POST', body: '{}' }),
+  listAudit: () => req<{ entries: AuditEntry[] }>('/api/audit'),
 };

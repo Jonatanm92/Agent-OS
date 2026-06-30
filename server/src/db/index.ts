@@ -87,6 +87,37 @@ function initializeSchema(database: Database.Database): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS skills (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      prompt TEXT NOT NULL,
+      agent_id TEXT NOT NULL DEFAULT 'free-claude-code',
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS loops (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      agent_id TEXT NOT NULL DEFAULT 'free-claude-code',
+      interval_minutes INTEGER NOT NULL DEFAULT 60,
+      enabled INTEGER NOT NULL DEFAULT 0,
+      last_run TEXT,
+      next_run TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id TEXT PRIMARY KEY,
+      ts TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      agent TEXT NOT NULL DEFAULT '',
+      title TEXT NOT NULL DEFAULT '',
+      detail TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'ok'
+    );
   `);
 
   // ── Migrations ──────────────────────────────────────────────────────────

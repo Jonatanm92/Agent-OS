@@ -4,6 +4,7 @@ import type { Agent, FccStatus } from '../api';
 // Sidebar tools that aren't model agents (still routed locally, not via FCC).
 const TOOLS: { id: string; label: string; tab: Tab }[] = [
   { id: 'pipeline', label: 'Pipeline', tab: 'pipeline' },
+  { id: 'studio', label: 'Studio', tab: 'studio' },
   { id: 'workspace', label: 'Workspace', tab: 'workspace' },
   { id: 'memory', label: 'Memory', tab: 'memory' },
   { id: 'terminal', label: 'Terminal', tab: 'terminal' },

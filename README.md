@@ -138,6 +138,24 @@ entry in `server/src/services/agents.ts`.
 
 ---
 
+## Studio — Skills, Loops & Audit (Level 1)
+
+The **Studio** tab is the Skill + Loop engineering layer (behavior):
+
+- **Skills** — save a reusable, named prompt (with a `{{input}}` placeholder) that any
+  agent can run on demand. "Skill creation," done.
+- **Automation loops** — schedule a recurring agent task (e.g. *"every 60 min, summarize
+  my inbox"*). A built-in scheduler runs due loops, and each run is **filed to your vault**
+  under `Loops/`. "Loop engineering," done.
+- **Workflow audit** — every skill and loop run is recorded in an audit trail you can
+  review. "Workflow audit," done.
+
+With this, Agent OS covers all four levels of the AIOS architecture: **L1 Skill+Loop**,
+**L2 Memory+State** (Obsidian + SQLite + files), **L3 Interface/UI** (this dashboard),
+**L4 Distribution** (GitHub).
+
+---
+
 ## Pipeline — From Inbox to Shipped
 
 The **Pipeline** tab is a kanban that turns ideas into shipped deliverables with a
