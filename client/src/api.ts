@@ -182,6 +182,23 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ projectId, path, content }),
     }),
+  extractFiles: (text: string, projectId?: string) =>
+    req<{ written: WorkspaceFile[]; skipped: number }>('/api/workspace/extract', {
+      method: 'POST',
+      body: JSON.stringify({ text, projectId }),
+    }),
+  runStatus: (projectId: string) =>
+    req<{ running: boolean; command?: string; pid?: number; startedAt?: string; suggested: string }>(
+      `/api/run/${projectId}/status`
+    ),
+  runLogs: (projectId: string) => req<{ logs: string[] }>(`/api/run/${projectId}/logs`),
+  runStart: (projectId: string, command: string) =>
+    req<{ running: boolean }>(`/api/run/${projectId}/start`, {
+      method: 'POST',
+      body: JSON.stringify({ command }),
+    }),
+  runStop: (projectId: string) =>
+    req<{ ok: boolean }>(`/api/run/${projectId}/stop`, { method: 'POST', body: '{}' }),
 
   listNotes: () => req<{ notes: NoteSummary[] }>('/api/memory/notes'),
   readNote: (path: string) =>

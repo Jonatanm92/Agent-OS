@@ -118,6 +118,13 @@ entry in `server/src/services/agents.ts`.
   (`run_command` — `npm install`, run tests, execute scripts) via JSON actions the dashboard
   executes, reading the output back each step. So it can actually build and run code, not
   just talk about it. Model-agnostic (works with Owl Alpha).
+- **Save files from a reply** — when an agent pastes code as `### File: path` + fenced
+  blocks (instead of using tools), click **💾 Save files** on the message and the
+  dashboard writes every named file into your active project. Turns any model's "here's
+  the code, you save it" dump into real files in one click.
+- **Run & Preview** — in the Workspace, **▶ Run** starts a dev server / command for the
+  project (auto-suggests `npm run dev` etc.), streams logs, and **⇗ Preview** opens the
+  running app. Build software and watch it run, in the OS.
 - **Editable Workspace** — open any file in the Workspace tab to **edit and save** it, or
   create new files. Real coding, in the browser (and on mobile).
 - **Terminal tab** — a real shell embedded in the dashboard (xterm.js over a PTY bridge),

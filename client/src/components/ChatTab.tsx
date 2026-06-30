@@ -21,6 +21,7 @@ export function ChatTab({
   const [lastModel, setLastModel] = useState<string | null>(null);
   const [savingMem, setSavingMem] = useState(false);
   const [memMsg, setMemMsg] = useState<string | null>(null);
+  const [fileMsg, setFileMsg] = useState<Record<string, string>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const agentId = activeAgent?.id ?? 'free-claude-code';
@@ -103,6 +104,21 @@ export function ChatTab({
       await api.rateMessage(id, next);
     } catch {
       /* keep optimistic state; non-critical */
+    }
+  };
+
+  const saveFiles = async (m: Message) => {
+    setFileMsg((s) => ({ ...s, [m.id]: 'Saving…' }));
+    try {
+      const r = await api.extractFiles(m.content);
+      setFileMsg((s) => ({
+        ...s,
+        [m.id]: r.written.length
+          ? `✓ Saved ${r.written.length} file(s) to Workspace${r.skipped ? ` (skipped ${r.skipped})` : ''}`
+          : 'No named files found in this message',
+      }));
+    } catch (e) {
+      setFileMsg((s) => ({ ...s, [m.id]: e instanceof Error ? e.message : 'failed' }));
     }
   };
 
@@ -207,6 +223,16 @@ export function ChatTab({
                   >
                     👎
                   </button>
+                  {m.content.includes('```') && (
+                    <button
+                      className="save-files-btn"
+                      title="Save the code blocks in this reply into your active Workspace project"
+                      onClick={() => saveFiles(m)}
+                    >
+                      💾 Save files
+                    </button>
+                  )}
+                  {fileMsg[m.id] && <span className="muted tiny">{fileMsg[m.id]}</span>}
                 </div>
               )}
             </div>

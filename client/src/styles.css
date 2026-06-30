@@ -444,3 +444,19 @@ code {
 .stat-row { display: flex; flex-wrap: wrap; gap: 22px; padding: 4px 2px 20px; }
 .stat-n { font-size: 22px; font-weight: 700; }
 .stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+
+
+/* ── Save-files button + Run panel ── */
+.save-files-btn {
+  background: var(--bg-3); color: var(--accent); border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 8px; font-size: 12px;
+}
+.save-files-btn:hover { border-color: var(--accent); }
+.ws-run { border-top: 1px solid var(--border); margin: 4px 0 10px; padding-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.ws-run-row { display: flex; align-items: center; gap: 6px; }
+.ws-run-row input { flex: 1; background: var(--bg-3); color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 6px 9px; font-size: 12px; }
+.ws-run-row .port-input { flex: 0 0 64px; }
+.ghost-btn.running { color: var(--red); border-color: var(--red); }
+.run-led { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.run-led.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.run-logs { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 8px; font-size: 11px; line-height: 1.45; max-height: 160px; overflow: auto; white-space: pre-wrap; margin: 0; }

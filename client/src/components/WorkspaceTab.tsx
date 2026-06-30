@@ -9,6 +9,11 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newName, setNewName] = useState('');
+  const [runCmd, setRunCmd] = useState('');
+  const [run, setRun] = useState<{ running: boolean; suggested: string } | null>(null);
+  const [runLogs, setRunLogs] = useState<string[]>([]);
+  const [showLogs, setShowLogs] = useState(false);
+  const [port, setPort] = useState('5173');
 
   const refresh = async () => {
     if (!activeProject) return;
@@ -23,6 +28,46 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProject?.id]);
+
+  // Poll the run status + logs for the active project.
+  useEffect(() => {
+    if (!activeProject) return;
+    let alive = true;
+    const poll = async () => {
+      try {
+        const st = await api.runStatus(activeProject.id);
+        if (!alive) return;
+        setRun({ running: st.running, suggested: st.suggested });
+        setRunCmd((c) => c || st.command || st.suggested || '');
+        if (st.running) {
+          const { logs } = await api.runLogs(activeProject.id);
+          if (alive) setRunLogs(logs);
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    poll();
+    const t = setInterval(poll, 2500);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject?.id]);
+
+  const toggleRun = async () => {
+    if (!activeProject) return;
+    if (run?.running) {
+      await api.runStop(activeProject.id);
+      setRun((r) => (r ? { ...r, running: false } : r));
+    } else {
+      if (!runCmd.trim()) return;
+      await api.runStart(activeProject.id, runCmd.trim());
+      setShowLogs(true);
+      setRun((r) => (r ? { ...r, running: true } : { running: true, suggested: '' }));
+    }
+  };
 
   // Load file contents when a file is opened (don't clobber unsaved edits).
   useEffect(() => {
@@ -92,6 +137,45 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
           />
           <button className="ghost-btn small-btn" type="submit">+ file</button>
         </form>
+
+        <div className="ws-run">
+          <div className="ws-run-row">
+            <input
+              value={runCmd}
+              placeholder={run?.suggested || 'npm run dev'}
+              onChange={(e) => setRunCmd(e.target.value)}
+            />
+            <button
+              className={`ghost-btn small-btn ${run?.running ? 'running' : ''}`}
+              onClick={toggleRun}
+              title="Start/stop a dev server or command"
+            >
+              {run?.running ? '■ Stop' : '▶ Run'}
+            </button>
+          </div>
+          <div className="ws-run-row">
+            <span className="muted tiny">localhost:</span>
+            <input
+              className="port-input"
+              value={port}
+              onChange={(e) => setPort(e.target.value)}
+            />
+            <button
+              className="ghost-btn small-btn"
+              onClick={() => window.open(`http://localhost:${port}`, '_blank')}
+              title="Open the running app in a new tab"
+            >
+              ⇗ Preview
+            </button>
+            <button className="ghost-btn small-btn" onClick={() => setShowLogs((s) => !s)}>
+              {showLogs ? 'Hide logs' : 'Logs'}
+            </button>
+            <span className={`run-led ${run?.running ? 'on' : ''}`} />
+          </div>
+          {showLogs && (
+            <pre className="run-logs">{runLogs.length ? runLogs.join('\n') : '(no output yet)'}</pre>
+          )}
+        </div>
         <div className="ws-file-list">
           {files.map((f) => (
             <div

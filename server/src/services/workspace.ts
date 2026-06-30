@@ -164,6 +164,66 @@ export function writeFileContent(
   };
 }
 
+/**
+ * Extract fenced code blocks that name a file and write them into the project.
+ * Handles the common model output patterns:
+ *   ### File: `path`            then  ```lang ... ```
+ *   **`path`**                  then  ```...```
+ *   ```path                     (filename as the code-fence info string)
+ * Lets you save an agent's "here's the code, you save it" dump in one click.
+ */
+export interface ExtractResult {
+  written: WorkspaceFile[];
+  skipped: number;
+}
+
+export function extractFiles(projectId: string, text: string): ExtractResult {
+  const project = getProject(projectId);
+  if (!project) throw new Error('Project not found');
+
+  const written: WorkspaceFile[] = [];
+  let skipped = 0;
+
+  const fence = /```([^\n`]*)\n([\s\S]*?)```/g;
+  const looksLikePath = (s: string) =>
+    /[\w.\-/]+\.[A-Za-z0-9]+$/.test(s.trim()) || s.includes('/');
+  // bare language identifiers that are NOT filenames
+  const langOnly = /^(ts|tsx|js|jsx|json|html|css|rust|rs|toml|yaml|yml|bash|sh|python|py|go|java|c|cpp|sql|md|text|plaintext|env|dockerfile)$/i;
+
+  let m: RegExpExecArray | null;
+  let lastIndex = 0;
+  while ((m = fence.exec(text)) !== null) {
+    const info = (m[1] || '').trim();
+    const body = m[2] ?? '';
+    let filename = '';
+
+    if (info && looksLikePath(info) && !langOnly.test(info)) {
+      filename = info;
+    } else {
+      // Look back up to 240 chars before this block for a filename hint.
+      const before = text.slice(Math.max(0, m.index - 240), m.index);
+      const backtick = [...before.matchAll(/`([^`\n]+\.[A-Za-z0-9]+)`/g)];
+      const fileLabel = [...before.matchAll(/(?:File|Path|filename)\s*\d*\s*[:\-]?\s*`?([\w.\-/]+\.[A-Za-z0-9]+)`?/gi)];
+      if (fileLabel.length) filename = fileLabel[fileLabel.length - 1][1];
+      else if (backtick.length) filename = backtick[backtick.length - 1][1];
+    }
+
+    lastIndex = fence.lastIndex;
+    if (!filename) {
+      skipped++;
+      continue;
+    }
+    try {
+      const trimmed = body.replace(/\n$/, '');
+      written.push(writeFileContent(projectId, filename.trim().replace(/^\.\//, ''), trimmed));
+    } catch {
+      skipped++;
+    }
+  }
+  void lastIndex;
+  return { written, skipped };
+}
+
 function mimeFor(ext: string): string {
   const map: Record<string, string> = {
     '.html': 'text/html',

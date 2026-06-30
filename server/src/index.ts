@@ -18,6 +18,7 @@ import { listAgentViews, getAgent, resolveAgentIdentity } from './services/agent
 import * as hermes from './services/hermes.js';
 import { runAgentic } from './services/agentic.js';
 import * as pipeline from './services/pipeline.js';
+import * as runner from './services/runner.js';
 import { attachTerminal } from './terminal.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -433,6 +434,33 @@ api.post('/workspace/file', (req, res) => {
   if (!rel) return res.status(400).json({ error: 'path required' });
   const file = workspace.writeFileContent(projectId, rel, String(req.body?.content ?? ''));
   res.json({ file });
+});
+
+// Save code blocks from a message into the active project (one-click "save the agent's code").
+api.post('/workspace/extract', (req, res) => {
+  const projectId = String(req.body?.projectId ?? getAllSettings().active_project_id);
+  const text = String(req.body?.text ?? '');
+  if (!text) return res.status(400).json({ error: 'text required' });
+  res.json(workspace.extractFiles(projectId, text));
+});
+
+// ── Run & Preview ─────────────────────────────────────────────────────────────
+api.get('/run/:projectId/status', (req, res) => {
+  res.json(runner.status(req.params.projectId));
+});
+api.get('/run/:projectId/logs', (req, res) => {
+  res.json({ logs: runner.logs(req.params.projectId) });
+});
+api.post('/run/:projectId/start', (req, res) => {
+  try {
+    res.json(runner.start(req.params.projectId, String(req.body?.command ?? '')));
+  } catch (e) {
+    res.status(400).json({ error: e instanceof Error ? e.message : 'failed' });
+  }
+});
+api.post('/run/:projectId/stop', (req, res) => {
+  runner.stop(req.params.projectId);
+  res.json({ ok: true });
 });
 
 // ── Pipeline (From Inbox to Shipped) ──────────────────────────────────────────
