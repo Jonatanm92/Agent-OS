@@ -104,6 +104,13 @@ api.post('/auth/login', (req, res) => {
   return res.status(401).json({ error: 'invalid password' });
 });
 
+// Mutating API operations require an authenticated owner.
+api.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  if (PUBLIC_PATHS.has(req.path)) return next();
+  return requireOwnerPassword(req, res, next);
+});
+
 // ── Health & status ─────────────────────────────────────────────────────────
 api.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -160,7 +167,9 @@ api.post(
 // One-click: set FCC's MODEL by writing ~/.fcc/.env (then user restarts fcc-server).
 api.post('/fcc/set-model', requireOwnerPassword, (req, res) => {
   const model = String(req.body?.model ?? '').trim();
-  if (!model) return res.status(400).json({ error: 'model required' });
+  if (!/^[A-Za-z0-9._:/-]{1,200}$/.test(model)) {
+    return res.status(400).json({ error: 'model must be 1-200 safe identifier characters' });
+  }
   const fccEnv = path.join(os.homedir(), '.fcc', '.env');
   fs.mkdirSync(path.dirname(fccEnv), { recursive: true });
   const existing = fs.existsSync(fccEnv) ? fs.readFileSync(fccEnv, 'utf8').split(/\r?\n/) : [];
@@ -193,7 +202,7 @@ api.post('/settings', requireOwnerPassword, (req, res) => {
   for (const [key, value] of Object.entries(updates)) {
     // Allow the fixed keys plus any per-agent model override (agent_model_<id>).
     if (allowed.includes(key) || key.startsWith('agent_model_') || key.startsWith('agent_identity_')) {
-      setSetting(key, String(value ?? ''));
+      setSetting(key, String(value ?? '').slice(0, key.startsWith('agent_identity_') ? 50_000 : 2_000));
     }
   }
   res.json({ ok: true, settings: getAllSettings() });
@@ -203,10 +212,10 @@ api.post('/settings', requireOwnerPassword, (req, res) => {
 api.get(
   '/agents',
   wrap(async (_req, res) => {
-    const hermesUp = await hermes.isAvailable();
+    const [hermesUp, gateway] = await Promise.all([hermes.isAvailable(), fcc.getStatus()]);
     const agents = listAgentViews().map((a) => ({
       ...a,
-      available: a.backend === 'cli' ? hermesUp : true,
+      available: a.backend === 'cli' ? hermesUp : gateway.ok,
     }));
     res.json({ agents });
   })
@@ -512,7 +521,7 @@ api.post(
   '/pipeline/:id/shape',
   requireOwnerPassword,
   wrap(async (req, res) => {
-    const agentId = getAgent(String(req.body?.agentId ?? 'free-claude-code')).id;
+    const agentId = getAgent(String(req.body?.agentId ?? 'product-lead')).id;
     res.json({ item: await pipeline.shape(req.params.id, agentId) });
   })
 );
@@ -525,7 +534,7 @@ api.post(
   '/pipeline/:id/execute',
   requireOwnerPassword,
   wrap(async (req, res) => {
-    const agentId = getAgent(String(req.body?.agentId ?? 'free-claude-code')).id;
+    const agentId = getAgent(String(req.body?.agentId ?? 'build-engineer')).id;
     res.json({ item: await pipeline.execute(req.params.id, agentId) });
   })
 );
@@ -640,7 +649,7 @@ httpServer.listen(port, host, () => {
   console.log(`  ▸ FCC proxy:  ${cfg.fccBaseUrl}  (model: ${cfg.model})`);
   console.log(`  ▸ Vault:      ${cfg.vaultPath}`);
   console.log(`  ▸ Scratch:    ${cfg.scratchDir}`);
-  console.log(`  ▸ Auth:       ${cfg.password ? 'password required' : 'open (no password set)'}\n`);
+  console.log(`  ▸ Mutations:  ${cfg.password ? 'owner password required' : 'LOCKED — configure AGENT_OS_PASSWORD'}\n`);
 });
 
 export { app };
