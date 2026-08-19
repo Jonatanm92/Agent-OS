@@ -6,6 +6,9 @@ on:
       - codex/foundry-company-os-v1
     paths:
       - .github/workflows/apply-foundry.yml
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
