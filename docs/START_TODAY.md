@@ -13,6 +13,7 @@ When this runbook is complete:
 - Docker is ready for fixed no-network verification tasks
 - Hermes is configured as the employee runtime
 - Paperclip contains the company, eight roles, four skills, one revenue project, and six starter tasks
+- the local owner gate is enabled
 - the first internal task is assigned
 - customer contact, spending, contracts, invoices, secrets, deployment, and self-modification remain locked to the owner
 
@@ -232,7 +233,21 @@ Expected tasks:
 5. Prepare offer, outreach, CRM, and payment readiness
 6. Owner decision — authorize controlled founder outreach
 
-## 7. Run preflight and start both control planes
+## 7. Enable the local owner gate
+
+Every state-changing Agent OS action requires an authenticated owner. Set a process-only password before starting the server:
+
+```powershell
+.\scripts\set-owner-password.ps1
+```
+
+Enter a password containing at least 16 characters. The secure prompt keeps it out of PowerShell history, and the helper does not write it to Git, `.env`, or persistent Windows environment settings.
+
+Keep this PowerShell window open. Agent OS must be started from the same process so its child server receives `AGENT_OS_PASSWORD`.
+
+When the Owner Cockpit opens, enter the same password on its login screen. Full rotation and recovery instructions are in `docs/OWNER_ACCESS.md`.
+
+## 8. Run preflight and start both control planes
 
 First run the non-mutating preflight:
 
@@ -252,7 +267,7 @@ It must show green for:
 - Hermes
 - Paperclip
 
-Then start only missing local processes and open the dashboards:
+Then, from the same PowerShell window in which the owner password was set, start only missing local processes and open the dashboards:
 
 ```powershell
 powershell -ExecutionPolicy Bypass `
@@ -287,7 +302,7 @@ powershell -ExecutionPolicy Bypass `
   -Json
 ```
 
-## 8. Start the first internal work
+## 9. Start the first internal work
 
 In Paperclip:
 
@@ -311,7 +326,7 @@ product contract
   → owner outreach decision
 ```
 
-## 9. First offer under validation
+## 10. First offer under validation
 
 **AI Workflow Revenue Sprint**
 
@@ -357,7 +372,7 @@ Founder validation targets:
 
 Targets are not recorded as completed without source artifacts.
 
-## 10. Payment readiness through Frilans Finans
+## 11. Payment readiness through Frilans Finans
 
 The initial seller path is egenanställning through Frilans Finans rather than forming a company before the first validated assignment.
 
@@ -391,7 +406,7 @@ prepare scope and price internally
 
 Do not agree compensation first and try to route an already-personal assignment through egenanställning afterward.
 
-## 11. Owner-only actions
+## 12. Owner-only actions
 
 Agents stop and create an owner gate before:
 
@@ -408,7 +423,7 @@ Agents stop and create an owner gate before:
 - submitting an invoice
 - promoting a self-improvement to production behavior
 
-## 12. Stop conditions
+## 13. Stop conditions
 
 Pause and return the mission to Commercial Red Team when:
 
@@ -433,6 +448,7 @@ Day one is complete when:
 - Hermes is configured
 - Paperclip is healthy
 - the company package is imported and reviewed
+- the local owner gate is enabled
 - runtime preflight is green
 - the first internal task is assigned
 - outreach, spending, contracts, payment, production, secrets, and self-modification remain locked
