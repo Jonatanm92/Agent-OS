@@ -349,7 +349,7 @@ function runVerificationTask(
   cwd: string,
   task: SandboxTask
 ): { passed: boolean; output: string } {
-  const result = runSandboxTask(cwd, task, 120_000);
+  const result = runSandboxTask(cwd, task, 180_000);
   return { passed: result.passed, output: formatSandboxResult(result) };
 }
 
@@ -364,8 +364,9 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
 
   const commands: { command: string; passed: boolean; output: string }[] = [];
   const packagePath = path.join(project.path, 'package.json');
+  const lockPath = path.join(project.path, 'package-lock.json');
   const pyprojectPath = path.join(project.path, 'pyproject.toml');
-  const hasNodeModules = fs.existsSync(path.join(project.path, 'node_modules'));
+  let deterministicVerificationTasks = 0;
 
   if (fs.existsSync(packagePath)) {
     try {
@@ -373,33 +374,42 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
         scripts?: Record<string, string>;
         dependencies?: Record<string, string>;
         devDependencies?: Record<string, string>;
+        optionalDependencies?: Record<string, string>;
+        peerDependencies?: Record<string, string>;
       };
-      const dependencyCount =
-        Object.keys(pkg.dependencies ?? {}).length + Object.keys(pkg.devDependencies ?? {}).length;
+      const dependencyCount = [
+        pkg.dependencies,
+        pkg.devDependencies,
+        pkg.optionalDependencies,
+        pkg.peerDependencies,
+      ].reduce((sum, section) => sum + Object.keys(section ?? {}).length, 0);
 
-      if (dependencyCount > 0 && !hasNodeModules) {
-        commands.push({
-          command: 'dependency preparation',
-          passed: false,
-          output:
-            'package.json declares dependencies but node_modules is missing. Autonomous network installation is disabled. Prepare dependencies through an owner-reviewed, locked install step before verification.',
-        });
-      } else {
-        if (pkg.scripts?.typecheck) {
-          const result = runVerificationTask(project.path, 'node-typecheck');
-          commands.push({ command: 'sandbox: npm run typecheck', ...result });
-        }
-        if (pkg.scripts?.lint) {
-          const result = runVerificationTask(project.path, 'node-lint');
-          commands.push({ command: 'sandbox: npm run lint', ...result });
-        }
-        if (pkg.scripts?.test && !/no test specified/i.test(pkg.scripts.test)) {
-          const result = runVerificationTask(project.path, 'node-test');
-          commands.push({ command: 'sandbox: npm test', ...result });
-        }
-        if (pkg.scripts?.build) {
-          const result = runVerificationTask(project.path, 'node-build');
-          commands.push({ command: 'sandbox: npm run build', ...result });
+      const nodeTasks: { task: SandboxTask; command: string }[] = [];
+      if (pkg.scripts?.typecheck) {
+        nodeTasks.push({ task: 'node-typecheck', command: 'sandbox: npm run typecheck' });
+      }
+      if (pkg.scripts?.lint) {
+        nodeTasks.push({ task: 'node-lint', command: 'sandbox: npm run lint' });
+      }
+      if (pkg.scripts?.test && !/no test specified/i.test(pkg.scripts.test)) {
+        nodeTasks.push({ task: 'node-test', command: 'sandbox: npm test' });
+      }
+      if (pkg.scripts?.build) {
+        nodeTasks.push({ task: 'node-build', command: 'sandbox: npm run build' });
+      }
+
+      let dependenciesReady = true;
+      if (dependencyCount > 0 && nodeTasks.length > 0 && !fs.existsSync(lockPath)) {
+        const lockResult = runVerificationTask(project.path, 'node-lock');
+        commands.push({ command: 'sandbox: resolve validated package-lock.json', ...lockResult });
+        dependenciesReady = lockResult.passed;
+      }
+
+      if (dependenciesReady) {
+        for (const nodeTask of nodeTasks) {
+          const result = runVerificationTask(project.path, nodeTask.task);
+          commands.push({ command: nodeTask.command, ...result });
+          deterministicVerificationTasks++;
         }
       }
     } catch (error) {
@@ -416,10 +426,11 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
     if (hasTests) {
       const result = runVerificationTask(project.path, 'python-test');
       commands.push({ command: 'sandbox: python -m pytest -q', ...result });
+      deterministicVerificationTasks++;
     }
   }
 
-  if (productionBuild && commands.length === 0) {
+  if (productionBuild && deterministicVerificationTasks === 0) {
     commands.push({
       command: 'automated verification availability',
       passed: false,
@@ -431,7 +442,7 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
   const summary = [
     `${files.length} workspace file(s) present.`,
     commands.length
-      ? `${commands.filter((command) => command.passed).length}/${commands.length} sandboxed verification task(s) passed.`
+      ? `${commands.filter((command) => command.passed).length}/${commands.length} controlled sandbox command(s) passed.`
       : 'Validation artifact mode: file evidence present; independent review still required.',
   ].join(' ');
 
@@ -482,6 +493,7 @@ NON-NEGOTIABLE RULES:
 - Never contact a customer, spend money, deploy publicly, change production, or send communications.
 - Keep secrets and personal data out of generated files.
 - Run available fixed sandbox tasks before declaring done.
+- For a Node project with dependencies, run node-lock before test/build verification.
 
 TITLE: ${item.title}
 
@@ -496,7 +508,7 @@ ${item.raw}`;
     [{ role: 'user', content: goal }],
     projectId,
     resolveAgentIdentity(agentId),
-    14
+    16
   );
 
   const built = agentRun.steps
