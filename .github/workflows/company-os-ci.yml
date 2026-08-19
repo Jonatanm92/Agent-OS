@@ -47,6 +47,31 @@ jobs:
       - name: Reject critical findings in all dependencies
         run: npm audit --audit-level=critical
 
+      - name: Parse Windows runtime scripts
+        shell: pwsh
+        run: |
+          $failed = $false
+          foreach ($file in @(
+            'scripts/company-runtime.ps1',
+            'scripts/set-owner-password.ps1'
+          )) {
+            $tokens = $null
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref]$tokens,
+              [ref]$parseErrors
+            ) | Out-Null
+
+            if ($parseErrors.Count -gt 0) {
+              Write-Error "PowerShell parse errors in $file"
+              $parseErrors | ForEach-Object { Write-Error $_.Message }
+              $failed = $true
+            }
+          }
+
+          if ($failed) { exit 1 }
+
       - name: Run deterministic tests
         run: npm test
 
