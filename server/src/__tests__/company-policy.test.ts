@@ -88,7 +88,7 @@ describe('owner control plane', () => {
     expect(seed).toContain('DECISION: EXPERIMENT');
     expect(seed).toContain('PRODUCTION BUILD ALLOWED: NO');
     expect(seed).toContain('This is a commercial hypothesis');
-    expect(seed).toContain('No customer contact');
+    expect(seed).toContain('Do not contact prospects until the owner approves');
     expect(seed).toContain("'company-ceo-heartbeat'");
   });
 });
