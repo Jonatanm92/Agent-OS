@@ -1,34 +1,83 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import {
+  formatSandboxResult,
+  normalizeSandboxTask,
+  runSandboxTask,
+  type SandboxTask,
+} from './sandbox.js';
 
 /**
- * Tool Registry (Primitive #6) — extensible tools via a JSON config.
+ * Capability-limited tool registry.
  *
- * Tools are defined in tools.json at the repo root. Each tool has a name,
- * description, and either:
- *   - type:"shell" + command template ({{input}} placeholder)
- *   - type:"http" + url template + method
+ * Repository-controlled tools.json may expose only:
+ *   - builtin: pure Node.js read-only helpers implemented in this module
+ *   - sandbox: one fixed task from sandbox.ts
  *
- * The agent loop (agentic.ts) checks this registry for any tool name it doesn't
- * recognize built-in, enabling expansion without code changes.
+ * Shell templates and arbitrary HTTP requests are deliberately unsupported.
+ * This prevents model-controlled placeholder values from becoming command or
+ * URL injection paths on the owner's machine.
  */
 
 export interface ToolDef {
   name: string;
   description: string;
-  type: 'shell' | 'http';
-  command?: string; // for shell: command template with {{input}} and {{args.*}}
-  url?: string; // for http
-  method?: string;
+  type: 'builtin' | 'sandbox';
+  builtin?: 'grep' | 'tree';
+  task?: SandboxTask;
 }
+
+const EXCLUDED_DIRECTORIES = new Set([
+  '.git',
+  '.company-runtime',
+  'node_modules',
+  'target',
+  'dist',
+]);
+const SEARCHABLE_EXTENSIONS = new Set([
+  '.c',
+  '.cpp',
+  '.css',
+  '.h',
+  '.html',
+  '.js',
+  '.json',
+  '.jsx',
+  '.md',
+  '.mjs',
+  '.py',
+  '.rs',
+  '.toml',
+  '.ts',
+  '.tsx',
+  '.txt',
+  '.yaml',
+  '.yml',
+]);
 
 let cache: ToolDef[] | null = null;
 let cacheTime = 0;
 
 function toolsPath(): string {
-  // Look in the repo root (2 levels up from dist/services/)
   return path.resolve(process.cwd(), 'tools.json');
+}
+
+function normalizeTool(value: unknown): ToolDef | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const source = value as Record<string, unknown>;
+  const name = typeof source.name === 'string' ? source.name.trim() : '';
+  const description = typeof source.description === 'string' ? source.description.trim() : '';
+  const type = source.type;
+  if (!name || !description) return null;
+
+  if (type === 'builtin' && (source.builtin === 'grep' || source.builtin === 'tree')) {
+    return { name, description, type, builtin: source.builtin };
+  }
+  if (type === 'sandbox') {
+    const task = normalizeSandboxTask(source.task);
+    if (task) return { name, description, type, task };
+  }
+  return null;
 }
 
 export function listTools(): ToolDef[] {
@@ -42,10 +91,15 @@ export function listTools(): ToolDef[] {
   }
   try {
     const raw = fs.readFileSync(p, 'utf8');
-    const parsed = JSON.parse(raw);
-    cache = Array.isArray(parsed) ? parsed : (parsed.tools ?? []);
+    const parsed = JSON.parse(raw) as unknown;
+    const values = Array.isArray(parsed)
+      ? parsed
+      : parsed && typeof parsed === 'object' && Array.isArray((parsed as { tools?: unknown }).tools)
+        ? ((parsed as { tools: unknown[] }).tools)
+        : [];
+    cache = values.map(normalizeTool).filter((tool): tool is ToolDef => Boolean(tool));
     cacheTime = now;
-    return cache!;
+    return cache;
   } catch {
     cache = [];
     cacheTime = now;
@@ -54,40 +108,96 @@ export function listTools(): ToolDef[] {
 }
 
 export function findTool(name: string): ToolDef | undefined {
-  return listTools().find((t) => t.name === name);
+  return listTools().find((tool) => tool.name === name);
+}
+
+function safeFiles(root: string, limit = 500): string[] {
+  const output: string[] = [];
+  const walk = (directory: string): void => {
+    if (output.length >= limit) return;
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (output.length >= limit) return;
+      if (entry.name.startsWith('.') && entry.name !== '.env.example') continue;
+      if (EXCLUDED_DIRECTORIES.has(entry.name)) continue;
+      const full = path.join(directory, entry.name);
+      let stat: fs.Stats;
+      try {
+        stat = fs.lstatSync(full);
+      } catch {
+        continue;
+      }
+      if (stat.isSymbolicLink()) continue;
+      if (stat.isDirectory()) walk(full);
+      else if (stat.isFile()) output.push(path.relative(root, full));
+    }
+  };
+  walk(root);
+  return output;
+}
+
+function executeTree(cwd: string): string {
+  const files = safeFiles(cwd, 100);
+  return files.length ? files.join('\n') : '(project is empty)';
+}
+
+function executeGrep(cwd: string, input: unknown): string {
+  const query = typeof input === 'string' ? input.trim() : '';
+  if (!query) return 'ERROR: grep requires a non-empty input string';
+  if (query.length > 200 || /[\r\n\0]/.test(query)) {
+    return 'ERROR: grep input is too long or contains unsupported control characters';
+  }
+
+  const needle = query.toLowerCase();
+  const matches: string[] = [];
+  for (const relative of safeFiles(cwd, 1000)) {
+    if (matches.length >= 30) break;
+    if (!SEARCHABLE_EXTENSIONS.has(path.extname(relative).toLowerCase())) continue;
+    const full = path.join(cwd, relative);
+    let stat: fs.Stats;
+    try {
+      stat = fs.lstatSync(full);
+    } catch {
+      continue;
+    }
+    if (!stat.isFile() || stat.size > 1024 * 1024) continue;
+
+    let content: string;
+    try {
+      content = fs.readFileSync(full, 'utf8');
+    } catch {
+      continue;
+    }
+    const lines = content.split(/\r?\n/);
+    for (let index = 0; index < lines.length && matches.length < 30; index++) {
+      if (lines[index].toLowerCase().includes(needle)) {
+        matches.push(`${relative}:${index + 1}: ${lines[index].slice(0, 300)}`);
+      }
+    }
+  }
+  return matches.length ? matches.join('\n') : '(no matches)';
 }
 
 export function executeTool(tool: ToolDef, args: Record<string, unknown>, cwd: string): string {
-  if (tool.type === 'shell') {
-    let cmd = tool.command ?? '';
-    // Replace {{input}} and {{args.key}} placeholders.
-    const input = String(args.input ?? args.query ?? args.command ?? '');
-    cmd = cmd.replace(/\{\{\s*input\s*\}\}/g, input);
-    for (const [k, v] of Object.entries(args)) {
-      cmd = cmd.replace(new RegExp(`\\{\\{\\s*args\\.${k}\\s*\\}\\}`, 'g'), String(v));
+  try {
+    const root = path.resolve(cwd);
+    if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
+      return 'ERROR: active project directory is unavailable';
     }
-    if (!cmd.trim()) return 'ERROR: empty command after template expansion';
-    try {
-      const out = execSync(cmd, { cwd, encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'pipe'] });
-      return (out || '(no output)').slice(0, 4000);
-    } catch (e) {
-      const err = e as { stderr?: string; stdout?: string; message?: string };
-      return `ERROR: ${(err.stderr || err.stdout || err.message || 'failed').toString().slice(0, 2000)}`;
+
+    if (tool.type === 'builtin') {
+      if (tool.builtin === 'tree') return executeTree(root);
+      if (tool.builtin === 'grep') {
+        return executeGrep(root, args.input ?? args.query);
+      }
+      return 'ERROR: unsupported builtin capability';
     }
+
+    if (tool.type === 'sandbox' && tool.task) {
+      return formatSandboxResult(runSandboxTask(root, tool.task, 120_000));
+    }
+
+    return 'BLOCKED BY POLICY: unsupported tool capability';
+  } catch (error) {
+    return `ERROR: ${error instanceof Error ? error.message : String(error)}`;
   }
-  if (tool.type === 'http') {
-    // Simple sync HTTP via curl (keeps it dependency-free).
-    const url = (tool.url ?? '').replace(/\{\{\s*input\s*\}\}/g, encodeURIComponent(String(args.input ?? '')));
-    const method = (tool.method ?? 'GET').toUpperCase();
-    try {
-      const out = execSync(
-        `curl -s -m 15 -X ${method} "${url}"`,
-        { cwd, encoding: 'utf8', timeout: 20000, stdio: ['ignore', 'pipe', 'pipe'] }
-      );
-      return (out || '(no response)').slice(0, 4000);
-    } catch (e) {
-      return `ERROR: HTTP tool failed — ${(e as Error).message}`;
-    }
-  }
-  return `ERROR: unknown tool type "${tool.type}"`;
 }
