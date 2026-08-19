@@ -7,7 +7,7 @@ on:
     branches: [codex/company-os-foundation]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: company-os-ci-${{ github.ref }}
@@ -15,40 +15,28 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
-      - name: Check out reviewed branch
-        uses: actions/checkout@v4
+      - name: Check out reviewed commit
+        uses: actions/checkout@v6
         with:
-          ref: codex/company-os-foundation
-          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Use Node.js 22
-        uses: actions/setup-node@v4
+      - name: Use pinned Node.js LTS
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
-          cache: npm
+          node-version: 24.19.0
+          package-manager-cache: false
 
-      - name: Apply deterministic release hardening
-        run: node scripts/apply-release-hardening.mjs
+      - name: Use pinned npm
+        run: npm install --global npm@12.0.2 --ignore-scripts
 
-      - name: Refresh locked dependency graph without lifecycle scripts
-        run: npm install --package-lock-only --ignore-scripts
-
-      - name: Persist generated hardening and lockfile
-        shell: bash
+      - name: Verify toolchain
         run: |
-          if git diff --quiet; then
-            echo "Generated files are already current"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add server/src/index.ts server/src/services/pipeline.ts server/src/services/tool-registry.ts package-lock.json
-            git commit -m "security: apply release hardening and refresh lockfile"
-            git push origin HEAD:codex/company-os-foundation
-          fi
+          test "$(node --version)" = "v24.19.0"
+          test "$(npm --version)" = "12.0.2"
 
       - name: Install locked dependencies
         run: npm ci
@@ -64,3 +52,6 @@ jobs:
 
       - name: Build client and server
         run: npm run build
+
+      - name: Reject generated or uncommitted changes
+        run: git diff --exit-code
