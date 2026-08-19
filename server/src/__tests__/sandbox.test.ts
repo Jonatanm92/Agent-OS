@@ -39,12 +39,12 @@ describe('sandbox task allowlist', () => {
   });
 
   it('rejects option-like and delimiter-bearing image references', () => {
-    expect(validateSandboxImage('node:22-bookworm-slim')).toBe('node:22-bookworm-slim');
+    expect(validateSandboxImage('node:24-bookworm-slim')).toBe('node:24-bookworm-slim');
     expect(validateSandboxImage('ghcr.io/example/agent-os@sha256:' + 'a'.repeat(64))).toContain(
       '@sha256:'
     );
     expect(() => validateSandboxImage('-v')).toThrow(/unsafe sandbox image/i);
-    expect(() => validateSandboxImage('node:22,source=/host')).toThrow(/unsafe sandbox image/i);
+    expect(() => validateSandboxImage('node:24,source=/host')).toThrow(/unsafe sandbox image/i);
     expect(() => validateSandboxImage('https://registry.example/image')).toThrow(/unsafe sandbox image/i);
     expect(() => validateSandboxImage('image@sha256:1234')).toThrow(/digest-pinned/i);
   });
@@ -74,7 +74,7 @@ describe('Docker sandbox invocation', () => {
     expect(mount).toBe(`type=bind,source=${path.resolve(source)},target=/source,readonly`);
     expect(args.join(' ')).not.toContain('docker.sock');
 
-    expect(args.at(-4)).toBe('node:22-bookworm-slim');
+    expect(args.at(-4)).toBe('node:24-bookworm-slim');
     expect(args.at(-3)).toBe('sh');
     expect(args.at(-2)).toBe('-lc');
     expect(args.at(-1)).toBe(
