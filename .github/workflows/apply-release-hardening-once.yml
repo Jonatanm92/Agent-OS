@@ -1,0 +1,136 @@
+name: Apply reviewed release hardening once
+
+on:
+  push:
+    branches: [codex/company-os-foundation]
+    paths:
+      - .github/workflows/apply-release-hardening-once.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-release-hardening-once
+  cancel-in-progress: true
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source branch
+        uses: actions/checkout@v6
+        with:
+          ref: codex/company-os-foundation
+
+      - name: Use pinned Node.js LTS
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+
+      - name: Use pinned npm
+        run: npm install --global npm@12.0.2 --ignore-scripts
+
+      - name: Install reviewed dependency graph
+        run: npm ci
+
+      - name: Apply reviewed server hardening
+        run: node scripts/apply-release-hardening.mjs
+
+      - name: Align Windows runtime and runbook with the pinned toolchain
+        shell: python
+        run: |
+          from pathlib import Path
+
+          runtime_path = Path('scripts/company-runtime.ps1')
+          runtime = runtime_path.read_text(encoding='utf-8')
+          runtime = runtime.replace("$image.Contains('..') -or\n    $image -notmatch", "$image.Contains('..') -or\n    $image.Contains('://') -or\n    $image -notmatch")
+          runtime = runtime.replace("-Fallback 'node:22-bookworm-slim'", "-Fallback 'node:24-bookworm-slim'")
+
+          old_check = """  $node = $checks | Where-Object { $_.kind -eq 'tool' -and $_.name -eq 'node' }
+          if ($node.ok -and $node.version -match 'v(?<major>\\d+)') {
+            if ([int]$Matches.major -lt 20) {
+              $node.ok = $false
+              $node.detail = 'Node.js 20 or newer is required'
+            }
+          }
+          """
+          new_check = """  $node = $checks | Where-Object { $_.kind -eq 'tool' -and $_.name -eq 'node' }
+          if ($node.ok) {
+            try {
+              $nodeMatch = [regex]::Match([string]$node.version, '\\d+\\.\\d+\\.\\d+')
+              if (-not $nodeMatch.Success -or [version]$nodeMatch.Value -lt [version]'24.19.0') {
+                $node.ok = $false
+                $node.detail = 'Node.js 24.19.0 or newer within major 24 is required'
+              }
+            } catch {
+              $node.ok = $false
+              $node.detail = 'Unable to verify the Node.js version'
+            }
+          }
+
+          $npm = $checks | Where-Object { $_.kind -eq 'tool' -and $_.name -eq 'npm' }
+          if ($npm.ok) {
+            try {
+              $npmMatch = [regex]::Match([string]$npm.version, '\\d+\\.\\d+\\.\\d+')
+              if (-not $npmMatch.Success -or [version]$npmMatch.Value -lt [version]'12.0.2') {
+                $npm.ok = $false
+                $npm.detail = 'npm 12.0.2 or newer within major 12 is required'
+              }
+            } catch {
+              $npm.ok = $false
+              $npm.detail = 'Unable to verify the npm version'
+            }
+          }
+          """
+          if old_check not in runtime:
+              raise SystemExit('Windows runtime version-check anchor was not found')
+          runtime = runtime.replace(old_check, new_check)
+          runtime_path.write_text(runtime, encoding='utf-8')
+
+          runbook_path = Path('docs/START_TODAY.md')
+          runbook = runbook_path.read_text(encoding='utf-8')
+          runbook = runbook.replace('node:22-bookworm-slim', 'node:24-bookworm-slim')
+          runbook = runbook.replace('Node.js 20 or newer', 'Node.js 24.19.0 or newer within major 24')
+          marker = """## 2. Install and verify the repository
+
+```powershell
+npm ci
+"""
+          replacement = """## 2. Install and verify the repository
+
+The reviewed runtime is pinned to Node.js 24.19.0 and npm 12.0.2. Verify and, when required, upgrade npm before installing dependencies:
+
+```powershell
+node --version
+npm install --global npm@12.0.2 --ignore-scripts
+npm --version
+npm ci
+"""
+          if marker not in runbook:
+              raise SystemExit('START_TODAY toolchain anchor was not found')
+          runbook = runbook.replace(marker, replacement)
+          runbook_path.write_text(runbook, encoding='utf-8')
+
+      - name: Verify the migrated source
+        run: |
+          npm audit --omit=dev --audit-level=high
+          npm audit --audit-level=critical
+          npm test
+          npm run build
+          git diff --check
+
+      - name: Commit reviewed result and delete migration machinery
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm scripts/apply-release-hardening.mjs
+          git rm .github/workflows/apply-release-hardening-once.yml
+          git add -A
+          git commit -m "security: finalize local Company OS release boundary"
+          git push origin HEAD:codex/company-os-foundation
