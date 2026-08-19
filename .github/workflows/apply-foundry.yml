@@ -33,6 +33,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cat > /tmp/foundry-parts.sha256 <<'EOF'
+          b89cbd43f051b0a04cb07c57d4aae25458c672eff89cf12e799c5e23202ec379  .foundry/parts/00
+          ce946832a4b905b673fec1c6f12326c3b1a3aea558f1b3690d1d147c0a02f67f  .foundry/parts/01
+          0f5f9981c3da3cc27b1311b499d5616cfd55e75f8691773079a3870946e036aa  .foundry/parts/02
+          676f97e6deb0fbbc46fe2ce457648f72f6fc3ac3f5b533510c505b30371ab611  .foundry/parts/03
+          08f456b5557d96f3773622687ac4ce510634aa133244150a2be791b19974d76e  .foundry/parts/04
+          1de4e80dd60d9fbdd1a4b907d19f63e1146280d30378ba6b82e2ceb71b0a65ba  .foundry/parts/05
+          efefe96117edb5a34b0b53db34b4bd45a271c507c0e446be180d5b193e30b109  .foundry/parts/06
+          f66053374601a86eeec2b9f5bbddd05bad430f4170bae736b566457909af6819  .foundry/parts/07
+          32196600edd2ec0b077959059d8c062559ec9c85fb8cddb110776660ceb62cea  .foundry/parts/08
+          ca6a7816d234e87a870c471861e10823bdd6e586cdbb9ebbac82c1b9fb0ec8c3  .foundry/parts/09
+          01732879a8eee6d79456ec35e1f93db3db3787b434839318bed15a387e046821  .foundry/parts/10
+          EOF
+          sha256sum -c /tmp/foundry-parts.sha256
           cat .foundry/parts/* > /tmp/foundry-patch.tgz.b64
           base64 --decode /tmp/foundry-patch.tgz.b64 > /tmp/foundry-patch.tgz
           echo "4ce37072c117ea95c4185fba674cdbf3b08c7247c01dbc207a23cbad32728426  /tmp/foundry-patch.tgz" | sha256sum -c -
