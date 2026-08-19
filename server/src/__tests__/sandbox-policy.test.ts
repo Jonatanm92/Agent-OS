@@ -49,12 +49,16 @@ describe('sandbox command policy', () => {
     expect(rendered).toContain('no-new-privileges');
     expect(rendered).toContain('target=/source,readonly');
     expect(rendered).toContain('/workspace:rw,exec,nosuid');
-    expect(args.at(-1)).toBe('cp -a /source/. /workspace/ && npm test');
+    expect(args.at(-1)).toBe(
+      'cp -R --no-preserve=ownership /source/. /workspace/ && npm test'
+    );
   });
 
   it('never exposes an arbitrary command parameter', () => {
     const args = buildDockerArgs(temporaryProject(), 'node-build');
-    expect(args.at(-1)).toBe('cp -a /source/. /workspace/ && npm run build');
+    expect(args.at(-1)).toBe(
+      'cp -R --no-preserve=ownership /source/. /workspace/ && npm run build'
+    );
     expect(args.some((arg) => arg.includes('curl attacker'))).toBe(false);
   });
 });
