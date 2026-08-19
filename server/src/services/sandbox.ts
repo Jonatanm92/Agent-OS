@@ -1,9 +1,39 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 
-const NODE_IMAGE = process.env.AGENT_OS_NODE_SANDBOX_IMAGE?.trim() || 'node:22-bookworm-slim';
-const PYTHON_IMAGE = process.env.AGENT_OS_PYTHON_SANDBOX_IMAGE?.trim() || 'python:3.12-slim';
+/**
+ * Validate configured image references before they can become positional Docker
+ * arguments. Images are operator configuration, never model input, but rejecting
+ * option-like or delimiter-bearing values protects against accidental unsafe env
+ * configuration as well.
+ */
+export function validateSandboxImage(value: string): string {
+  const image = value.trim();
+  if (
+    !image ||
+    image.length > 255 ||
+    image.startsWith('-') ||
+    image.includes('..') ||
+    !/^[A-Za-z0-9][A-Za-z0-9._/:@-]*$/.test(image)
+  ) {
+    throw new Error(`Unsafe sandbox image reference: ${JSON.stringify(value)}`);
+  }
+
+  if (image.includes('@') && !/@sha256:[a-fA-F0-9]{64}$/.test(image)) {
+    throw new Error('Digest-pinned sandbox images must use @sha256:<64 hex characters>.');
+  }
+
+  return image;
+}
+
+const NODE_IMAGE = validateSandboxImage(
+  process.env.AGENT_OS_NODE_SANDBOX_IMAGE?.trim() || 'node:22-bookworm-slim'
+);
+const PYTHON_IMAGE = validateSandboxImage(
+  process.env.AGENT_OS_PYTHON_SANDBOX_IMAGE?.trim() || 'python:3.12-slim'
+);
 
 export const SANDBOX_TASKS = {
   'node-test': {
@@ -60,12 +90,28 @@ function compactOutput(stdout: string, stderr: string): string {
   return (combined || '(completed with no output)').slice(0, 8000);
 }
 
+function dockerEnvironment(): NodeJS.ProcessEnv {
+  return {
+    PATH: process.env.PATH ?? '',
+    PATHEXT: process.env.PATHEXT ?? '',
+    SystemRoot: process.env.SystemRoot ?? '',
+    WINDIR: process.env.WINDIR ?? '',
+    HOME: process.env.HOME ?? '',
+    USERPROFILE: process.env.USERPROFILE ?? '',
+    DOCKER_HOST: process.env.DOCKER_HOST ?? '',
+    DOCKER_CONTEXT: process.env.DOCKER_CONTEXT ?? '',
+    DOCKER_CERT_PATH: process.env.DOCKER_CERT_PATH ?? '',
+    DOCKER_TLS_VERIFY: process.env.DOCKER_TLS_VERIFY ?? '',
+  };
+}
+
 function dockerAvailable(): { available: boolean; detail: string } {
   const result = spawnSync('docker', ['version', '--format', '{{.Server.Version}}'], {
     encoding: 'utf8',
     timeout: 15_000,
     windowsHide: true,
     maxBuffer: 1024 * 1024,
+    env: dockerEnvironment(),
   });
 
   if (result.error) {
@@ -81,23 +127,51 @@ function dockerAvailable(): { available: boolean; detail: string } {
 }
 
 function imageAvailable(image: string): boolean {
+  validateSandboxImage(image);
   const result = spawnSync('docker', ['image', 'inspect', image], {
     encoding: 'utf8',
     timeout: 15_000,
     windowsHide: true,
     maxBuffer: 1024 * 1024,
+    env: dockerEnvironment(),
   });
   return !result.error && result.status === 0;
+}
+
+function validateContainerName(value: string): string {
+  if (!/^agent-os-sandbox-[a-f0-9-]{8,64}$/.test(value)) {
+    throw new Error('Sandbox container name is invalid.');
+  }
+  return value;
+}
+
+function newContainerName(): string {
+  return validateContainerName(`agent-os-sandbox-${randomUUID()}`);
+}
+
+function removeContainer(containerName: string): void {
+  spawnSync('docker', ['rm', '-f', validateContainerName(containerName)], {
+    encoding: 'utf8',
+    timeout: 15_000,
+    windowsHide: true,
+    maxBuffer: 1024 * 1024,
+    env: dockerEnvironment(),
+  });
 }
 
 /**
  * Build a fixed Docker invocation. No model-supplied command is ever interpolated.
  * The source workspace is mounted read-only and copied into an ephemeral tmpfs,
  * so package scripts can neither modify the real workspace nor access the host
- * filesystem outside the source mount. Network, Linux capabilities, and privilege
- * escalation are disabled and resource ceilings are applied.
+ * filesystem outside the source mount. Network, Linux capabilities, privilege
+ * escalation, root execution, swap growth, and persistent container logs are
+ * disabled. Resource ceilings are applied.
  */
-export function buildDockerArgs(sourceDirectory: string, task: SandboxTask): string[] {
+export function buildDockerArgs(
+  sourceDirectory: string,
+  task: SandboxTask,
+  containerName = newContainerName()
+): string[] {
   const source = path.resolve(sourceDirectory);
   if (!fs.existsSync(source) || !fs.statSync(source).isDirectory()) {
     throw new Error('Sandbox source directory does not exist.');
@@ -106,15 +180,21 @@ export function buildDockerArgs(sourceDirectory: string, task: SandboxTask): str
     throw new Error('Sandbox source path contains unsupported characters.');
   }
 
+  const safeName = validateContainerName(containerName);
   const spec = SANDBOX_TASKS[task];
-  const fixedCommand = `cp -a /source/. /workspace/ && ${spec.command}`;
+  const image = validateSandboxImage(spec.image);
+  const fixedCommand = `cp -R --no-preserve=ownership /source/. /workspace/ && ${spec.command}`;
 
   return [
     'run',
     '--rm',
+    '--name',
+    safeName,
     '--pull=never',
     '--network=none',
     '--read-only',
+    '--user',
+    '65532:65532',
     '--cap-drop=ALL',
     '--security-opt',
     'no-new-privileges',
@@ -122,16 +202,23 @@ export function buildDockerArgs(sourceDirectory: string, task: SandboxTask): str
     '128',
     '--memory',
     '1024m',
+    '--memory-swap',
+    '1024m',
     '--cpus',
     '1',
     '--ipc',
     'none',
     '--ulimit',
     'nofile=1024:1024',
+    '--stop-timeout',
+    '1',
+    '--log-driver',
+    'none',
+    '--init',
     '--tmpfs',
-    '/tmp:rw,noexec,nosuid,size=128m',
+    '/tmp:rw,noexec,nosuid,nodev,size=128m,uid=65532,gid=65532,mode=1770',
     '--tmpfs',
-    '/workspace:rw,exec,nosuid,size=1024m',
+    '/workspace:rw,exec,nosuid,nodev,size=1024m,uid=65532,gid=65532,mode=1770',
     '--mount',
     `type=bind,source=${source},target=/source,readonly`,
     '--workdir',
@@ -144,7 +231,7 @@ export function buildDockerArgs(sourceDirectory: string, task: SandboxTask): str
     'NO_COLOR=1',
     '--hostname',
     'agent-os-sandbox',
-    spec.image,
+    image,
     'sh',
     '-lc',
     fixedCommand,
@@ -182,9 +269,10 @@ export function runSandboxTask(
     };
   }
 
+  const containerName = newContainerName();
   let args: string[];
   try {
-    args = buildDockerArgs(sourceDirectory, task);
+    args = buildDockerArgs(sourceDirectory, task, containerName);
   } catch (error) {
     return {
       task,
@@ -201,20 +289,16 @@ export function runSandboxTask(
     timeout: timeoutMs,
     windowsHide: true,
     maxBuffer: 8 * 1024 * 1024,
-    env: {
-      PATH: process.env.PATH ?? '',
-      SystemRoot: process.env.SystemRoot ?? '',
-      WINDIR: process.env.WINDIR ?? '',
-      HOME: process.env.HOME ?? '',
-      USERPROFILE: process.env.USERPROFILE ?? '',
-      DOCKER_HOST: process.env.DOCKER_HOST ?? '',
-      DOCKER_CONTEXT: process.env.DOCKER_CONTEXT ?? '',
-    },
+    env: dockerEnvironment(),
   });
 
   const output = compactOutput(result.stdout ?? '', result.stderr ?? '');
   if (result.error) {
-    const timedOut = result.error.message.toLowerCase().includes('timed out');
+    // A timed-out docker client can leave its container alive. The unique name
+    // gives the host process a deterministic cleanup target.
+    removeContainer(containerName);
+    const code = (result.error as NodeJS.ErrnoException).code;
+    const timedOut = code === 'ETIMEDOUT' || result.error.message.toLowerCase().includes('timed out');
     return {
       task,
       passed: false,
