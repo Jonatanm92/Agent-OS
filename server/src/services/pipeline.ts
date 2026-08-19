@@ -1,13 +1,17 @@
 import { randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'node:child_process';
 import { getDb } from '../db/index.js';
 import * as fcc from './fcc.js';
 import * as memory from './memory.js';
 import * as workspace from './workspace.js';
 import { runAgentic } from './agentic.js';
 import { resolveAgentIdentity } from './agents.js';
+import {
+  formatSandboxResult,
+  runSandboxTask,
+  type SandboxTask,
+} from './sandbox.js';
 import {
   assessVenture,
   formatAssessment,
@@ -22,10 +26,11 @@ import {
  *   shape    → research packet + independent red team + deterministic score
  *   gate     → owner approves the next experiment/build
  *   execute  → isolated workspace build or validation experiment
- *   verify   → files + deterministic commands + independent reality check
+ *   verify   → sandboxed commands + files + independent reality check
  *   shipped  → only after evidence says it is actually complete
  *
  * A commercial idea never reaches a production build from an LLM score alone.
+ * Model-written package scripts never execute directly on the host.
  */
 
 export type Stage = 'capture' | 'gate' | 'execute' | 'shipped';
@@ -340,21 +345,12 @@ export function approve(id: string): PipelineItem {
   return update(id, { stage: 'execute' });
 }
 
-function runVerificationCommand(cwd: string, command: string): { passed: boolean; output: string } {
-  try {
-    const output = execSync(command, {
-      cwd,
-      timeout: 120_000,
-      maxBuffer: 8 * 1024 * 1024,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    return { passed: true, output: (output || '(completed with no output)').slice(0, 5000) };
-  } catch (error) {
-    const detail = error as { stdout?: string; stderr?: string; message?: string; status?: number };
-    const output = `${detail.stdout ?? ''}${detail.stderr ?? ''}` || detail.message || 'unknown error';
-    return { passed: false, output: `exit ${detail.status ?? '?'}: ${output.slice(0, 5000)}` };
-  }
+function runVerificationTask(
+  cwd: string,
+  task: SandboxTask
+): { passed: boolean; output: string } {
+  const result = runSandboxTask(cwd, task, 120_000);
+  return { passed: result.passed, output: formatSandboxResult(result) };
 }
 
 function verifyProject(projectId: string, productionBuild: boolean): VerificationResult {
@@ -383,18 +379,27 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
 
       if (dependencyCount > 0 && !hasNodeModules) {
         commands.push({
-          command: 'dependency check',
+          command: 'dependency preparation',
           passed: false,
-          output: 'package.json declares dependencies but node_modules is missing. The build agent must install dependencies explicitly.',
+          output:
+            'package.json declares dependencies but node_modules is missing. Autonomous network installation is disabled. Prepare dependencies through an owner-reviewed, locked install step before verification.',
         });
       } else {
+        if (pkg.scripts?.typecheck) {
+          const result = runVerificationTask(project.path, 'node-typecheck');
+          commands.push({ command: 'sandbox: npm run typecheck', ...result });
+        }
+        if (pkg.scripts?.lint) {
+          const result = runVerificationTask(project.path, 'node-lint');
+          commands.push({ command: 'sandbox: npm run lint', ...result });
+        }
         if (pkg.scripts?.test && !/no test specified/i.test(pkg.scripts.test)) {
-          const result = runVerificationCommand(project.path, 'npm test');
-          commands.push({ command: 'npm test', ...result });
+          const result = runVerificationTask(project.path, 'node-test');
+          commands.push({ command: 'sandbox: npm test', ...result });
         }
         if (pkg.scripts?.build) {
-          const result = runVerificationCommand(project.path, 'npm run build');
-          commands.push({ command: 'npm run build', ...result });
+          const result = runVerificationTask(project.path, 'node-build');
+          commands.push({ command: 'sandbox: npm run build', ...result });
         }
       }
     } catch (error) {
@@ -409,8 +414,8 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
   if (fs.existsSync(pyprojectPath)) {
     const hasTests = fs.existsSync(path.join(project.path, 'tests'));
     if (hasTests) {
-      const result = runVerificationCommand(project.path, 'python -m pytest -q');
-      commands.push({ command: 'python -m pytest -q', ...result });
+      const result = runVerificationTask(project.path, 'python-test');
+      commands.push({ command: 'sandbox: python -m pytest -q', ...result });
     }
   }
 
@@ -418,7 +423,7 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
     commands.push({
       command: 'automated verification availability',
       passed: false,
-      output: 'Production mode requires at least one deterministic test or build command.',
+      output: 'Production mode requires at least one deterministic sandboxed test or build task.',
     });
   }
 
@@ -426,7 +431,7 @@ function verifyProject(projectId: string, productionBuild: boolean): Verificatio
   const summary = [
     `${files.length} workspace file(s) present.`,
     commands.length
-      ? `${commands.filter((command) => command.passed).length}/${commands.length} verification command(s) passed.`
+      ? `${commands.filter((command) => command.passed).length}/${commands.length} sandboxed verification task(s) passed.`
       : 'Validation artifact mode: file evidence present; independent review still required.',
   ].join(' ');
 
@@ -441,15 +446,15 @@ function verificationText(result: VerificationResult): string {
             `### ${command.passed ? 'PASS' : 'FAIL'} — ${command.command}\n${command.output}`
         )
         .join('\n\n')
-    : 'No executable verification command was required for this validation-only artifact.';
+    : 'No executable verification task was required for this validation-only artifact.';
 
   return `${result.passed ? 'PASS' : 'FAIL'}: ${result.summary}\n\n${commandText}`;
 }
 
 /**
  * Execute in an isolated workspace. Validation-only ventures produce evidence
- * assets, not a speculative production product. Shipping requires deterministic
- * verification plus a separate Reality Checker verdict.
+ * assets, not a speculative production product. Shipping requires sandboxed
+ * deterministic verification plus a separate Reality Checker verdict.
  */
 export async function execute(id: string, agentId = 'free-claude-code'): Promise<PipelineItem> {
   const item = get(id);
@@ -476,7 +481,7 @@ NON-NEGOTIABLE RULES:
 - Never claim customer evidence that was not actually observed.
 - Never contact a customer, spend money, deploy publicly, change production, or send communications.
 - Keep secrets and personal data out of generated files.
-- Run available tests/builds before declaring done.
+- Run available fixed sandbox tasks before declaring done.
 
 TITLE: ${item.title}
 
