@@ -26,23 +26,45 @@ function Resolve-SandboxImage {
 
   $candidate = [Environment]::GetEnvironmentVariable($EnvironmentVariable)
   $image = if ([string]::IsNullOrWhiteSpace($candidate)) { $Fallback } else { $candidate.Trim() }
+
   if (
+    [string]::IsNullOrWhiteSpace($image) -or
     $image.Length -gt 255 -or
     $image.StartsWith('-') -or
     $image.Contains('..') -or
+    $image.Contains('://') -or
     $image -notmatch '^[A-Za-z0-9][A-Za-z0-9._/:@-]*$'
   ) {
     throw "Unsafe sandbox image configured in $EnvironmentVariable."
   }
+
+  if ($image.Contains('@') -and $image -notmatch '@sha256:[a-fA-F0-9]{64}$') {
+    throw "Digest-pinned image in $EnvironmentVariable must use @sha256:<64 hex characters>."
+  }
+
   return $image
 }
 
 $NodeSandboxImage = Resolve-SandboxImage `
   -EnvironmentVariable 'AGENT_OS_NODE_SANDBOX_IMAGE' `
-  -Fallback 'node:22-bookworm-slim'
+  -Fallback 'node:24-bookworm-slim'
 $PythonSandboxImage = Resolve-SandboxImage `
   -EnvironmentVariable 'AGENT_OS_PYTHON_SANDBOX_IMAGE' `
   -Fallback 'python:3.12-slim'
+
+function Convert-ToVersion {
+  param([AllowNull()] [string]$Value)
+
+  if ([string]::IsNullOrWhiteSpace($Value)) { return $null }
+  $match = [regex]::Match($Value, '\d+\.\d+\.\d+')
+  if (-not $match.Success) { return $null }
+
+  try {
+    return [version]$match.Value
+  } catch {
+    return $null
+  }
+}
 
 function Get-ToolStatus {
   param(
@@ -67,12 +89,12 @@ function Get-ToolStatus {
   $version = $null
   try {
     $version = (& $command.Source @VersionArguments 2>$null | Select-Object -First 1)
-    if ($null -ne $version) { $version = [string]$version }
+    if ($null -ne $version) { $version = ([string]$version).Trim() }
   } catch {
     $version = $null
   }
 
-  [pscustomobject]@{
+  return [pscustomobject]@{
     kind = 'tool'
     name = $Name
     required = $Required
@@ -97,8 +119,7 @@ function Get-DockerEngineStatus {
 
   try {
     $output = & $docker.Source version --format '{{.Server.Version}}' 2>&1
-    $exitCode = $LASTEXITCODE
-    if ($exitCode -ne 0) {
+    if ($LASTEXITCODE -ne 0) {
       return [pscustomobject]@{
         kind = 'runtime'
         name = 'Docker engine'
@@ -107,6 +128,7 @@ function Get-DockerEngineStatus {
         detail = (($output | Out-String).Trim() -replace '\s+', ' ')
       }
     }
+
     return [pscustomobject]@{
       kind = 'runtime'
       name = 'Docker engine'
@@ -172,22 +194,22 @@ function Test-Endpoint {
     [int]$TimeoutSec = 3
   )
 
-  $started = [System.Diagnostics.Stopwatch]::StartNew()
+  $timer = [System.Diagnostics.Stopwatch]::StartNew()
   try {
     $response = Invoke-WebRequest -UseBasicParsing -Uri $Url -Method Get -TimeoutSec $TimeoutSec
-    $started.Stop()
+    $timer.Stop()
     return [pscustomobject]@{
       kind = 'endpoint'
       name = $Name
       required = $Required
       ok = ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500)
       url = $Url
-      latencyMs = [math]::Round($started.Elapsed.TotalMilliseconds)
+      latencyMs = [math]::Round($timer.Elapsed.TotalMilliseconds)
       statusCode = [int]$response.StatusCode
       detail = 'reachable'
     }
   } catch {
-    $started.Stop()
+    $timer.Stop()
     $statusCode = $null
     if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
       $statusCode = [int]$_.Exception.Response.StatusCode
@@ -198,7 +220,7 @@ function Test-Endpoint {
       required = $Required
       ok = $false
       url = $Url
-      latencyMs = [math]::Round($started.Elapsed.TotalMilliseconds)
+      latencyMs = [math]::Round($timer.Elapsed.TotalMilliseconds)
       statusCode = $statusCode
       detail = $_.Exception.Message
     }
@@ -217,20 +239,34 @@ function Get-RuntimeStatus {
     (Get-ToolStatus -Name 'hermes' -Required $true),
     (Get-ToolStatus -Name 'paperclipai' -Required $true),
     (Test-Endpoint -Name 'Paperclip API' -Url "$($PaperclipUrl.TrimEnd('/'))/api/health"),
-    (Test-Endpoint -Name 'Agent OS API' -Url "$($AgentOsUrl.TrimEnd('/'))/api/status"),
+    (Test-Endpoint -Name 'Agent OS API' -Url "$($AgentOsUrl.TrimEnd('/'))/api/health"),
     (Test-Endpoint -Name 'Hermes gateway (optional)' -Url "$($HermesGatewayUrl.TrimEnd('/'))/api/health")
   )
 
   $node = $checks | Where-Object { $_.kind -eq 'tool' -and $_.name -eq 'node' }
-  if ($node.ok -and $node.version -match 'v(?<major>\d+)') {
-    if ([int]$Matches.major -lt 20) {
-      $node.ok = $false
-      $node.detail = 'Node.js 20 or newer is required'
-    }
+  $nodeVersion = Convert-ToVersion -Value $node.version
+  if ($node.ok -and (
+      $null -eq $nodeVersion -or
+      $nodeVersion.Major -ne 24 -or
+      $nodeVersion -lt [version]'24.19.0'
+    )) {
+    $node.ok = $false
+    $node.detail = 'Node.js 24.19.0 or newer within major 24 is required.'
+  }
+
+  $npm = $checks | Where-Object { $_.kind -eq 'tool' -and $_.name -eq 'npm' }
+  $npmVersion = Convert-ToVersion -Value $npm.version
+  if ($npm.ok -and (
+      $null -eq $npmVersion -or
+      $npmVersion.Major -ne 12 -or
+      $npmVersion -lt [version]'12.0.2'
+    )) {
+    $npm.ok = $false
+    $npm.detail = 'npm 12.0.2 or newer within major 12 is required.'
   }
 
   $requiredOk = -not ($checks | Where-Object { $_.required -and -not $_.ok })
-  [pscustomobject]@{
+  return [pscustomobject]@{
     timestamp = (Get-Date).ToUniversalTime().ToString('o')
     repoRoot = $RepoRoot
     requiredOk = $requiredOk
@@ -309,7 +345,7 @@ function Start-ManagedProcess {
     -RedirectStandardError $stderr `
     -PassThru
 
-  [pscustomobject]@{
+  return [pscustomobject]@{
     name = $Name
     pid = $process.Id
     command = $Command
@@ -329,26 +365,36 @@ if ($Action -in @('preflight', 'status')) {
 Write-RuntimeStatus -Status $status
 if (-not $status.requiredOk) { exit 1 }
 
-$paperclipTool = $status.checks | Where-Object { $_.kind -eq 'tool' -and $_.name -eq 'paperclipai' }
-$paperclipEndpoint = $status.checks | Where-Object { $_.kind -eq 'endpoint' -and $_.name -eq 'Paperclip API' }
-$agentOsEndpoint = $status.checks | Where-Object { $_.kind -eq 'endpoint' -and $_.name -eq 'Agent OS API' }
+$paperclipEndpoint = $status.checks | Where-Object {
+  $_.kind -eq 'endpoint' -and $_.name -eq 'Paperclip API'
+}
+$agentOsEndpoint = $status.checks | Where-Object {
+  $_.kind -eq 'endpoint' -and $_.name -eq 'Agent OS API'
+}
 $started = @()
 
 if (-not $paperclipEndpoint.ok) {
-  if (-not $paperclipTool.ok) {
-    throw 'Paperclip CLI is not installed. Complete the reviewed Paperclip onboarding command in docs/START_TODAY.md first.'
-  }
   $env:PAPERCLIP_TELEMETRY_DISABLED = '1'
-  $started += Start-ManagedProcess -Name 'paperclip' -Command 'paperclipai run' -WorkingDirectory $RepoRoot
-  Wait-ForEndpoint -Name 'Paperclip API' -Url "$($PaperclipUrl.TrimEnd('/'))/api/health" | Out-Null
+  $started += Start-ManagedProcess `
+    -Name 'paperclip' `
+    -Command 'paperclipai run' `
+    -WorkingDirectory $RepoRoot
+  Wait-ForEndpoint `
+    -Name 'Paperclip API' `
+    -Url "$($PaperclipUrl.TrimEnd('/'))/api/health" | Out-Null
 }
 
 if (-not $agentOsEndpoint.ok) {
   if (-not (Test-Path (Join-Path $RepoRoot 'node_modules'))) {
     throw 'Dependencies are not installed. Run npm ci in the repository root, then run this script again.'
   }
-  $started += Start-ManagedProcess -Name 'agent-os' -Command 'npm start' -WorkingDirectory $RepoRoot
-  Wait-ForEndpoint -Name 'Agent OS API' -Url "$($AgentOsUrl.TrimEnd('/'))/api/status" | Out-Null
+  $started += Start-ManagedProcess `
+    -Name 'agent-os' `
+    -Command 'npm start' `
+    -WorkingDirectory $RepoRoot
+  Wait-ForEndpoint `
+    -Name 'Agent OS API' `
+    -Url "$($AgentOsUrl.TrimEnd('/'))/api/health" | Out-Null
 }
 
 if ($OpenDashboards) {
@@ -361,7 +407,7 @@ $result = [pscustomobject]@{
   ok = $true
   paperclip = $PaperclipUrl
   agentOs = $AgentOsUrl
-  hermesMode = 'Paperclip hermes_local adapter launches Hermes per heartbeat; no separate gateway is required.'
+  hermesMode = 'Paperclip hermes_local launches Hermes per heartbeat; no separate gateway is required.'
   sandbox = [pscustomobject]@{
     engine = 'Docker'
     network = 'disabled per task'
@@ -380,6 +426,6 @@ if ($Json) {
   Write-Host "Paperclip: $PaperclipUrl"
   Write-Host "Owner Cockpit: $AgentOsUrl"
   Write-Host "Logs: $LogDir"
-  Write-Host 'Hermes employees are started by Paperclip when assigned work or awakened by a routine.'
+  Write-Host 'Hermes employees start when Paperclip assigns work or runs a routine.'
   Write-Host 'Coding verification uses fixed tasks in no-network, non-root Docker sandboxes.'
 }
