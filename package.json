@@ -2,7 +2,7 @@
   "name": "agent-os",
   "version": "1.0.0",
   "private": true,
-  "description": "Agent OS — Mission Control for Free Claude Code (the Sovereign Stack 'Command' pillar)",
+  "description": "Hermes Oracle Company OS — a governed AI software factory and owner control plane",
   "workspaces": [
     "server",
     "client"
@@ -17,7 +17,8 @@
     "start": "npm run build && npm start -w server",
     "serve": "npm start -w server",
     "cli": "node bin/agentos.mjs",
-    "test": "npm test -w server"
+    "validate:company": "node scripts/validate-company-package.mjs",
+    "test": "npm run validate:company && npm test -w server"
   },
   "bin": {
     "agentos": "bin/agentos.mjs"
