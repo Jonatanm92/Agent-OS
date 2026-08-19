@@ -1,0 +1,124 @@
+schema: paperclip/v1
+
+# Portable runtime declarations. Secret values are never stored in this package.
+agents:
+  ceo:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: terminal,file,web
+    inputs:
+      env: &provider-env
+        OPENROUTER_API_KEY:
+          kind: secret
+          requirement: optional
+        OPENAI_API_KEY:
+          kind: secret
+          requirement: optional
+        ANTHROPIC_API_KEY:
+          kind: secret
+          requirement: optional
+
+  market-intelligence:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 600
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web,browser
+    inputs:
+      env: *provider-env
+
+  commercial-red-team:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web
+    inputs:
+      env: *provider-env
+
+  product-lead:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web
+    inputs:
+      env: *provider-env
+
+  solutions-architect:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 600
+        persistSession: true
+        worktreeMode: true
+        checkpoints: true
+        toolsets: terminal,file,web,code_execution
+    inputs:
+      env: *provider-env
+
+  build-engineer:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 900
+        persistSession: true
+        worktreeMode: true
+        checkpoints: true
+        toolsets: terminal,file,code_execution
+    inputs:
+      env: *provider-env
+
+  qa-security:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 600
+        persistSession: true
+        worktreeMode: true
+        checkpoints: true
+        toolsets: terminal,file,web,code_execution
+    inputs:
+      env: *provider-env
+
+  revenue-operations:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web
+    inputs:
+      env: *provider-env
+
+routines:
+  ceo-operating-review:
+    triggers:
+      - kind: schedule
+        cronExpression: "0 7,19 * * *"
+        timezone: Europe/Stockholm
+
+  weekly-safe-improvement-review:
+    triggers:
+      - kind: schedule
+        cronExpression: "0 19 * * 0"
+        timezone: Europe/Stockholm
