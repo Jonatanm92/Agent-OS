@@ -1,19 +1,20 @@
 # Start Today — Hermes Oracle Company OS
 
-This runbook starts the local owner cockpit, Paperclip control plane, and Hermes employees on Windows. It deliberately separates reversible internal work from actions that create legal, financial, customer, security, or production consequences.
+This runbook starts the local Owner Cockpit, Paperclip control plane, Hermes employees, and the restricted coding-verification sandbox on Windows. It separates reversible internal work from actions that create legal, financial, customer, security, or production consequences.
 
 ## What “started today” means
 
 By the end of this runbook:
 
-- the Agent OS branch has passed locked dependency installation, tests, company-package validation, and production builds
+- the Agent OS branch has passed locked dependency installation, company-package validation, deterministic tests, and production builds
+- Docker is available for fixed, no-network, non-root verification tasks
 - Paperclip is running locally as the durable company control plane
-- Hermes is installed as the agent runtime
+- Hermes is installed as the employee runtime
 - the portable company package is imported with eight AI employees, four skills, one revenue-validation project, and six starter tasks
-- the first internal work can run on heartbeats
+- the first internal task can run
 - customer contact, spending, contracts, invoices, secrets, deployment, and self-modification remain locked behind the owner
 
-This does not claim that revenue exists before a customer agrees and pays. It creates the fastest controlled path to that event.
+This does not claim that revenue exists before a customer agrees and pays. It creates the controlled operating path to that event.
 
 ## 1. Check out the reviewed branch
 
@@ -51,9 +52,59 @@ Expected company-package counts:
 
 A failed command is a stop condition. Do not continue by weakening a test or replacing `npm ci` with an unlocked dependency update.
 
-## 3. Install Hermes Agent natively on Windows
+## 3. Prepare the coding sandbox
 
-The official Hermes installer supports Windows 10 and 11 without WSL. Download the script first so it can be inspected before execution:
+Autonomous code and project-supplied package scripts must not execute directly on the Windows host. The Company OS therefore runs only fixed verification tasks in disposable Linux containers.
+
+Install or update Docker Desktop from the official Windows instructions:
+
+```text
+https://docs.docker.com/desktop/setup/install/windows-install/
+```
+
+Use the Linux-container/WSL 2 backend, start Docker Desktop, review its terms, and verify the engine:
+
+```powershell
+docker version
+docker info
+```
+
+Review and pull the two required images once. Runtime tasks use `--pull=never`; agents cannot download or silently update images.
+
+```powershell
+docker pull node:22-bookworm-slim
+docker pull python:3.12-slim
+
+docker image inspect node:22-bookworm-slim
+docker image inspect python:3.12-slim
+```
+
+The sandbox applies:
+
+- no network
+- non-root user
+- read-only container root filesystem
+- read-only mount of the real workspace
+- a writable ephemeral copy in tmpfs
+- all Linux capabilities dropped
+- no privilege escalation
+- CPU, memory, process, file-descriptor, and timeout ceilings
+- no persistent container logs
+- automatic cleanup of timed-out named containers
+
+Allowed autonomous verification tasks are limited to:
+
+- `node-test`
+- `node-build`
+- `node-lint`
+- `node-typecheck`
+- `python-test`
+
+Arbitrary shell commands and automatic package installation are blocked. A generated project that needs third-party dependencies must receive an owner-reviewed locked dependency-preparation step before its verification can pass. Sandbox image references can later be pinned by digest through `AGENT_OS_NODE_SANDBOX_IMAGE` and `AGENT_OS_PYTHON_SANDBOX_IMAGE`.
+
+## 4. Install Hermes Agent natively on Windows
+
+The official Hermes installer supports Windows without requiring this repository to run under WSL. Download the script first so it can be inspected before execution:
 
 ```powershell
 $HermesInstaller = "$env:TEMP\hermes-install.ps1"
@@ -66,18 +117,18 @@ notepad $HermesInstaller
 & $HermesInstaller
 ```
 
-Open a new PowerShell window after installation, then verify:
+Open a new PowerShell window after installation, then verify and configure it:
 
 ```powershell
 hermes --help
 hermes setup
 ```
 
-During setup, configure one approved provider/model route. Provider credentials stay in Hermes/Paperclip secret storage; never paste them into a task, prompt, repository file, screenshot, or chat transcript.
+Configure one approved provider/model route. Provider credentials stay in Hermes/Paperclip secret storage; never paste them into a task, prompt, repository file, screenshot, or chat transcript.
 
 A persistent Hermes gateway is optional for this configuration. The imported company uses Paperclip's built-in `hermes_local` adapter, which launches Hermes for each heartbeat and persists the session.
 
-## 4. Install and onboard Paperclip
+## 5. Install and onboard Paperclip
 
 Install the official CLI from the public npm registry:
 
@@ -87,18 +138,12 @@ paperclipai onboard --yes
 paperclipai doctor
 ```
 
-The default first-run mode is local loopback. Do not expose it to LAN or the public internet during founder validation. If remote phone access is later required, use an authenticated private/Tailscale configuration rather than a public port.
+The initial mode is local loopback. Do not expose it to the LAN or public internet during founder validation. Remote phone access should later use an authenticated private/Tailscale configuration rather than a public port.
 
 Start Paperclip once for the initial import:
 
 ```powershell
 paperclipai run
-```
-
-Paperclip should be reachable at:
-
-```text
-http://127.0.0.1:3100
 ```
 
 Health check:
@@ -107,7 +152,7 @@ Health check:
 Invoke-WebRequest http://127.0.0.1:3100/api/health -UseBasicParsing
 ```
 
-## 5. Import the company package
+## 6. Import the company package
 
 From the Agent OS repository root, while Paperclip is running:
 
@@ -149,9 +194,26 @@ Expected first six tasks:
 5. Prepare offer, outreach, CRM, and payment readiness
 6. Owner decision — authorize controlled founder outreach
 
-## 6. Start the complete local runtime
+## 7. Run preflight and start the local company
 
-After `npm ci` and Paperclip onboarding have completed:
+Run the status check first:
+
+```powershell
+powershell -ExecutionPolicy Bypass `
+  -File .\scripts\company-runtime.ps1 `
+  -Action preflight
+```
+
+It must show green for:
+
+- Node.js 20 or newer
+- npm and Git
+- Docker CLI and running Docker engine
+- both sandbox images
+- Hermes
+- Paperclip
+
+Then start missing local processes and open both dashboards:
 
 ```powershell
 powershell -ExecutionPolicy Bypass `
@@ -162,10 +224,10 @@ powershell -ExecutionPolicy Bypass `
 
 The script:
 
-- checks Node.js 20+, npm, Git, Hermes, and Paperclip
+- refuses to start when a required runtime or sandbox image is missing
 - checks Paperclip, Agent OS, and optional Hermes gateway health endpoints
 - starts only missing local processes
-- disables Paperclip telemetry for that started process
+- disables Paperclip telemetry for the process it starts
 - writes stdout/stderr to `.company-runtime\`
 - waits for health endpoints before reporting success
 
@@ -191,32 +253,32 @@ Expected local interfaces:
 - Paperclip company control plane: `http://127.0.0.1:3100`
 - Hermes Oracle Owner Cockpit: `http://127.0.0.1:3001`
 
-## 7. Start internal work
+## 8. Start internal work
 
 In Paperclip:
 
-1. Confirm that the imported agents use `hermes_local` and that the environment test passes.
-2. Confirm that provider/model selection and cost visibility are correct.
-3. Set conservative per-agent budgets before enabling broad recurring execution.
-4. Assign the first task to Product Lead.
-5. Allow CEO, Product, Architecture, Build, and QA to progress only through the defined dependencies.
+1. Confirm that the imported agents use `hermes_local` and that each environment test passes.
+2. Confirm the provider/model selection and cost visibility.
+3. Set conservative per-agent budgets before enabling recurring execution.
+4. Assign `Freeze the founder offer and acceptance contract` to Product Lead.
+5. Allow Product, Commercial Red Team, Architecture, Build, and QA to progress only through the defined dependencies.
 6. Keep the outreach gate blocked.
 
-The first internal execution sequence is:
+The first execution chain is:
 
 ```text
-Product contract
+product contract
   → commercial red team
-  → architecture/acceptance contract
+  → architecture / acceptance contract
   → isolated synthetic build
-  → deterministic tests/build/screenshots
+  → sandboxed tests / build / screenshots
   → independent QA
   → prospect evidence pack
-  → revenue/payment readiness
+  → revenue and payment readiness
   → owner outreach decision
 ```
 
-## 8. Payment readiness — Frilans Finans
+## 9. Payment readiness — Frilans Finans
 
 The current founder path is egenanställning through Frilans Finans rather than forming a company before the first validated paid work.
 
@@ -232,9 +294,9 @@ Internal agents may prepare:
 
 The owner must personally perform identity verification, BankID/2FA, banking changes, legal acceptance, assignment approval, and invoice submission.
 
-Critical sequencing rule: register/establish the assignment through Frilans Finans before agreeing the compensation and work arrangement with the customer. The Revenue Operations task treats this as an explicit owner gate.
+Critical sequencing rule: register or establish the assignment through Frilans Finans before agreeing the compensation and work arrangement with the customer. Revenue Operations treats this as an explicit owner gate.
 
-## 9. First commercial offer under validation
+## 10. First commercial offer under validation
 
 **AI Workflow Revenue Sprint**
 
@@ -242,7 +304,7 @@ Initial target:
 
 - Swedish installation and field-service firms
 - roughly 5–49 employees
-- quote/service inquiries arrive through email or website form
+- quote or service inquiries arrive through email or a website form
 - repetitive classification, missing-information follow-up, internal task creation, and reminders
 
 Workflow hypothesis:
@@ -280,13 +342,15 @@ Validation targets:
 
 Targets are not recorded as completed until a source artifact exists.
 
-## 10. Owner-only actions
+## 11. Owner-only actions
 
 Agents stop and create an owner gate for:
 
 - sending external outreach or replying to a prospect
-- phone/video customer conversations
+- phone or video customer conversations
 - accepting platform or provider terms
+- pulling or changing approved sandbox images
+- installing or changing dependencies for a generated customer project
 - purchasing subscriptions or spending money
 - signing a contract or data-processing agreement
 - entering BankID/2FA, identity, banking, or payment information
@@ -295,30 +359,32 @@ Agents stop and create an owner gate for:
 - submitting an invoice
 - promoting a self-improvement to production behavior
 
-## 11. Stop conditions
+## 12. Stop conditions
 
 Pause the revenue mission and return it to Commercial Red Team when:
 
 - qualified buyers do not confirm the painful job
 - price reactions fail the defined threshold
 - the workflow requires broad custom consulting to deliver
-- support or integration cost destroys the expected margin
+- support or integration cost destroys expected margin
 - customer data cannot be handled safely within the founder scope
-- acquisition depends on spam, private-data scraping, or a sales burden the owner cannot sustain
+- acquisition depends on spam, private-data scraping, or an unsustainable sales burden
 - the synthetic demonstration fails its acceptance tests
+- the Docker sandbox is unavailable or reports a blocked verification
 - an agent reports work without evidence
 
-## 12. Definition of done for day one
+## 13. Definition of done for day one
 
 Day one is complete when:
 
-- PR branch is checked out
+- the PR branch is checked out
 - `npm ci`, `npm test`, and `npm run build` pass
+- Docker is running and both reviewed sandbox images are present
 - Hermes is installed and configured
 - Paperclip is installed, onboarded, and healthy
-- company package is imported and reviewed
-- runtime status is green
-- first internal task is assigned
+- the company package is imported and reviewed
+- runtime preflight is green
+- the first internal task is assigned
 - outreach, spend, contracts, payment, production, secrets, and self-modification remain locked
 
-At that point the company is doing real internal work. The next external milestone is not “more features”; it is an owner-approved validation action capable of producing the first legitimate payment signal.
+At that point the company is doing real internal work. The next external milestone is not more OS features; it is an owner-approved validation action capable of producing the first legitimate payment signal.
