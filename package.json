@@ -18,7 +18,8 @@
     "serve": "npm start -w server",
     "cli": "node bin/agentos.mjs",
     "validate:company": "node scripts/validate-company-package.mjs",
-    "test": "npm run validate:company && npm test -w server"
+    "test:revenue-demo": "npm test --prefix company/projects/revenue-001/demo && npm run build --prefix company/projects/revenue-001/demo",
+    "test": "npm run validate:company && npm run test:revenue-demo && npm test -w server"
   },
   "bin": {
     "agentos": "bin/agentos.mjs"
