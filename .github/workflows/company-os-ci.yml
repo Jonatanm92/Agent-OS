@@ -7,7 +7,7 @@ on:
     branches: [codex/company-os-foundation]
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: company-os-ci-${{ github.ref }}
@@ -16,17 +16,39 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
-      - name: Check out source
+      - name: Check out reviewed branch
         uses: actions/checkout@v4
+        with:
+          ref: codex/company-os-foundation
+          fetch-depth: 0
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
+      - name: Apply deterministic release hardening
+        run: node scripts/apply-release-hardening.mjs
+
+      - name: Refresh locked dependency graph without lifecycle scripts
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Persist generated hardening and lockfile
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Generated files are already current"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add server/src/index.ts server/src/services/pipeline.ts server/src/services/tool-registry.ts package-lock.json
+            git commit -m "security: apply release hardening and refresh lockfile"
+            git push origin HEAD:codex/company-os-foundation
+          fi
 
       - name: Install locked dependencies
         run: npm ci
