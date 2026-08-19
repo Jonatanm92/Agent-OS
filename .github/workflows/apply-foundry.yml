@@ -1,0 +1,77 @@
+name: Apply Foundry Company OS patch
+
+on:
+  push:
+    branches:
+      - codex/foundry-company-os-v1
+    paths:
+      - .github/workflows/apply-foundry.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-foundry-company-os-v1
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout locked development branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/foundry-company-os-v1
+          fetch-depth: 0
+
+      - name: Reassemble and verify the source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .foundry/parts/* > /tmp/foundry-patch.tgz.b64
+          base64 --decode /tmp/foundry-patch.tgz.b64 > /tmp/foundry-patch.tgz
+          echo "4ce37072c117ea95c4185fba674cdbf3b08c7247c01dbc207a23cbad32728426  /tmp/foundry-patch.tgz" | sha256sum -c -
+          tar -tzf /tmp/foundry-patch.tgz >/dev/null
+
+      - name: Install the patch and remove legacy product defaults
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xzf /tmp/foundry-patch.tgz -C .
+          node scripts/migrations/2026-08-19-foundry-index.mjs
+          rm -rf client/src/components/TuningTab.tsx
+          rm -rf templates/erra-amp-sim
+          rm -f CAREER_PORTFOLIO.md PROGRAM.md
+          rm -rf .foundry/parts
+          rm -f .github/workflows/apply-foundry.yml
+
+      - name: Synchronize the exact dependency lock without running package scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install exact dependencies
+        shell: bash
+        run: npm ci --no-audit --no-fund
+
+      - name: Run unit tests and production builds
+        shell: bash
+        run: npm run verify
+
+      - name: Verify migration idempotence and product invariants
+        shell: bash
+        run: ./scripts/verify-foundry.sh
+
+      - name: Commit only after every verification gate passes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "OpenAI Codex"
+          git config user.email "codex@openai.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "feat: install Foundry Company OS v1"
+          git push origin HEAD:codex/foundry-company-os-v1
