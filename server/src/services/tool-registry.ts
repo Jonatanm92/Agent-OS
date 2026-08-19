@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   formatSandboxResult,
   normalizeSandboxTask,
@@ -59,7 +60,13 @@ let cache: ToolDef[] | null = null;
 let cacheTime = 0;
 
 function toolsPath(): string {
-  return path.resolve(process.cwd(), 'tools.json');
+  const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(process.cwd(), 'tools.json'),
+    path.resolve(process.cwd(), 'server', 'tools.json'),
+    path.resolve(moduleDirectory, '../../../tools.json'),
+  ];
+  return candidates.find((candidate) => fs.existsSync(candidate)) ?? candidates[0];
 }
 
 function normalizeTool(value: unknown): ToolDef | null {
