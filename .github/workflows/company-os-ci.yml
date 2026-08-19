@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [codex/company-os-foundation]
+    branches: [codex/company-os-foundation, 'revenue/**']
 
 permissions:
   contents: read
