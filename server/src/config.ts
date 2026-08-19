@@ -3,40 +3,38 @@ import path from 'path';
 import { getDb } from './db/index.js';
 
 /** Expand a leading ~ to the user's home directory. */
-export function expandHome(p: string): string {
-  if (!p) return p;
-  if (p === '~') return os.homedir();
-  if (p.startsWith('~/') || p.startsWith('~\\')) {
-    return path.join(os.homedir(), p.slice(2));
+export function expandHome(value: string): string {
+  if (!value) return value;
+  if (value === '~') return os.homedir();
+  if (value.startsWith('~/') || value.startsWith('~\\')) {
+    return path.join(os.homedir(), value.slice(2));
   }
-  return p;
+  return value;
 }
 
-/** Read a single setting from the DB, falling back to env then a default. */
+/** Read one setting from SQLite, falling back to a caller-supplied default. */
 export function getSetting(key: string, fallback = ''): string {
-  const db = getDb();
-  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
+  const row = getDb().prepare('SELECT value FROM settings WHERE key = ?').get(key) as
     | { value: string }
     | undefined;
   const value = row?.value;
-  if (value !== undefined && value !== null && value !== '') return value;
-  return fallback;
+  return value !== undefined && value !== null && value !== '' ? value : fallback;
 }
 
 export function setSetting(key: string, value: string): void {
-  const db = getDb();
-  db.prepare(
-    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
-  ).run(key, value ?? '');
+  getDb()
+    .prepare(
+      'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
+    )
+    .run(key, value ?? '');
 }
 
 export function getAllSettings(): Record<string, string> {
-  const db = getDb();
-  const rows = db.prepare('SELECT key, value FROM settings').all() as {
+  const rows = getDb().prepare('SELECT key, value FROM settings').all() as {
     key: string;
     value: string;
   }[];
-  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  return Object.fromEntries(rows.map((row) => [row.key, row.value]));
 }
 
 function enabled(value: string | undefined): boolean {
@@ -59,6 +57,13 @@ export function isLoopbackHost(host: string): boolean {
   return normalized === '127.0.0.1' || normalized === 'localhost' || normalized === '::1';
 }
 
+function configuredOrigins(): string[] {
+  return (process.env.AGENT_OS_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => /^https?:\/\/[^\s/]+(?::\d{1,5})?$/.test(origin));
+}
+
 export interface ResolvedConfig {
   host: string;
   port: number;
@@ -78,12 +83,12 @@ export interface ResolvedConfig {
 }
 
 /**
- * Resolve effective runtime config. Precedence:
- *   DB setting -> environment variable -> built-in default.
+ * Resolve effective runtime configuration.
  *
- * The service is loopback-only by default. Binding to any non-loopback address
- * without an API password is rejected because the dashboard includes local file,
- * agent, and optional shell capabilities.
+ * SQLite overrides environment values for user-editable provider settings.
+ * Security capabilities remain environment-only. The service binds to loopback
+ * unless the owner deliberately configures a non-loopback host, a strong
+ * password, and the exact browser origins that may access it.
  */
 export function resolveConfig(): ResolvedConfig {
   const vaultRaw =
@@ -98,10 +103,9 @@ export function resolveConfig(): ResolvedConfig {
   if (!Number.isInteger(port) || port < 1 || port > 65_535) {
     throw new Error('PORT must be an integer between 1 and 65535.');
   }
-  if (!isLoopbackHost(host) && !password) {
+  if (!isLoopbackHost(host) && password.length < 16) {
     throw new Error(
-      'Refusing non-loopback Agent OS binding without AGENT_OS_PASSWORD. ' +
-        'Use 127.0.0.1 or configure an owner password first.'
+      'Refusing non-loopback Agent OS binding without an AGENT_OS_PASSWORD of at least 16 characters.'
     );
   }
 
@@ -109,11 +113,10 @@ export function resolveConfig(): ResolvedConfig {
     `http://127.0.0.1:${port}`,
     `http://localhost:${port}`,
     `http://[::1]:${port}`,
+    // Standard local Vite development origins. Production is served by Express.
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
   ];
-  const configuredOrigins = (process.env.AGENT_OS_ALLOWED_ORIGINS || '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
 
   return {
     host,
@@ -129,7 +132,7 @@ export function resolveConfig(): ResolvedConfig {
     vaultPath: expandHome(vaultRaw),
     scratchDir: expandHome(scratchRaw),
     password,
-    allowedOrigins: [...new Set([...defaultOrigins, ...configuredOrigins])],
+    allowedOrigins: [...new Set([...defaultOrigins, ...configuredOrigins()])],
     enableTerminal: enabled(process.env.AGENT_OS_ENABLE_TERMINAL),
     enableHostRunner: enabled(process.env.AGENT_OS_ENABLE_HOST_RUNNER),
     enableGitPush: enabled(process.env.AGENT_OS_ENABLE_GIT_PUSH),
