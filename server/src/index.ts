@@ -37,48 +37,22 @@ if (!getAllSettings().active_project_id) {
   setSetting('active_project_id', defaultProject.id);
 }
 
-// Seed default music-dev skills on first boot.
-if (studio.listSkills().length === 0) {
-  studio.createSkill({
-    name: 'DSP: Design a waveshaper',
-    prompt: 'Design a guitar amp waveshaper function. Input: {{input}}. Output: C++ or Rust code with explanation of the harmonic content and how it suits modern metal/thall tones.',
-    agent_id: 'dsp-engineer',
-  });
-  studio.createSkill({
-    name: 'Plugin: Scaffold JUCE project',
-    prompt: 'Generate the folder structure and key files (PluginProcessor, PluginEditor, CMakeLists) for a JUCE audio plugin called "{{input}}". Use best practices for VST3/AU. Output as named code blocks.',
-    agent_id: 'plugin-architect',
-  });
-  studio.createSkill({
-    name: 'YouTube: Video title ideas',
-    prompt: 'Generate 10 YouTube title ideas for a guitar cover video of "{{input}}". The channel is modern metal/thall focused. Make them SEO-friendly and attention-grabbing.',
-    agent_id: 'free-claude-code',
-  });
-  studio.createSkill({
-    name: 'Song: Chord progression for metal',
-    prompt: 'Write a djent/thall chord progression in {{input}} tuning. Include tab notation, rhythmic pattern (polyrhythmic preferred), and suggest a tempo. Think Meshuggah, Periphery, Vildhjarta.',
-    agent_id: 'free-claude-code',
-  });
-  studio.createSkill({
-    name: 'YouTube: Cover video plan',
-    prompt: 'Plan a guitar cover video for "{{input}}". Include: 1) Which tuning/guitar to use 2) Tone settings (amp/pedals) to match the original 3) Camera angles (2-3 recommended) 4) Thumbnail concept 5) Description with SEO keywords for modern metal/thall/djent audience.',
-    agent_id: 'content-creator',
-  });
-  studio.createSkill({
-    name: 'YouTube: Description + tags',
-    prompt: 'Write a YouTube description and 15 SEO tags for my guitar cover of "{{input}}". My channel is modern metal/thall focused. Include timestamps placeholder, gear section, and a call-to-action for subscribe. Make it rank for guitar cover + the song name + the genre.',
-    agent_id: 'content-creator',
-  });
-  studio.createSkill({
-    name: 'YouTube: 2-week content calendar',
-    prompt: 'Build a 2-week YouTube content calendar for my guitar channel. I cover modern metal/thall bands (ERRA, Periphery, Vildhjarta, Meshuggah, Architects, Polaris). Current focus: {{input}}. Include: video titles, upload days (2-3/week), shorts ideas, community posts, and cross-platform hooks for IG Reels.',
-    agent_id: 'content-creator',
-  });
-}
+// Company settings, employees, skills, loops, and REV-001 are migrated in db/seed.ts.
 
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.disable('x-powered-by');
+const runtimeConfig = resolveConfig();
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || runtimeConfig.allowedOrigins.includes(origin)) callback(null, true);
+      else callback(new Error('Origin is not allowed by Agent OS policy.'));
+    },
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-agentos-token'],
+  })
+);
+app.use(express.json({ limit: '2mb' }));
 
 const api = express.Router();
 
@@ -105,6 +79,18 @@ api.use((req: Request, res: Response, next: NextFunction) => {
   if (token && token === password) return next();
   return res.status(401).json({ error: 'unauthorized' });
 });
+
+const requireOwnerPassword = (req: Request, res: Response, next: NextFunction) => {
+  const { password } = resolveConfig();
+  if (!password) {
+    return res.status(403).json({
+      error: 'Owner-gated actions require AGENT_OS_PASSWORD. Configure it and sign in first.',
+    });
+  }
+  const token = req.header('x-agentos-token') ?? '';
+  if (token !== password) return res.status(401).json({ error: 'unauthorized' });
+  return next();
+};
 
 api.get('/auth/status', (_req, res) => {
   res.json({ required: !!resolveConfig().password });
@@ -156,6 +142,7 @@ api.get(
         notes,
         projects: workspace.listProjects().length,
       },
+      automation: studio.automationBudgetStatus(),
       time: new Date().toISOString(),
     });
   })
@@ -171,7 +158,7 @@ api.post(
 );
 
 // One-click: set FCC's MODEL by writing ~/.fcc/.env (then user restarts fcc-server).
-api.post('/fcc/set-model', (req, res) => {
+api.post('/fcc/set-model', requireOwnerPassword, (req, res) => {
   const model = String(req.body?.model ?? '').trim();
   if (!model) return res.status(400).json({ error: 'model required' });
   const fccEnv = path.join(os.homedir(), '.fcc', '.env');
@@ -200,7 +187,7 @@ api.get('/settings', (_req, res) => {
   });
 });
 
-api.post('/settings', (req, res) => {
+api.post('/settings', requireOwnerPassword, (req, res) => {
   const updates = req.body as Record<string, string>;
   const allowed = ['fcc_base_url', 'fcc_auth_token', 'model', 'obsidian_vault_path', 'active_project_id', 'hermes_provider'];
   for (const [key, value] of Object.entries(updates)) {
@@ -498,14 +485,14 @@ api.get('/run/:projectId/status', (req, res) => {
 api.get('/run/:projectId/logs', (req, res) => {
   res.json({ logs: runner.logs(req.params.projectId) });
 });
-api.post('/run/:projectId/start', (req, res) => {
+api.post('/run/:projectId/start', requireOwnerPassword, (req, res) => {
   try {
     res.json(runner.start(req.params.projectId, String(req.body?.command ?? '')));
   } catch (e) {
     res.status(400).json({ error: e instanceof Error ? e.message : 'failed' });
   }
 });
-api.post('/run/:projectId/stop', (req, res) => {
+api.post('/run/:projectId/stop', requireOwnerPassword, (req, res) => {
   runner.stop(req.params.projectId);
   res.json({ ok: true });
 });
@@ -523,18 +510,20 @@ api.post('/pipeline/capture', (req, res) => {
 
 api.post(
   '/pipeline/:id/shape',
+  requireOwnerPassword,
   wrap(async (req, res) => {
     const agentId = getAgent(String(req.body?.agentId ?? 'free-claude-code')).id;
     res.json({ item: await pipeline.shape(req.params.id, agentId) });
   })
 );
 
-api.post('/pipeline/:id/approve', (req, res) => {
+api.post('/pipeline/:id/approve', requireOwnerPassword, (req, res) => {
   res.json({ item: pipeline.approve(req.params.id) });
 });
 
 api.post(
   '/pipeline/:id/execute',
+  requireOwnerPassword,
   wrap(async (req, res) => {
     const agentId = getAgent(String(req.body?.agentId ?? 'free-claude-code')).id;
     res.json({ item: await pipeline.execute(req.params.id, agentId) });
@@ -555,22 +544,25 @@ api.delete('/skills/:id', (req, res) => {
 });
 api.post(
   '/skills/:id/run',
+  requireOwnerPassword,
   wrap(async (req, res) => {
     res.json(await studio.runSkill(req.params.id, String(req.body?.input ?? '')));
   })
 );
 
+api.get('/loops/budget', (_req, res) => res.json(studio.automationBudgetStatus()));
 api.get('/loops', (_req, res) => res.json({ loops: studio.listLoops() }));
-api.post('/loops', (req, res) => res.json({ loop: studio.createLoop(req.body ?? {}) }));
-api.delete('/loops/:id', (req, res) => {
+api.post('/loops', requireOwnerPassword, (req, res) => res.json({ loop: studio.createLoop(req.body ?? {}) }));
+api.delete('/loops/:id', requireOwnerPassword, (req, res) => {
   studio.deleteLoop(req.params.id);
   res.json({ ok: true });
 });
-api.post('/loops/:id/toggle', (req, res) => {
+api.post('/loops/:id/toggle', requireOwnerPassword, (req, res) => {
   res.json({ loop: studio.setLoopEnabled(req.params.id, req.body?.enabled !== false) });
 });
 api.post(
   '/loops/:id/run',
+  requireOwnerPassword,
   wrap(async (req, res) => {
     res.json(await studio.runLoop(req.params.id));
   })
@@ -580,7 +572,7 @@ api.get('/audit', (_req, res) => res.json({ entries: studio.listAudit(Number(_re
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 api.get('/templates', (_req, res) => res.json({ templates: templates.listTemplates() }));
-api.post('/templates/scaffold', (req, res) => {
+api.post('/templates/scaffold', requireOwnerPassword, (req, res) => {
   const id = String(req.body?.templateId ?? '');
   const name = String(req.body?.name ?? '');
   res.json(templates.scaffold(id, name));
@@ -591,42 +583,26 @@ api.get('/git/:projectId/status', (req, res) => {
   try { res.json(git.status(req.params.projectId)); }
   catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : 'failed' }); }
 });
-api.post('/git/:projectId/init', (req, res) => {
+api.post('/git/:projectId/init', requireOwnerPassword, (req, res) => {
   res.json({ output: git.init(req.params.projectId) });
 });
 api.get('/git/:projectId/diff', (req, res) => {
   res.json({ diff: git.diff(req.params.projectId) });
 });
-api.post('/git/:projectId/commit', (req, res) => {
+api.post('/git/:projectId/commit', requireOwnerPassword, (req, res) => {
   const msg = String(req.body?.message ?? 'update');
   try { res.json({ output: git.commit(req.params.projectId, msg) }); }
   catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : 'failed' }); }
 });
-api.post('/git/:projectId/push', (req, res) => {
+api.post('/git/:projectId/push', requireOwnerPassword, (req, res) => {
   try { res.json({ output: git.push(req.params.projectId, req.body?.remote, req.body?.branch) }); }
   catch (e) { res.status(400).json({ error: e instanceof Error ? e.message : 'failed' }); }
 });
 
-// ── Guitar reference tools ────────────────────────────────────────────────────
-const TUNINGS: Record<string, { notes: string[]; semitones: number }> = {
-  'Standard': { notes: ['E2','A2','D3','G3','B3','E4'], semitones: 0 },
-  'Drop D': { notes: ['D2','A2','D3','G3','B3','E4'], semitones: -2 },
-  'Drop C': { notes: ['C2','G2','C3','F3','A3','D4'], semitones: -4 },
-  'Drop B': { notes: ['B1','F#2','B2','E3','G#3','C#4'], semitones: -5 },
-  'Drop A': { notes: ['A1','E2','A2','D3','F#3','B3'], semitones: -7 },
-  'Drop G#': { notes: ['G#1','D#2','G#2','C#3','F3','A#3'], semitones: -8 },
-  'Drop G': { notes: ['G1','D2','G2','C3','E3','A3'], semitones: -9 },
-  'Drop F': { notes: ['F1','C2','F2','Bb2','D3','G3'], semitones: -11 },
-  'Standard 7 (B)': { notes: ['B1','E2','A2','D3','G3','B3','E4'], semitones: -5 },
-  'Drop A 7-string': { notes: ['A1','E2','A2','D3','G3','B3','E4'], semitones: -7 },
-  'Standard 8 (F#)': { notes: ['F#1','B1','E2','A2','D3','G3','B3','E4'], semitones: -10 },
-  'Meshuggah (F)': { notes: ['F1','Bb1','Eb2','Ab2','C3','F3','Bb3','Eb4'], semitones: -11 },
-};
-api.get('/tools/tunings', (_req, res) => res.json({ tunings: TUNINGS }));
-
 // ── Orchestrator (auto-chain the squad) ───────────────────────────────────────
 api.post(
   '/orchestrator/run',
+  requireOwnerPassword,
   wrap(async (req, res) => {
     const goal = String(req.body?.goal ?? '').trim();
     if (!goal) return res.status(400).json({ error: 'goal required' });
@@ -653,14 +629,14 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: err.message });
 });
 
-const { port } = resolveConfig();
+const { port, host } = runtimeConfig;
 const httpServer = http.createServer(app);
 attachTerminal(httpServer); // in-dashboard terminal at /api/terminal (optional node-pty)
 studio.startScheduler(); // runs due automation loops every 30s
-httpServer.listen(port, () => {
+httpServer.listen(port, host, () => {
   const cfg = resolveConfig();
   console.log(`\n  Agent OS — Mission Control`);
-  console.log(`  ▸ Dashboard:  http://127.0.0.1:${port}`);
+  console.log(`  ▸ Dashboard:  http://${host}:${port}`);
   console.log(`  ▸ FCC proxy:  ${cfg.fccBaseUrl}  (model: ${cfg.model})`);
   console.log(`  ▸ Vault:      ${cfg.vaultPath}`);
   console.log(`  ▸ Scratch:    ${cfg.scratchDir}`);

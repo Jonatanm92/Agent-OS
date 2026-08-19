@@ -7,7 +7,6 @@ const TOOLS: { id: string; label: string; tab: Tab }[] = [
   { id: 'studio', label: 'Skills & Routines', tab: 'studio' },
   { id: 'workspace', label: 'Workspaces', tab: 'workspace' },
   { id: 'memory', label: 'Company Memory', tab: 'memory' },
-  { id: 'terminal', label: 'Terminal', tab: 'terminal' },
 ];
 
 // These profiles remain compatible with old conversations but are no longer
@@ -49,7 +48,7 @@ export function Sidebar({
         </button>
       </nav>
 
-      <div className="nav-section-label">Agent runtimes</div>
+      <div className="nav-section-label">AI employees</div>
       <nav className="nav">
         {visibleAgents.map((agent) => (
           <button
@@ -78,7 +77,7 @@ export function Sidebar({
         ◇ shared company memory
       </div>
 
-      <div className="nav-section-label">Operations</div>
+      <div className="nav-section-label">Company operations</div>
       <nav className="nav">
         {TOOLS.map((tool) => (
           <button

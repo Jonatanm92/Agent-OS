@@ -29,8 +29,8 @@ export function ChatTab({
   const [squadRunning, setSquadRunning] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const agentId = activeAgent?.id ?? 'free-claude-code';
-  const agentLabel = activeAgent?.label ?? 'Free Claude Code';
+  const agentId = activeAgent?.id ?? 'ceo';
+  const agentLabel = activeAgent?.label ?? 'CEO / Orchestrator';
 
   const loadConversations = async () => {
     const { conversations } = await api.listConversations();
@@ -70,7 +70,7 @@ export function ChatTab({
     ]);
 
     // If talking to Orchestrator, run the full squad chain instead of a single chat.
-    if (agentId === 'orchestrator') {
+    if (agentId === 'ceo') {
       setSquadRunning(true);
       try {
         const result = await api.runSquad(text);
@@ -219,13 +219,13 @@ export function ChatTab({
           {messages.length === 0 && !busy && (
             <div className="empty">
               <div className="agent-badge">{agentLabel}</div>
-              <h2>Same engine. Free fuel.</h2>
+              <h2>Company command channel.</h2>
               <p className="muted">
                 Talking to <strong>{agentLabel}</strong>. Replies route through your{' '}
                 {activeAgent?.backend === 'cli' ? 'local Hermes runtime' : 'FCC proxy'} to{' '}
                 <code>{lastModel || status?.routedModel || activeAgent?.model || 'your configured free model'}</code>.
                 {agentId === 'orchestrator' && (
-                  <><br /><strong>🚀 The Orchestrator auto-chains the squad</strong> — give it a goal and it plans, delegates to specialists in order, and gates via Reality Checker.</>
+                  <><br /><strong>The CEO runs the governed company chain</strong> — it delegates only to known employees and always ends at the independent QA & Security gate.</>
                 )}
               </p>
               <p className="muted small">
@@ -274,7 +274,7 @@ export function ChatTab({
             <div className="msg assistant">
               <div className="msg-role">{agentLabel}</div>
               <div className="msg-body thinking">
-                {squadRunning ? '🚀 Running the squad — calling agents in sequence…' : '…thinking'}
+                {squadRunning ? 'Running the governed company chain…' : '…thinking'}
               </div>
             </div>
           )}

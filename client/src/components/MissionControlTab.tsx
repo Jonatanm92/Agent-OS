@@ -25,14 +25,14 @@ interface MetricTile {
 }
 
 const FALLBACK_ROLES: CompanyRole[] = [
-  { id: 'ceo', title: 'CEO / Portfolio Lead', agent: 'orchestrator', mandate: 'Prioritize goals, budgets, and work.' },
-  { id: 'market', title: 'Market Intelligence Lead', agent: 'growth-hacker', mandate: 'Collect traceable demand and distribution evidence.' },
-  { id: 'red-team', title: 'Commercial Red Team', agent: 'reality-checker', mandate: 'Attack assumptions and block weak ventures.' },
-  { id: 'product', title: 'Product Lead', agent: 'rapid-prototyper', mandate: 'Turn validated pain into a narrow offer and acceptance test.' },
-  { id: 'architecture', title: 'Solutions Architect', agent: 'backend-architect', mandate: 'Design minimal, secure, maintainable systems.' },
-  { id: 'builder', title: 'Build Engineer', agent: 'codex', mandate: 'Implement in an isolated workspace with tests.' },
-  { id: 'qa', title: 'QA / Security', agent: 'reality-checker', mandate: 'Verify from tests, diffs, screenshots, and risk evidence.' },
-  { id: 'revenue', title: 'Revenue Operations', agent: 'free-claude-code', mandate: 'Own offer, CRM, invoicing readiness, and metrics.' },
+  { id: 'ceo', title: 'CEO / Orchestrator', agent: 'ceo', mandate: 'Own the mission, sequence work, enforce budgets and escalate owner gates.' },
+  { id: 'market', title: 'Market Intelligence', agent: 'market-intelligence', mandate: 'Collect traceable buyer, pain, pricing and distribution evidence.' },
+  { id: 'red-team', title: 'Commercial Red Team', agent: 'commercial-red-team', mandate: 'Try to falsify weak opportunities before time or money is committed.' },
+  { id: 'product', title: 'Product Lead', agent: 'product-lead', mandate: 'Freeze the smallest sellable scope and measurable acceptance contract.' },
+  { id: 'architecture', title: 'Software Architect', agent: 'software-architect', mandate: 'Design the simplest reversible implementation and trust boundaries.' },
+  { id: 'builder', title: 'Build Engineer', agent: 'build-engineer', mandate: 'Implement bounded work inside the governed workspace and sandbox.' },
+  { id: 'qa', title: 'QA & Security', agent: 'qa-security', mandate: 'Independently verify tests, evidence, security, rollback and residual risk.' },
+  { id: 'revenue', title: 'Revenue Operations', agent: 'revenue-operations', mandate: 'Prepare prospects, drafts, CRM and payment readiness without sending.' },
 ];
 
 const DEFAULT_OWNER_GATES = [
@@ -113,7 +113,7 @@ export function MissionControlTab({
       tone: revenueMission ? 'positive' : 'guarded',
     },
     {
-      label: 'Commercial score',
+      label: 'Hypothesis score',
       value: revenueMission ? `${missionScore}/100` : '—',
       sub: revenueMission ? currentStage : 'not assessed',
       tone: missionScore >= 75 ? 'positive' : missionScore >= 65 ? 'guarded' : 'neutral',
@@ -125,7 +125,7 @@ export function MissionControlTab({
       tone: buildAllowed ? 'positive' : 'guarded',
     },
     {
-      label: 'Agent runtimes',
+      label: 'AI employees',
       value: `${onlineAgents}/${totalAgents}`,
       sub: onlineAgents > 0 ? 'available now' : 'local runtime required',
       tone: onlineAgents > 0 ? 'positive' : 'offline',
@@ -213,8 +213,8 @@ export function MissionControlTab({
               <strong>Installation / field service · 5–49 employees</strong>
             </div>
             <div>
-              <span>Founder price</span>
-              <strong>6,900 SEK excl. VAT</strong>
+              <span>Price hypothesis</span>
+              <strong>6,900 SEK excl. VAT · unvalidated</strong>
             </div>
             <div>
               <span>Workflow</span>
@@ -258,7 +258,7 @@ export function MissionControlTab({
         })}
       </section>
 
-      <div className="section-label">AI employees · open a role runtime</div>
+      <div className="section-label">AI employees · open a role channel</div>
       <section className="agent-cards" aria-label="Company employees">
         {roles.map((role) => {
           const runtime = ov?.agents.find((agent) => agent.id === role.agent);

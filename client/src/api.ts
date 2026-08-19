@@ -219,7 +219,7 @@ export const api = {
       body: JSON.stringify({ text, projectId }),
     }),
   runStatus: (projectId: string) =>
-    req<{ running: boolean; command?: string; pid?: number; startedAt?: string; suggested: string }>(
+    req<{ running: boolean; command?: string; pid?: number; startedAt?: string; suggested: string; enabled: boolean }>(
       `/api/run/${projectId}/status`
     ),
   runLogs: (projectId: string) => req<{ logs: string[] }>(`/api/run/${projectId}/logs`),
@@ -293,7 +293,7 @@ export const api = {
 
   // Git
   gitStatus: (projectId: string) =>
-    req<{ initialized: boolean; branch: string; files: { path: string; status: string }[]; log: string[]; remotes: string[] }>(
+    req<{ initialized: boolean; branch: string; files: { path: string; status: string }[]; log: string[]; remotes: string[]; mutationsEnabled: boolean }>(
       `/api/git/${projectId}/status`
     ),
   gitInit: (projectId: string) =>
