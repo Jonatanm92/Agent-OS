@@ -39,13 +39,23 @@ describe('autonomous execution boundary', () => {
     const agentic = source('server/src/services/agentic.ts');
     const pipeline = source('server/src/services/pipeline.ts');
     const registry = source('server/src/services/tool-registry.ts');
+    const sandbox = source('server/src/services/sandbox.ts');
 
     expect(agentic).not.toContain('execSync(');
     expect(pipeline).not.toContain('execSync(');
     expect(registry).not.toContain('execSync(');
     expect(agentic).toContain('BLOCKED BY POLICY: arbitrary host-shell execution is disabled');
-    expect(pipeline).toContain("runVerificationTask(project.path, 'node-test')");
-    expect(pipeline).toContain("runVerificationTask(project.path, 'node-build')");
+    expect(agentic).toContain('runSandboxTask(project.path, task, 180_000)');
+    expect(pipeline).toContain("runVerificationTask(project.path, 'node-lock')");
+    expect(pipeline).toContain('runVerificationTask(project.path, nodeTask.task)');
+    expect(pipeline).toContain("task: 'node-test'");
+    expect(pipeline).toContain("task: 'node-build'");
+    expect(sandbox).toContain("'--pull=never'");
+    expect(sandbox).toContain("network: 'none' | 'bridge'");
+    expect(sandbox).toContain('`--network=${network}`');
+    expect(sandbox).toContain("...commonRestrictedRunArgs(containerName, 'none')");
+    expect(sandbox).toContain("'--cap-drop=ALL'");
+    expect(sandbox).toContain('validateNodeLockfile');
   });
 
   it('keeps Hermes out of YOLO mode and restricts its one-shot toolset', () => {
