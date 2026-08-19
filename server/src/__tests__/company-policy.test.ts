@@ -51,7 +51,10 @@ describe('autonomous execution boundary', () => {
     expect(pipeline).toContain("task: 'node-test'");
     expect(pipeline).toContain("task: 'node-build'");
     expect(sandbox).toContain("'--pull=never'");
-    expect(sandbox).toContain("'--network=none'");
+    expect(sandbox).toContain("network: 'none' | 'bridge'");
+    expect(sandbox).toContain('`--network=${network}`');
+    expect(sandbox).toContain("commonRestrictedRunArgs(containerName, 'none')");
+    expect(sandbox).toContain("commonRestrictedRunArgs(containerName, 'bridge')");
     expect(sandbox).toContain("'--cap-drop=ALL'");
     expect(sandbox).toContain('validateNodeLockfile');
   });
