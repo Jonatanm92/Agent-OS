@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Syntetisk demonstration av ett styrt förfrågan-till-arbetsorder-flöde." />
+    <title>Inquiry Command — syntetisk workflow-demo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">IO</div>
+          <div>
+            <p class="eyebrow">AGENT OS · REVENUE MISSION 001</p>
+            <h1>Inquiry Command</h1>
+          </div>
+        </div>
+        <div class="safety-chip"><span></span>Syntetisk demo · skickar ingenting</div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">FÖRFRÅGAN → ARBETSKLART UNDERLAG</p>
+          <h2>Varje inkommande ärende blir tydligt, prioriterat och redo för en människa att godkänna.</h2>
+          <p class="hero-copy">Demonstrationen klassificerar ett ärende, hittar informationsluckor, skapar ett svarutkast och en intern uppgift. Ingen kund kontaktas och inget externt system ändras.</p>
+        </div>
+        <div class="gate-card">
+          <div class="gate-icon">✓</div>
+          <div>
+            <span>Obligatorisk kontrollpunkt</span>
+            <strong>Manuellt godkännande</strong>
+            <p>Extern åtgärd är tekniskt blockerad i denna version.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="Översikt">
+        <article><span>Demoärenden</span><strong id="metric-total">—</strong><small>syntetiska fixtures</small></article>
+        <article><span>Akuta</span><strong id="metric-urgent">—</strong><small>kräver mänsklig kontroll</small></article>
+        <article><span>Behöver kompletteras</span><strong id="metric-missing">—</strong><small>synliga informationsluckor</small></article>
+        <article><span>Externa åtgärder</span><strong>0</strong><small>alltid blockerade</small></article>
+      </section>
+
+      <section class="workspace">
+        <aside class="case-panel">
+          <div class="panel-heading">
+            <div><span class="eyebrow">INKORG</span><h3>Syntetiska ärenden</h3></div>
+            <select id="filter" aria-label="Filtrera ärenden">
+              <option value="all">Alla</option>
+              <option value="AKUT">Akuta</option>
+              <option value="missing">Ofullständiga</option>
+            </select>
+          </div>
+          <div id="case-list" class="case-list" aria-live="polite"></div>
+        </aside>
+
+        <section class="detail-panel" id="detail-panel" aria-live="polite">
+          <div class="empty-state">
+            <div class="empty-glyph">↗</div>
+            <h3>Välj ett demoärende</h3>
+            <p>Se klassificering, kompletteringsfrågor, svarutkast, arbetskort och hela kontrollspåret.</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="composer">
+        <div>
+          <p class="eyebrow">PROVA MED FIKTIVA UPPGIFTER</p>
+          <h3>Skapa ett nytt syntetiskt ärende</h3>
+          <p>Använd inga riktiga personuppgifter, kunduppgifter eller hemligheter.</p>
+        </div>
+        <form id="demo-form">
+          <label>Ämne<input name="subject" value="Stopp i avloppet idag" required /></label>
+          <label>Ort<input name="location" value="Vänersborg" /></label>
+          <label class="wide">Beskrivning<textarea name="description" rows="4" required>Det är stopp i avloppet i vår fiktiva butik och vi behöver hjälp idag.</textarea></label>
+          <label>Kontaktperson<input name="contactName" value="Demo Butik AB" /></label>
+          <label>Svarskanal<input name="contactChannel" value="demo@example.invalid" /></label>
+          <label>Fastighetstyp<input name="propertyType" value="Butik" /></label>
+          <label>Nuvarande system<input name="currentSystem" value="Okänt" /></label>
+          <button type="submit">Analysera lokalt <span>→</span></button>
+        </form>
+      </section>
+
+      <footer>
+        <span>Revenue Mission 001 · Founder validation artifact</span>
+        <span>Local-first · Synthetic-only · Human-in-the-loop</span>
+      </footer>
+    </main>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
