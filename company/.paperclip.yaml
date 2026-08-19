@@ -1,6 +1,7 @@
 schema: paperclip/v1
 
-# Portable runtime declarations. Secret values are never stored in this package.
+# Portable runtime declarations. Provider credentials remain in the local
+# Hermes/Paperclip secret stores and are never exported with this package.
 agents:
   ceo:
     adapter:
@@ -11,17 +12,6 @@ agents:
         persistSession: true
         checkpoints: true
         toolsets: terminal,file,web
-    inputs:
-      env: &provider-env
-        OPENROUTER_API_KEY:
-          kind: secret
-          requirement: optional
-        OPENAI_API_KEY:
-          kind: secret
-          requirement: optional
-        ANTHROPIC_API_KEY:
-          kind: secret
-          requirement: optional
 
   market-intelligence:
     adapter:
@@ -32,8 +22,6 @@ agents:
         persistSession: true
         checkpoints: true
         toolsets: file,web,browser
-    inputs:
-      env: *provider-env
 
   commercial-red-team:
     adapter:
@@ -44,8 +32,6 @@ agents:
         persistSession: true
         checkpoints: true
         toolsets: file,web
-    inputs:
-      env: *provider-env
 
   product-lead:
     adapter:
@@ -56,8 +42,6 @@ agents:
         persistSession: true
         checkpoints: true
         toolsets: file,web
-    inputs:
-      env: *provider-env
 
   solutions-architect:
     adapter:
@@ -69,8 +53,6 @@ agents:
         worktreeMode: true
         checkpoints: true
         toolsets: terminal,file,web,code_execution
-    inputs:
-      env: *provider-env
 
   build-engineer:
     adapter:
@@ -82,8 +64,6 @@ agents:
         worktreeMode: true
         checkpoints: true
         toolsets: terminal,file,code_execution
-    inputs:
-      env: *provider-env
 
   qa-security:
     adapter:
@@ -95,8 +75,6 @@ agents:
         worktreeMode: true
         checkpoints: true
         toolsets: terminal,file,web,code_execution
-    inputs:
-      env: *provider-env
 
   revenue-operations:
     adapter:
@@ -107,8 +85,6 @@ agents:
         persistSession: true
         checkpoints: true
         toolsets: file,web
-    inputs:
-      env: *provider-env
 
 routines:
   ceo-operating-review:
