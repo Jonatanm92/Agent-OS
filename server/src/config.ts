@@ -43,6 +43,17 @@ function enabled(value: string | undefined): boolean {
   return /^(1|true|yes|on)$/i.test(value?.trim() ?? '');
 }
 
+function boundedInteger(
+  value: string | undefined,
+  fallback: number,
+  minimum: number,
+  maximum: number
+): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed)) return fallback;
+  return Math.max(minimum, Math.min(maximum, parsed));
+}
+
 export function isLoopbackHost(host: string): boolean {
   const normalized = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
   return normalized === '127.0.0.1' || normalized === 'localhost' || normalized === '::1';
@@ -61,6 +72,9 @@ export interface ResolvedConfig {
   enableTerminal: boolean;
   enableHostRunner: boolean;
   enableGitPush: boolean;
+  enableScheduler: boolean;
+  maxAutomationRunsPerDay: number;
+  minLoopIntervalMinutes: number;
 }
 
 /**
@@ -119,5 +133,18 @@ export function resolveConfig(): ResolvedConfig {
     enableTerminal: enabled(process.env.AGENT_OS_ENABLE_TERMINAL),
     enableHostRunner: enabled(process.env.AGENT_OS_ENABLE_HOST_RUNNER),
     enableGitPush: enabled(process.env.AGENT_OS_ENABLE_GIT_PUSH),
+    enableScheduler: enabled(process.env.AGENT_OS_ENABLE_SCHEDULER),
+    maxAutomationRunsPerDay: boundedInteger(
+      process.env.AGENT_OS_MAX_AUTOMATION_RUNS_PER_DAY,
+      20,
+      1,
+      500
+    ),
+    minLoopIntervalMinutes: boundedInteger(
+      process.env.AGENT_OS_MIN_LOOP_INTERVAL_MINUTES,
+      15,
+      5,
+      1440
+    ),
   };
 }
