@@ -16,6 +16,7 @@ export function validateSandboxImage(value: string): string {
     image.length > 255 ||
     image.startsWith('-') ||
     image.includes('..') ||
+    image.includes('://') ||
     !/^[A-Za-z0-9][A-Za-z0-9._/:@-]*$/.test(image)
   ) {
     throw new Error(`Unsafe sandbox image reference: ${JSON.stringify(value)}`);
@@ -29,7 +30,7 @@ export function validateSandboxImage(value: string): string {
 }
 
 const NODE_IMAGE = validateSandboxImage(
-  process.env.AGENT_OS_NODE_SANDBOX_IMAGE?.trim() || 'node:22-bookworm-slim'
+  process.env.AGENT_OS_NODE_SANDBOX_IMAGE?.trim() || 'node:24-bookworm-slim'
 );
 const PYTHON_IMAGE = validateSandboxImage(
   process.env.AGENT_OS_PYTHON_SANDBOX_IMAGE?.trim() || 'python:3.12-slim'
