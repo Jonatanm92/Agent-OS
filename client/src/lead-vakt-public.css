@@ -1,0 +1,31 @@
+.public-leadvakt-shell {
+  min-height: 100vh;
+  padding: 30px 34px 72px;
+  overflow-x: hidden;
+  background: #eef3f1;
+}
+
+.public-lv-hero {
+  max-width: 1440px;
+  margin: 0 auto 18px;
+}
+
+.public-leadvakt-shell > .lead-vakt {
+  padding: 0;
+}
+
+.public-leadvakt-shell > .lead-vakt > .lv-hero,
+.public-leadvakt-shell #lv-sprint {
+  display: none;
+}
+
+.lv-mission-price {
+  font-size: clamp(52px, 5vw, 70px);
+  letter-spacing: -.065em;
+}
+
+@media (max-width: 700px) {
+  .public-leadvakt-shell {
+    padding: 16px 14px 54px;
+  }
+}

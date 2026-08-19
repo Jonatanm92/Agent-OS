@@ -40,6 +40,14 @@ export function Sidebar({
       <div className="nav-section-label">Company</div>
       <nav className="nav">
         <button
+          className={`nav-item revenue-nav ${tab === 'revenue' ? 'active' : ''}`}
+          onClick={() => setTab('revenue')}
+        >
+          <span className="nav-dot" />
+          <span className="nav-label">Revenue Sprint</span>
+          <span className="agent-transport revenue">live</span>
+        </button>
+        <button
           className={`nav-item ${tab === 'mission' ? 'active' : ''}`}
           onClick={() => setTab('mission')}
         >

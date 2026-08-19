@@ -10,14 +10,15 @@ import { MissionControlTab } from './components/MissionControlTab';
 import { StudioTab } from './components/StudioTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
+import { LeadVaktTab } from './components/LeadVaktTab';
 
-export type Tab = 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'settings';
+export type Tab = 'revenue' | 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
 export function App() {
   const [gate, setGate] = useState<Gate>('loading');
-  const [tab, setTab] = useState<Tab>('mission');
+  const [tab, setTab] = useState<Tab>('revenue');
   const [status, setStatus] = useState<FccStatus | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string>('');
@@ -141,7 +142,8 @@ export function App() {
           />
         </header>
 
-        <section className="content">
+        <section className={`content ${tab === 'revenue' ? 'content-revenue' : ''}`}>
+          {tab === 'revenue' && <LeadVaktTab />}
           {tab === 'mission' && (
             <MissionControlTab
               onOpenAgent={(id) => {
@@ -186,6 +188,8 @@ export function App() {
 
 function tabTitle(tab: Tab, agentLabel?: string): string {
   switch (tab) {
+    case 'revenue':
+      return 'Revenue Sprint — LeadVakt';
     case 'mission':
       return 'Mission Control';
     case 'chat':
