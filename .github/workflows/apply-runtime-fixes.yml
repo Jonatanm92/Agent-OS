@@ -1,0 +1,41 @@
+name: Apply final runtime fixes
+
+on:
+  push:
+    branches: [codex/company-os-foundation]
+    paths:
+      - scripts/apply-runtime-fixes.mjs
+      - .github/workflows/apply-runtime-fixes.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: codex/company-os-foundation
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+      - name: Apply runtime fixes
+        run: node scripts/apply-runtime-fixes.mjs
+      - name: Commit runtime source
+        shell: bash
+        run: |
+          if git diff --quiet -- server/src/index.ts; then
+            echo "Runtime fixes are already applied"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/src/index.ts
+          git commit -m "release: apply final owner-gated runtime policy"
+          git push origin HEAD:codex/company-os-foundation
