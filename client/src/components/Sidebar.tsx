@@ -1,15 +1,18 @@
 import type { Tab } from '../App';
 import type { Agent, FccStatus } from '../api';
 
-// Sidebar tools that aren't model agents (still routed locally, not via FCC).
+// Tools that belong to the generic company operating system.
 const TOOLS: { id: string; label: string; tab: Tab }[] = [
-  { id: 'pipeline', label: 'Pipeline', tab: 'pipeline' },
-  { id: 'studio', label: 'Studio', tab: 'studio' },
-  { id: 'workspace', label: 'Workspace', tab: 'workspace' },
-  { id: 'memory', label: 'Memory', tab: 'memory' },
+  { id: 'pipeline', label: 'Venture Pipeline', tab: 'pipeline' },
+  { id: 'studio', label: 'Skills & Routines', tab: 'studio' },
+  { id: 'workspace', label: 'Workspaces', tab: 'workspace' },
+  { id: 'memory', label: 'Company Memory', tab: 'memory' },
   { id: 'terminal', label: 'Terminal', tab: 'terminal' },
-  { id: 'tuning', label: 'Tuning', tab: 'tuning' },
 ];
+
+// These profiles remain compatible with old conversations but are no longer
+// presented as normal company employees or default revenue paths.
+const LEGACY_AGENT_IDS = new Set(['dsp-engineer', 'plugin-architect']);
 
 export function Sidebar({
   tab,
@@ -26,59 +29,65 @@ export function Sidebar({
   activeAgentId: string;
   onSelectAgent: (id: string) => void;
 }) {
+  const visibleAgents = agents.filter((agent) => !LEGACY_AGENT_IDS.has(agent.id));
+
   return (
     <aside className="sidebar">
       <div className="brand">
         <span className="brand-mark">◆</span>
-        <span className="brand-name">Agent OS</span>
+        <span className="brand-name">Hermes Oracle</span>
       </div>
 
-      <div className="nav-section-label">Mission</div>
+      <div className="nav-section-label">Company</div>
       <nav className="nav">
         <button
           className={`nav-item ${tab === 'mission' ? 'active' : ''}`}
           onClick={() => setTab('mission')}
         >
           <span className="nav-dot" />
-          <span className="nav-label">Mission Control</span>
+          <span className="nav-label">Owner Cockpit</span>
         </button>
       </nav>
 
-      <div className="nav-section-label">Agents</div>
+      <div className="nav-section-label">Agent runtimes</div>
       <nav className="nav">
-        {agents.map((a) => (
+        {visibleAgents.map((agent) => (
           <button
-            key={a.id}
-            className={`nav-item ${tab === 'chat' && activeAgentId === a.id ? 'active' : ''}`}
-            onClick={() => onSelectAgent(a.id)}
-            title={`${a.blurb}${a.model ? `  •  model: ${a.model}` : ''}`}
+            key={agent.id}
+            className={`nav-item ${tab === 'chat' && activeAgentId === agent.id ? 'active' : ''}`}
+            onClick={() => onSelectAgent(agent.id)}
+            title={`${agent.blurb}${agent.model ? `  •  model: ${agent.model}` : ''}`}
           >
             <span className="nav-dot" />
-            <span className="nav-label">{a.label}</span>
-            {a.available === false ? (
+            <span className="nav-label">{agent.label}</span>
+            {agent.available === false ? (
               <span className="agent-transport install">install</span>
             ) : (
-              <span className="agent-transport">{a.backend === 'cli' ? 'cli' : a.transport === 'responses' ? 'resp' : 'msgs'}</span>
+              <span className="agent-transport">
+                {agent.backend === 'cli' ? 'cli' : agent.transport === 'responses' ? 'resp' : 'msgs'}
+              </span>
             )}
           </button>
         ))}
-        {agents.length === 0 && <p className="muted small" style={{ padding: '0 10px' }}>Loading…</p>}
+        {visibleAgents.length === 0 && (
+          <p className="muted small" style={{ padding: '0 10px' }}>Loading…</p>
+        )}
       </nav>
 
-      <div className="shared-memory-note" title="Every agent reads the same Obsidian vault">
-        ◇ shared memory
+      <div className="shared-memory-note" title="Every company agent reads the same durable memory">
+        ◇ shared company memory
       </div>
 
-      <div className="nav-section-label">Tools</div>
+      <div className="nav-section-label">Operations</div>
       <nav className="nav">
-        {TOOLS.map((t) => (
+        {TOOLS.map((tool) => (
           <button
-            key={t.id}
-            className={`nav-item ${tab === t.tab ? 'active' : ''}`}
-            onClick={() => setTab(t.tab)}
+            key={tool.id}
+            className={`nav-item ${tab === tool.tab ? 'active' : ''}`}
+            onClick={() => setTab(tool.tab)}
           >
             <span className="nav-dot" />
-            <span className="nav-label">{t.label}</span>
+            <span className="nav-label">{tool.label}</span>
           </button>
         ))}
       </nav>
@@ -92,7 +101,7 @@ export function Sidebar({
         </button>
         <div className={`fcc-status ${status?.ok ? 'up' : 'down'}`}>
           <span className="status-led" />
-          {status?.ok ? 'FCC connected' : 'FCC offline'}
+          {status?.ok ? 'Model gateway online' : 'Model gateway offline'}
         </div>
       </div>
     </aside>
