@@ -2,7 +2,7 @@ name: Company OS CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/company-os-foundation]
   push:
     branches: [codex/company-os-foundation, 'revenue/**']
 
