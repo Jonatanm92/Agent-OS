@@ -18,6 +18,32 @@ $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $LogDir = Join-Path $RepoRoot '.company-runtime'
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
+function Resolve-SandboxImage {
+  param(
+    [Parameter(Mandatory)] [string]$EnvironmentVariable,
+    [Parameter(Mandatory)] [string]$Fallback
+  )
+
+  $candidate = [Environment]::GetEnvironmentVariable($EnvironmentVariable)
+  $image = if ([string]::IsNullOrWhiteSpace($candidate)) { $Fallback } else { $candidate.Trim() }
+  if (
+    $image.Length -gt 255 -or
+    $image.StartsWith('-') -or
+    $image.Contains('..') -or
+    $image -notmatch '^[A-Za-z0-9][A-Za-z0-9._/:@-]*$'
+  ) {
+    throw "Unsafe sandbox image configured in $EnvironmentVariable."
+  }
+  return $image
+}
+
+$NodeSandboxImage = Resolve-SandboxImage `
+  -EnvironmentVariable 'AGENT_OS_NODE_SANDBOX_IMAGE' `
+  -Fallback 'node:22-bookworm-slim'
+$PythonSandboxImage = Resolve-SandboxImage `
+  -EnvironmentVariable 'AGENT_OS_PYTHON_SANDBOX_IMAGE' `
+  -Fallback 'python:3.12-slim'
+
 function Get-ToolStatus {
   param(
     [Parameter(Mandatory)] [string]$Name,
@@ -54,6 +80,87 @@ function Get-ToolStatus {
     path = $command.Source
     version = $version
     detail = 'available'
+  }
+}
+
+function Get-DockerEngineStatus {
+  $docker = Get-Command 'docker' -ErrorAction SilentlyContinue | Select-Object -First 1
+  if (-not $docker) {
+    return [pscustomobject]@{
+      kind = 'runtime'
+      name = 'Docker engine'
+      required = $true
+      ok = $false
+      detail = 'Docker CLI is not installed.'
+    }
+  }
+
+  try {
+    $output = & $docker.Source version --format '{{.Server.Version}}' 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
+      return [pscustomobject]@{
+        kind = 'runtime'
+        name = 'Docker engine'
+        required = $true
+        ok = $false
+        detail = (($output | Out-String).Trim() -replace '\s+', ' ')
+      }
+    }
+    return [pscustomobject]@{
+      kind = 'runtime'
+      name = 'Docker engine'
+      required = $true
+      ok = $true
+      detail = "server $((($output | Select-Object -First 1) | Out-String).Trim())"
+    }
+  } catch {
+    return [pscustomobject]@{
+      kind = 'runtime'
+      name = 'Docker engine'
+      required = $true
+      ok = $false
+      detail = $_.Exception.Message
+    }
+  }
+}
+
+function Get-DockerImageStatus {
+  param([Parameter(Mandatory)] [string]$Image)
+
+  $docker = Get-Command 'docker' -ErrorAction SilentlyContinue | Select-Object -First 1
+  if (-not $docker) {
+    return [pscustomobject]@{
+      kind = 'image'
+      name = "Sandbox image: $Image"
+      required = $true
+      ok = $false
+      detail = 'Docker CLI is not installed.'
+    }
+  }
+
+  try {
+    & $docker.Source image inspect $Image *> $null
+    $available = $LASTEXITCODE -eq 0
+    return [pscustomobject]@{
+      kind = 'image'
+      name = "Sandbox image: $Image"
+      required = $true
+      ok = $available
+      detail = if ($available) {
+        'present locally; automatic pulls disabled'
+      } else {
+        "missing; review and run: docker pull $Image"
+      }
+    }
+  } catch {
+    return [pscustomobject]@{
+      kind = 'image'
+      name = "Sandbox image: $Image"
+      required = $true
+      ok = $false
+      detail = $_.Exception.Message
+    }
   }
 }
 
@@ -103,8 +210,12 @@ function Get-RuntimeStatus {
     (Get-ToolStatus -Name 'node' -Required $true),
     (Get-ToolStatus -Name 'npm' -Required $true),
     (Get-ToolStatus -Name 'git' -Required $true),
-    (Get-ToolStatus -Name 'hermes'),
-    (Get-ToolStatus -Name 'paperclipai'),
+    (Get-ToolStatus -Name 'docker' -Required $true),
+    (Get-DockerEngineStatus),
+    (Get-DockerImageStatus -Image $NodeSandboxImage),
+    (Get-DockerImageStatus -Image $PythonSandboxImage),
+    (Get-ToolStatus -Name 'hermes' -Required $true),
+    (Get-ToolStatus -Name 'paperclipai' -Required $true),
     (Test-Endpoint -Name 'Paperclip API' -Url "$($PaperclipUrl.TrimEnd('/'))/api/health"),
     (Test-Endpoint -Name 'Agent OS API' -Url "$($AgentOsUrl.TrimEnd('/'))/api/status"),
     (Test-Endpoint -Name 'Hermes gateway (optional)' -Url "$($HermesGatewayUrl.TrimEnd('/'))/api/health")
@@ -123,6 +234,7 @@ function Get-RuntimeStatus {
     timestamp = (Get-Date).ToUniversalTime().ToString('o')
     repoRoot = $RepoRoot
     requiredOk = $requiredOk
+    sandboxImages = @($NodeSandboxImage, $PythonSandboxImage)
     checks = $checks
   }
 }
@@ -143,17 +255,21 @@ function Write-RuntimeStatus {
   foreach ($check in $Status.checks) {
     $mark = if ($check.ok) { '[PASS]' } else { '[----]' }
     $color = if ($check.ok) { 'Green' } elseif ($check.required) { 'Red' } else { 'Yellow' }
-    $suffix = if ($check.kind -eq 'tool') {
-      if ($check.version) { "$($check.version) — $($check.path)" } else { $check.detail }
-    } else {
-      if ($check.ok) { "HTTP $($check.statusCode), $($check.latencyMs) ms" } else { $check.detail }
+    $suffix = switch ($check.kind) {
+      'tool' {
+        if ($check.version) { "$($check.version) — $($check.path)" } else { $check.detail }
+      }
+      'endpoint' {
+        if ($check.ok) { "HTTP $($check.statusCode), $($check.latencyMs) ms" } else { $check.detail }
+      }
+      default { $check.detail }
     }
-    Write-Host ("{0} {1,-28} {2}" -f $mark, $check.name, $suffix) -ForegroundColor $color
+    Write-Host ("{0} {1,-38} {2}" -f $mark, $check.name, $suffix) -ForegroundColor $color
   }
 
   Write-Host ''
   if ($Status.requiredOk) {
-    Write-Host 'Required local prerequisites are available.' -ForegroundColor Green
+    Write-Host 'Required local prerequisites and sandbox images are available.' -ForegroundColor Green
   } else {
     Write-Host 'A required prerequisite is missing. Resolve the red item before start.' -ForegroundColor Red
   }
@@ -246,6 +362,12 @@ $result = [pscustomobject]@{
   paperclip = $PaperclipUrl
   agentOs = $AgentOsUrl
   hermesMode = 'Paperclip hermes_local adapter launches Hermes per heartbeat; no separate gateway is required.'
+  sandbox = [pscustomobject]@{
+    engine = 'Docker'
+    network = 'disabled per task'
+    hostWorkspace = 'read-only mount'
+    images = @($NodeSandboxImage, $PythonSandboxImage)
+  }
   started = $started
   logDirectory = $LogDir
 }
@@ -259,4 +381,5 @@ if ($Json) {
   Write-Host "Owner Cockpit: $AgentOsUrl"
   Write-Host "Logs: $LogDir"
   Write-Host 'Hermes employees are started by Paperclip when assigned work or awakened by a routine.'
+  Write-Host 'Coding verification uses fixed tasks in no-network, non-root Docker sandboxes.'
 }
