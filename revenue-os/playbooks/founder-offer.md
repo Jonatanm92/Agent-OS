@@ -6,7 +6,6 @@ Inom 48 timmar får ett svenskt tjänsteföretag ett källspårat go/avstå-unde
 Tiden räknas från att komplett underlag har lämnats och en starttid har bekräftats skriftligt.
 
 ## Pilotpris
-
 **1 900 SEK exklusive moms, betalas i förskott.**
 
 Första 1–3 uppdragen ska avtalas och faktureras genom godkänt egenanställningsföretag. Frilans Finans är förstahandsval och Cool Company är reserv. Avtalspart måste vara klar innan prisaccept blir bindande och innan arbete startar.
