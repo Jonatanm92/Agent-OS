@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="Revenue OS — evidence-first commercial control plane for an AI-operated founder company." />
+    <title>Revenue OS</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="auth-screen" class="auth-screen hidden" aria-live="polite">
+      <form id="login-form" class="login-card">
+        <div class="eyebrow">PRIVATE CONTROL PLANE</div>
+        <h1>Revenue OS</h1>
+        <p>Enter the local access token configured on this machine.</p>
+        <label>
+          Access token
+          <input id="login-token" type="password" autocomplete="current-password" required />
+        </label>
+        <button class="button primary" type="submit">Unlock</button>
+        <div id="login-error" class="error-text" role="alert"></div>
+      </form>
+    </div>
+
+    <div id="app" class="app-shell hidden">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">R</div>
+          <div>
+            <strong>Revenue OS</strong>
+            <span>Founder control plane</span>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Main navigation">
+          <button class="nav-link active" data-scroll="overview">Overview</button>
+          <button class="nav-link" data-scroll="mission">Mission</button>
+          <button class="nav-link" data-scroll="tasks">Task queue</button>
+          <button class="nav-link" data-scroll="company">AI company</button>
+          <button class="nav-link" data-scroll="ledger">Revenue ledger</button>
+          <button class="nav-link" data-scroll="candidate-lab">Candidate lab</button>
+        </nav>
+
+        <div class="sidebar-rule">
+          <span class="status-dot"></span>
+          Evidence before code.<br />Payment before scale.
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <button id="menu-button" class="icon-button menu-button" aria-label="Toggle navigation">☰</button>
+          <div>
+            <div class="eyebrow">CEO · JONATAN / PROJECT MANAGER · CHATGPT</div>
+            <h1>Commercial Mission Control</h1>
+          </div>
+          <div id="runtime-badge" class="runtime-badge">Loading…</div>
+        </header>
+
+        <div id="banner" class="banner hidden" role="status"></div>
+        <div id="content" class="content" aria-live="polite"></div>
+      </main>
+    </div>
+
+    <div id="modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2 id="modal-title">Task output</h2>
+          <button id="modal-close" class="icon-button" aria-label="Close">×</button>
+        </div>
+        <pre id="modal-output" class="output-pre"></pre>
+      </div>
+    </div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
