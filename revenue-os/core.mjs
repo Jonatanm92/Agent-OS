@@ -141,19 +141,19 @@ export function buildDeterministicGrill(mission) {
 
   const openGateLabels = evaluation.openGates.map((key) => GATE_LABELS[key] ?? key);
   const killConditions = [
-    'Kill or materially reposition after 30 qualified, personalized prospects produce no credible buying signal.',
-    'Kill after two offer iterations and three serious sales conversations produce no payment.',
-    'Kill immediately if the wedge collapses into a generic clipper that competes mainly on features or price.',
-    'Do not authorize a full software build before a customer pays for the founder workflow.',
+    'Kill or materially reposition after 20–30 qualified, personalized offers produce zero payment, after deliverability and channel quality have been verified.',
+    'Do not accept a binding order or start delivery before the approved self-employment company is the contracting party.',
+    'Kill immediately if the service drifts into legal advice, unsupported attestations, autonomous bid submission or claims that cannot be traced to the procurement documents.',
+    'Do not build SaaS before at least three unrelated customers have paid for and received the manual founder service.',
   ];
 
   let nextTest = mission.nextAction || 'Close the highest-risk open gate with the smallest real-world test.';
   if (evaluation.openGates.includes('proofReady')) {
-    nextTest = 'Produce one real customer-grade proof using an existing finished performance; evaluate musical coherence, framing, copy and export readiness.';
-  } else if (evaluation.openGates.includes('paymentReady')) {
-    nextTest = 'Make a legitimate one-time payment path live at the founder price before outreach begins.';
+    nextTest = 'Produce one customer-grade BidSprint 48 sample from official procurement documents and verify every requirement, deadline and recommendation against a cited source location.';
   } else if (evaluation.openGates.includes('reachableProspects')) {
-    nextTest = 'Build and qualify a list of 30 reachable buyers who already publish both long-form performances and short-form content.';
+    nextTest = 'Build 30 source-backed Swedish service-company prospects with public business contact routes and a relevant procurement fit; prepare the first ten for CEO review.';
+  } else if (evaluation.openGates.includes('paymentReady')) {
+    nextTest = 'Complete the legitimate Swedish B2B payment and contracting path through Frilans Finans first, with Cool Company only as reserve.';
   }
 
   return {
@@ -164,15 +164,15 @@ export function buildDeterministicGrill(mission) {
     openGates: openGateLabels,
     weakDimensions,
     strongestCaseAgainst: mission.competitionRisk ||
-      'The market may prefer broad, inexpensive creator tools rather than a specialist release-pack workflow.',
+      'The buyer may prefer internal bid staff, a specialist procurement consultant, or a free self-review rather than trusting a low-priced founder service.',
     nextTest,
     killConditions,
     conclusion:
       evaluation.decision === 'GO'
-        ? 'Proceed to a controlled paid validation; keep full build scope frozen.'
+        ? 'Proceed to a controlled paid founder validation; keep software scope frozen.'
         : evaluation.decision === 'TEST'
-          ? 'Do not scale or expand scope. Close the open gates through paid-market evidence.'
-          : 'Stop work unless a materially different buyer, channel or wedge changes the economics.',
+          ? 'Do not scale or expand scope. Close the open gates through real proof, a legitimate contracting path and paid-market evidence.'
+          : 'Stop work unless a materially different buyer, channel or service boundary changes the economics.',
   };
 }
 
@@ -262,7 +262,7 @@ export function createCandidateMission(input = {}) {
     problem,
     offer,
     priceCents: Math.max(0, Number(input.priceCents) || 0),
-    currency: String(input.currency ?? 'USD').toUpperCase(),
+    currency: String(input.currency ?? 'SEK').toUpperCase(),
     primaryChannel: String(input.primaryChannel ?? '').trim(),
     stage: 'evidence',
     status: 'active',
@@ -302,14 +302,44 @@ export function appendAudit(state, entry) {
 
 export function hydrateState(state, defaults) {
   const source = state && typeof state === 'object' ? state : {};
+  const sourceMissions = Array.isArray(source.missions) ? source.missions : [];
+  const sourceEvents = Array.isArray(source.events) ? source.events : [];
+  const replaceUnusedLegacySeed =
+    Number(source.version || 0) < Number(defaults.version || 0) &&
+    sourceEvents.length === 0 &&
+    sourceMissions.length === 1 &&
+    sourceMissions[0]?.id === 'mission-release-pack';
+
+  const migratedAudit = replaceUnusedLegacySeed
+    ? [
+        {
+          id: 'audit-migrate-bidsprint-48',
+          at: new Date().toISOString(),
+          type: 'system',
+          title: 'Revenue mission migrated to BidSprint 48',
+          detail: 'The unused Music Performance Release Pack seed was replaced by the later CEO-approved Swedish public-procurement service. No revenue events were discarded.',
+          status: 'warning',
+        },
+        ...(Array.isArray(source.audit) ? source.audit : []),
+      ]
+    : (Array.isArray(source.audit) ? source.audit : defaults.audit);
+
   return {
     version: defaults.version,
     company: { ...defaults.company, ...(source.company ?? {}) },
-    automation: { ...defaults.automation, ...(source.automation ?? {}) },
-    roles: Array.isArray(source.roles) && source.roles.length ? source.roles : defaults.roles,
-    missions: Array.isArray(source.missions) && source.missions.length ? source.missions : defaults.missions,
-    tasks: Array.isArray(source.tasks) && source.tasks.length ? source.tasks : defaults.tasks,
-    events: Array.isArray(source.events) ? source.events : [],
-    audit: Array.isArray(source.audit) ? source.audit : defaults.audit,
+    automation: replaceUnusedLegacySeed
+      ? defaults.automation
+      : { ...defaults.automation, ...(source.automation ?? {}) },
+    roles: replaceUnusedLegacySeed
+      ? defaults.roles
+      : (Array.isArray(source.roles) && source.roles.length ? source.roles : defaults.roles),
+    missions: replaceUnusedLegacySeed
+      ? defaults.missions
+      : (sourceMissions.length ? sourceMissions : defaults.missions),
+    tasks: replaceUnusedLegacySeed
+      ? defaults.tasks
+      : (Array.isArray(source.tasks) && source.tasks.length ? source.tasks : defaults.tasks),
+    events: sourceEvents,
+    audit: migratedAudit,
   };
 }
