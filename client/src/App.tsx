@@ -5,15 +5,13 @@ import { ChatTab } from './components/ChatTab';
 import { WorkspaceTab } from './components/WorkspaceTab';
 import { MemoryTab } from './components/MemoryTab';
 import { SettingsTab } from './components/SettingsTab';
-import { TerminalTab } from './components/TerminalTab';
 import { PipelineTab } from './components/PipelineTab';
 import { MissionControlTab } from './components/MissionControlTab';
 import { StudioTab } from './components/StudioTab';
-import { TuningTab } from './components/TuningTab';
 import { ProjectPill } from './components/ProjectPill';
 import { Login } from './components/Login';
 
-export type Tab = 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'terminal' | 'tuning' | 'settings';
+export type Tab = 'mission' | 'chat' | 'pipeline' | 'studio' | 'workspace' | 'memory' | 'settings';
 
 type Gate = 'loading' | 'login' | 'ready';
 
@@ -24,7 +22,7 @@ export function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string>('');
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [activeAgentId, setActiveAgentId] = useState<string>('free-claude-code');
+  const [activeAgentId, setActiveAgentId] = useState<string>('ceo');
   const [navOpen, setNavOpen] = useState(false); // mobile sidebar drawer
 
   const refreshStatus = useCallback(async () => {
@@ -171,8 +169,6 @@ export function App() {
           {tab === 'workspace' && <WorkspaceTab activeProject={activeProject} />}
           {tab === 'studio' && <StudioTab agents={agents} />}
           {tab === 'memory' && <MemoryTab />}
-          {tab === 'terminal' && <TerminalTab />}
-          {tab === 'tuning' && <TuningTab />}
           {tab === 'settings' && (
             <SettingsTab
               agents={agents}
@@ -193,19 +189,15 @@ function tabTitle(tab: Tab, agentLabel?: string): string {
     case 'mission':
       return 'Mission Control';
     case 'chat':
-      return `${agentLabel ?? 'Free Claude Code'} — Chat`;
+      return `${agentLabel ?? 'CEO / Orchestrator'} — Company channel`;
     case 'pipeline':
-      return 'Pipeline — From Inbox to Shipped';
+      return 'Venture Pipeline — Evidence to Verified Delivery';
     case 'studio':
-      return 'Studio — Skills, Loops & Audit';
+      return 'Agent Operations — Skills, Routines & Audit';
     case 'workspace':
       return 'Workspace';
     case 'memory':
       return 'Memory — Obsidian Vault';
-    case 'terminal':
-      return 'Terminal';
-    case 'tuning':
-      return 'Tuning Reference';
     case 'settings':
       return 'Settings';
   }

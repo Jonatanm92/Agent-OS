@@ -1,0 +1,15 @@
+{
+  "name": "@agent-os/revenue-001-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Synthetic inquiry-to-job workflow demonstration for the Agent OS founder validation sprint",
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/build.mjs",
+    "start": "node src/server.mjs"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

@@ -1,26 +1,32 @@
 [
   {
     "name": "grep",
-    "description": "Search for a pattern in project files. Input: the search term.",
-    "type": "shell",
-    "command": "grep -rn \"{{input}}\" . --include='*.rs' --include='*.ts' --include='*.cpp' --include='*.h' --include='*.js' --include='*.json' --include='*.toml' | head -30"
+    "description": "Search project text files for a plain-text term without invoking a shell.",
+    "type": "builtin",
+    "builtin": "grep"
   },
   {
     "name": "tree",
-    "description": "Show the project file tree.",
-    "type": "shell",
-    "command": "find . -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/target/*' | head -50"
-  },
-  {
-    "name": "cargo_check",
-    "description": "Run cargo check on a Rust project to find compile errors.",
-    "type": "shell",
-    "command": "cargo check 2>&1 | head -40"
+    "description": "List the project file tree without following symbolic links.",
+    "type": "builtin",
+    "builtin": "tree"
   },
   {
     "name": "npm_test",
-    "description": "Run npm test in the project.",
-    "type": "shell",
-    "command": "npm test 2>&1 | tail -30"
+    "description": "Run the project test script in the no-network Docker sandbox.",
+    "type": "sandbox",
+    "task": "node-test"
+  },
+  {
+    "name": "npm_build",
+    "description": "Run the project production build in the no-network Docker sandbox.",
+    "type": "sandbox",
+    "task": "node-build"
+  },
+  {
+    "name": "python_test",
+    "description": "Run pytest in the no-network Docker sandbox.",
+    "type": "sandbox",
+    "task": "python-test"
   }
 ]

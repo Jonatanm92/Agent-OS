@@ -1,8 +1,12 @@
 import * as fcc from './fcc.js';
 import type { ChatTurn } from './fcc.js';
 import * as workspace from './workspace.js';
-import { execSync } from 'node:child_process';
 import * as toolRegistry from './tool-registry.js';
+import {
+  formatSandboxResult,
+  normalizeSandboxTask,
+  runSandboxTask,
+} from './sandbox.js';
 
 /**
  * Component 4/5 — a model-agnostic tool loop (ReAct style).
@@ -10,8 +14,14 @@ import * as toolRegistry from './tool-registry.js';
  * Instead of relying on a model's native tool-calling format (which breaks for
  * some providers through proxies), we instruct the model to emit a single JSON
  * action per turn. The dashboard executes it against the active Workspace
- * project and feeds the result back, looping until the model says it's done.
+ * project and feeds the result back, looping until the model says it is done.
  * This works with any model, including Owl Alpha.
+ *
+ * Security boundary: models may write inside the selected workspace, but they
+ * cannot execute arbitrary host-shell commands. Deterministic tasks run only in
+ * the deny-by-default Docker sandbox defined in sandbox.ts. npm dependency
+ * resolution is a separate fixed capability: registry-only, scripts disabled,
+ * validated lockfile output, then networkless install/rebuild/test execution.
  */
 
 const TOOL_INSTRUCTIONS = `
@@ -22,8 +32,17 @@ nothing else (no prose, no markdown fences):
   {"tool":"write_file","args":{"path":"index.html","content":"<file contents>"}}
   {"tool":"read_file","args":{"path":"index.html"}}
   {"tool":"list_files","args":{}}
-  {"tool":"run_command","args":{"command":"npm install && npm test"}}
+  {"tool":"run_task","args":{"task":"node-lock"}}
+  {"tool":"run_task","args":{"task":"node-test"}}
   {"tool":"<custom_tool>","args":{"input":"..."}}
+
+Allowed run_task values:
+- node-lock (resolve/refresh package-lock.json from npm registry declarations only)
+- node-test
+- node-build
+- node-lint
+- node-typecheck
+- python-test
 
 When the task is fully complete, reply with:
 
@@ -31,17 +50,34 @@ When the task is fully complete, reply with:
 
 Rules:
 - Output ONLY the JSON object. No explanations around it.
-- Paths are relative to the project root; commands run in the project root.
-- Use run_command to install deps, build, run, or test code, then read the output.
-- Custom tools from tools.json are also available (grep, tree, cargo_check, npm_test, etc.).
+- Paths are relative to the project root.
+- Arbitrary shell commands, unrestricted network access, public deployment,
+  customer contact, secrets, and spending are unavailable to this loop.
+- When package.json adds or changes dependencies, run node-lock before Node
+  verification. node-lock can write only a validated package-lock.json.
+- npm resolution/install phases accept registry.npmjs.org artifacts only and run
+  with package scripts disabled. Lifecycle scripts and verification run later
+  with the network disabled and without host secrets.
+- run_task commands are fixed; never try to pass shell text as a task.
+- Custom tools from tools.json are capability-limited built-ins or sandbox tasks.
 - Do one action per reply; you'll get the result before your next step.
 - Prefer writing complete, working files in one write_file call.
+- A code task is not done until at least one relevant deterministic run_task has
+  returned PASS after the latest material code/dependency change.
 `.trim();
 
 interface Action {
   tool: string;
   args: Record<string, unknown>;
 }
+
+const VERIFICATION_TASKS = new Set([
+  'node-test',
+  'node-build',
+  'node-lint',
+  'node-typecheck',
+  'python-test',
+]);
 
 /** Robustly pull the first JSON action object out of a model reply. */
 export function parseAction(text: string): Action | null {
@@ -83,28 +119,22 @@ function executeTool(projectId: string, action: Action): string {
       const files = workspace.listFiles(projectId);
       return files.length ? files.map((f) => f.path).join('\n') : '(project is empty)';
     }
-    if (action.tool === 'run_command') {
+    if (action.tool === 'run_task') {
       const project = workspace.getProject(projectId);
       if (!project) return 'ERROR: no active project';
-      const command = String(args.command ?? '').trim();
-      if (!command) return 'ERROR: command required';
-      try {
-        const out = execSync(command, {
-          cwd: project.path,
-          timeout: 90000,
-          maxBuffer: 8 * 1024 * 1024,
-          encoding: 'utf8',
-          stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        const s = out || '(command finished, no output)';
-        return s.length > 4000 ? s.slice(0, 4000) + '\n...[truncated]' : s;
-      } catch (e) {
-        const err = e as { status?: number; stdout?: string; stderr?: string; message?: string };
-        const combined = `${err.stdout ?? ''}${err.stderr ?? ''}` || err.message || 'unknown error';
-        return `EXIT ${err.status ?? '?'}: ${combined.toString().slice(0, 4000)}`;
+      const task = normalizeSandboxTask(args.task);
+      if (!task) {
+        return (
+          'ERROR: unsupported sandbox task. Use node-lock, node-test, node-build, ' +
+          'node-lint, node-typecheck, or python-test.'
+        );
       }
+      return formatSandboxResult(runSandboxTask(project.path, task, 180_000));
     }
-    // Check the extensible tool registry (tools.json).
+    if (action.tool === 'run_command') {
+      return 'BLOCKED BY POLICY: arbitrary host-shell execution is disabled. Use a supported run_task value.';
+    }
+    // Check the capability-limited tool registry (tools.json).
     const customTool = toolRegistry.findTool(action.tool);
     if (customTool) {
       const project = workspace.getProject(projectId);
@@ -114,6 +144,27 @@ function executeTool(projectId: string, action: Action): string {
   } catch (e) {
     return `ERROR: ${e instanceof Error ? e.message : String(e)}`;
   }
+}
+
+function codeProject(projectId: string): boolean {
+  return workspace
+    .listFiles(projectId)
+    .some((file) => file.path === 'package.json' || file.path === 'pyproject.toml');
+}
+
+function verifiedAfterLatestWrite(steps: AgenticStep[]): boolean {
+  let lastMaterialWrite = -1;
+  for (let index = 0; index < steps.length; index++) {
+    const step = steps[index];
+    if (step.tool === 'write_file' && step.args.path !== 'package-lock.json') {
+      lastMaterialWrite = index;
+    }
+  }
+  return steps.some((step, index) => {
+    if (index <= lastMaterialWrite || step.tool !== 'run_task') return false;
+    const task = String(step.args.task ?? '');
+    return VERIFICATION_TASKS.has(task) && /^PASS:/m.test(step.result);
+  });
 }
 
 export interface AgenticStep {
@@ -132,11 +183,12 @@ export async function runAgentic(
   history: ChatTurn[],
   projectId: string,
   baseSystem?: string,
-  maxSteps = 6
+  maxSteps = 12
 ): Promise<AgenticResult> {
   const steps: AgenticStep[] = [];
   const msgs: ChatTurn[] = history.map((h) => ({ ...h }));
   const system = (baseSystem ? baseSystem + '\n\n' : '') + TOOL_INSTRUCTIONS;
+  const stepLimit = Math.max(1, Math.min(20, Math.round(maxSteps)));
   let model = '';
 
   if (!projectId) {
@@ -147,16 +199,32 @@ export async function runAgentic(
     };
   }
 
-  for (let i = 0; i < maxSteps; i++) {
+  for (let i = 0; i < stepLimit; i++) {
     const result = await fcc.runAgent(agentId, msgs, system);
     model = result.model;
     const action = parseAction(result.text);
 
     if (!action) {
-      // Model answered in prose — treat as the final answer.
+      // Model answered in prose — treat as the final answer only for non-code work.
+      if (codeProject(projectId) && !verifiedAfterLatestWrite(steps)) {
+        const observation =
+          'BLOCKED: this workspace contains a code project, but no deterministic verification task has passed after the latest material write. Run node-lock when needed, then a relevant test/build/lint/typecheck task.';
+        steps.push({ tool: 'done', args: {}, result: observation });
+        msgs.push({ role: 'assistant', content: result.text });
+        msgs.push({ role: 'user', content: `COMPLETION GATE:\n${observation}` });
+        continue;
+      }
       return { reply: result.text, steps, model };
     }
     if (action.tool === 'done') {
+      if (codeProject(projectId) && !verifiedAfterLatestWrite(steps)) {
+        const observation =
+          'BLOCKED: code cannot be declared done until a relevant deterministic run_task returns PASS after the latest material write.';
+        steps.push({ tool: 'done', args: action.args, result: observation });
+        msgs.push({ role: 'assistant', content: JSON.stringify(action) });
+        msgs.push({ role: 'user', content: `COMPLETION GATE:\n${observation}` });
+        continue;
+      }
       return { reply: String(action.args.message ?? 'Done.'), steps, model };
     }
 
@@ -168,7 +236,7 @@ export async function runAgentic(
   }
 
   return {
-    reply: `Reached the ${maxSteps}-step limit. Any files I created are in your Workspace tab.`,
+    reply: `Reached the ${stepLimit}-step safety limit. Any files I created are in your Workspace tab. The item is not complete unless the deterministic completion gate passed.`,
     steps,
     model,
   };

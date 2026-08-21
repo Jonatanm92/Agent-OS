@@ -1,0 +1,100 @@
+schema: paperclip/v1
+
+# Portable runtime declarations. Provider credentials remain in the local
+# Hermes/Paperclip secret stores and are never exported with this package.
+agents:
+  ceo:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: terminal,file,web
+
+  market-intelligence:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 600
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web,browser
+
+  commercial-red-team:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web
+
+  product-lead:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web
+
+  solutions-architect:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 600
+        persistSession: true
+        worktreeMode: true
+        checkpoints: true
+        toolsets: terminal,file,web,code_execution
+
+  build-engineer:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 900
+        persistSession: true
+        worktreeMode: true
+        checkpoints: true
+        toolsets: terminal,file,code_execution
+
+  qa-security:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 600
+        persistSession: true
+        worktreeMode: true
+        checkpoints: true
+        toolsets: terminal,file,web,code_execution
+
+  revenue-operations:
+    adapter:
+      type: hermes_local
+      config:
+        provider: auto
+        timeoutSec: 300
+        persistSession: true
+        checkpoints: true
+        toolsets: file,web
+
+routines:
+  ceo-operating-review:
+    triggers:
+      - kind: schedule
+        cronExpression: "0 7,19 * * *"
+        timezone: Europe/Stockholm
+
+  weekly-safe-improvement-review:
+    triggers:
+      - kind: schedule
+        cronExpression: "0 19 * * 0"
+        timezone: Europe/Stockholm
