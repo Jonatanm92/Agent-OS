@@ -1,35 +1,39 @@
-# Founder Outreach Framework — Human-Send Only
+# BidSprint 48 — outreachramverk, endast manuellt utskick
 
-## Rules
-- Use only a legitimate public contact channel.
-- No bulk automation, fake familiarity, invented compliments, or hidden AI identity claims.
-- Every message must reference one real performance and one observable release workflow detail.
-- Ask for a small paid founder test; do not imply an established customer base.
-- One initial message and one concise follow-up. Stop after a rejection or opt-out.
-- Revenue OS may draft messages but may never send them without explicit CEO approval.
+## Regler
+- Använd bara en legitim offentlig företagskontaktväg.
+- Inga köpta listor, gissade personadresser, massutskick eller påhittad bekantskap.
+- Varje meddelande ska hänvisa till ett verkligt tjänsteområde och en verklig offentlig upphandling.
+- Var transparent med att detta är en founder-pilot.
+- Ange pilotpriset 1 900 SEK exklusive moms.
+- Ett första meddelande och en kort uppföljning. Stoppa efter nej eller avregistrering.
+- Revenue OS får förbereda men aldrig skicka utan uttryckligt VD-godkännande.
 
-## Message structure
-1. Specific factual observation about a recent performance.
-2. The narrow workflow problem observed: turning that finished performance into coherent release assets.
-3. The founder offer in one sentence.
-4. Transparent founder price: $29.
-5. Low-friction question, not a calendar ambush.
+## Meddelandestruktur
+1. Verifierad koppling mellan företaget och tjänsteområdet.
+2. Den specifika upphandlingen och varför ett snabbt beslut kan vara relevant.
+3. BidSprint 48 i en mening.
+4. Exakta leverabler och pilotpris.
+5. En lågfriktionsfråga.
 
-## Email / DM draft shell
-Subject: release pack for [specific performance]
+## Utkastmall
+Ämne: snabb go/avstå-bedömning för [upphandling]
 
-Hi [name] — I watched your [exact performance/title] on [platform]. [One factual, non-generic observation tied to the performance or release format].
+Hej,
 
-I’m validating a music-performance-specific release service: one finished performance in, then two phrase-complete vertical clips, a cover concept, and upload-ready copy out. It is deliberately not a generic AI clipper.
+Jag såg att [företag] arbetar med [verifierat tjänsteområde] och att [upphandlande organisation] har publicerat [exakt upphandling].
 
-The founder price is $29 for one completed pack. I’d first confirm that your source fits, so there is no obligation from this message.
+Jag validerar just nu BidSprint 48: inom 48 timmar får ni ett källspårat go/avstå-underlag, kravmatris, bevisluckor, kritiska deadlines och föreslagna frågor för en specifik offentlig upphandling.
 
-Would that remove enough release work to be useful for your next performance?
+Founder-piloten kostar 1 900 SEK exklusive moms. Det är besluts- och kravstöd; juridisk rådgivning, full anbudsskrivning och portalinlämning ingår inte.
 
-— Jonatan / [approved brand]
+Är det relevant att jag först skickar en kort provsida som visar exakt hur beslutet och kravspårningen ser ut?
 
-## Follow-up shell
-Hi [name] — one follow-up on the release-pack idea for [performance]. The specific part I believe it could remove is [observable workflow burden]. If that is not a priority, no reply is needed and I will close this out.
+Jonatan
+BidSprint 48
 
-## Personalization rejection test
-Reject the draft if it could be sent unchanged to another creator. Reject it if any detail cannot be verified from the cited public source.
+## Uppföljning
+Hej — en kort uppföljning om BidSprint 48 för [upphandling]. Den konkreta risk jag tror tjänsten kan minska är [verifierad tids-/kravrisk]. Om det inte är aktuellt avslutar jag här.
+
+## Avvisningstest
+Avvisa utkastet om det kan skickas oförändrat till ett annat företag, om någon detalj saknar källa eller om det antyder att ett köp redan är godkänt.
