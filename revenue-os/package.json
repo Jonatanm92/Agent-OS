@@ -1,0 +1,15 @@
+{
+  "name": "revenue-os",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Evidence-first commercial control plane for Agent OS",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check server.mjs && node --check api.mjs && node --check runtime.mjs && node --check core.mjs && node --check company.mjs && node --check playbooks.mjs && node --check public/app.js && node --check public/render.js && node --check public/render-parts.js && node --check public/utils.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

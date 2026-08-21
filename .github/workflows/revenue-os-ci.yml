@@ -1,0 +1,60 @@
+name: Revenue OS CI
+
+on:
+  pull_request:
+    paths:
+      - "revenue-os/**"
+      - ".github/workflows/revenue-os-ci.yml"
+  push:
+    branches:
+      - "codex/revenue-os-v1"
+    paths:
+      - "revenue-os/**"
+      - ".github/workflows/revenue-os-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: revenue-os-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Test, check, and smoke-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: revenue-os
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run deterministic tests
+        run: npm test
+
+      - name: Run syntax checks
+        run: npm run check
+
+      - name: Smoke-test HTTP health endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          node server.mjs > /tmp/revenue-os.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true; cat /tmp/revenue-os.log' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3010/api/health > /tmp/revenue-os-health.json; then
+              cat /tmp/revenue-os-health.json
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "Revenue OS did not become healthy."
+          exit 1
