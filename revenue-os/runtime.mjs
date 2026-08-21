@@ -7,6 +7,7 @@ import {
   appendAudit,
   buildDeterministicGrill,
   computeMetrics,
+  countAutomationAttempts,
   evaluateMission,
   GATE_LABELS,
   hydrateState,
@@ -249,10 +250,7 @@ export async function runAiGrill(mission) {
 }
 
 function automationRunsToday() {
-  const today = new Date().toISOString().slice(0, 10);
-  return state.audit.filter((entry) =>
-    entry.type === 'automation' && entry.status === 'ok' && String(entry.at).startsWith(today)
-  ).length;
+  return countAutomationAttempts(state.audit);
 }
 
 export async function automationTick() {

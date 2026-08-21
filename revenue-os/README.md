@@ -121,7 +121,7 @@ npm test
 npm run check
 ```
 
-The test suite verifies the 80-point seeded verdict, the hard-gate requirement for `GO`, kill
+The eight-test suite verifies the 80-point seeded verdict, the hard-gate requirement for `GO`, kill
 logic, fatal-risk override, internal-only task selection, event/revenue accounting, and safe
 candidate initialization.
 

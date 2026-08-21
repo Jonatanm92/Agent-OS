@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   calculateScore,
   computeMetrics,
+  countAutomationAttempts,
   createCandidateMission,
   evaluateMission,
   nextRunnableTask,
@@ -84,4 +85,14 @@ test('candidate missions start at evidence stage and cannot bypass hard gates', 
   assert.equal(candidate.hardGates.noBuildBeforeSale, true);
   assert.equal(candidate.hardGates.proofReady, false);
   assert.equal(candidate.hardGates.paymentReady, false);
+});
+
+test('automation daily limit counts failed attempts as well as successful runs', () => {
+  const audit = [
+    { type: 'automation', status: 'ok', at: '2026-08-21T01:00:00.000Z' },
+    { type: 'automation', status: 'error', at: '2026-08-21T02:00:00.000Z' },
+    { type: 'task', status: 'error', at: '2026-08-21T03:00:00.000Z' },
+    { type: 'automation', status: 'ok', at: '2026-08-20T23:00:00.000Z' },
+  ];
+  assert.equal(countAutomationAttempts(audit, '2026-08-21'), 2);
 });

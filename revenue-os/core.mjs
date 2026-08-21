@@ -176,6 +176,12 @@ export function buildDeterministicGrill(mission) {
   };
 }
 
+export function countAutomationAttempts(audit = [], date = new Date().toISOString().slice(0, 10)) {
+  return (Array.isArray(audit) ? audit : []).filter((entry) =>
+    entry?.type === 'automation' && String(entry?.at || '').startsWith(date)
+  ).length;
+}
+
 export function computeMetrics(state) {
   const events = Array.isArray(state?.events) ? state.events : [];
   let grossRevenueCents = 0;
