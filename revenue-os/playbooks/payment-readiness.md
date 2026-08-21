@@ -1,27 +1,30 @@
-# First $29 International Payment — Readiness Checklist
+# Betalnings- och avtalsberedskap — BidSprint 48
 
-This is an operational checklist, not legal or tax advice. Current official requirements must be verified before launch.
+Detta är en operativ kontrollista, inte juridisk eller skattemässig rådgivning. Aktuella villkor ska kontrolleras hos leverantören innan försäljning.
 
-## Buyer-facing minimum
-- Separate brand and seller identity are not misleading.
-- Exact $29 USD price is shown before payment.
-- Deliverables, exclusions, turnaround, correction boundary, and refund/cancellation handling are visible.
-- Buyer receives an order confirmation or receipt.
-- Buyer can provide the intake and source-file delivery instructions after payment.
-- A support/contact address is available.
-- Privacy handling for uploaded video/audio is described in plain language.
+## Låst väg för de första 1–3 piloterna
+- Förstahandsval: Frilans Finans Sverige AB.
+- Reserv: Cool Company Skandinavien AB.
+- Egenanställningsföretaget måste vara avtalspart innan bindande prisaccept och innan arbete börjar.
+- Pilotpris: 1 900 SEK exklusive moms, i förskott.
+- Uppdraget ska beskrivas som ett avgränsat analys-/konsultuppdrag med tydlig leverans och tydliga undantag.
 
-## Owner-only setup
-- Complete identity verification, BankID/2FA, banking details, and binding account terms.
-- Confirm how seller name appears on buyer statement/receipt.
-- Confirm the legitimate Swedish route for recording and declaring income before accepting sales.
-- Confirm VAT/tax handling for the selected payment/merchant-of-record route and buyer locations.
-- Approve the final refund/cancellation language.
+## Kundminimum
+- Kunden ser pris, moms, avtalspart, leverabler, 48-timmarsstart, rättelsegräns och undantag före accept.
+- Kunden får offert/orderbekräftelse och korrekt faktura eller betalningsinstruktion.
+- Det framgår att kunden ansvarar för slutligt beslut, företagsuppgifter och anbudsinlämning.
+- Hantering av kunddokument och radering/lagring förklaras enkelt.
 
-## Operational test before outreach
-- Run a real test transaction where allowed, or the provider’s official test mode.
-- Verify price, currency, receipt, notification, payout destination, refund path, and data captured.
-- Do not mark the payment gate closed merely because a checkout page exists.
+## VD-åtgärder
+- Slutför identitetskontroll, BankID/2FA, utbetalningsuppgifter och bindande villkor hos vald leverantör.
+- Bekräfta att leverantören accepterar uppdragstypen och hur avtalspart/säljarnamn visas.
+- Godkänn slutliga villkor för avbokning, rättelse och eventuell återbetalning.
+- Kontrollera vad som måste vara klart innan en kund kan betala i förskott.
 
-## Gate definition
-Payment Ready = a qualified international buyer can legitimately pay $29, receive confirmation, submit the intake, and be refunded through a known process; unavoidable owner verification is complete.
+## Test före outreach
+- Skapa ett icke-bindande exempel eller officiellt testflöde där leverantören tillåter det.
+- Kontrollera pris, moms, kunduppgifter, orderbekräftelse, faktura, utbetalning och krediteringsväg.
+- Betalningsgrinden stängs inte bara för att ett konto eller formulär existerar.
+
+## Grinddefinition
+Payment Ready = en svensk företagskund kan legitimt acceptera och betala 1 900 SEK exklusive moms till rätt avtalspart, få dokumentation och omfattas av en känd avboknings-/krediteringsprocess; all oundviklig VD-verifiering är klar.

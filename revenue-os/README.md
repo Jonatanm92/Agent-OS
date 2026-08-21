@@ -1,55 +1,71 @@
-# Revenue OS v1
+# Revenue OS v1 — BidSprint 48
 
-Revenue OS is the commercial control plane in front of the existing Agent OS build pipeline.
-It is designed to prevent a common failure mode: agents producing convincing software before
-anyone has proved that a reachable buyer will pay.
+Revenue OS is the commercial control plane in front of the existing Agent OS pipeline.
+It keeps one revenue mission active, blocks speculative product work and lets the AI team perform
+bounded internal work while Jonatan retains control over outreach, contracts, payments and other
+irreversible decisions.
 
-## What this version does
+## Active revenue mission
 
-- Operates one active revenue mission at a time.
-- Uses a deterministic 100-point commercial scorecard.
-- Enforces eight hard gates before a mission can receive `GO`.
-- Returns `GO`, `TEST`, or `KILL`; a model cannot override open gates.
-- Maps nine company roles onto the existing Agent OS agents.
-- Executes only internal work products through the existing `/api/chat` route.
-- Permanently blocks automated outreach, publishing, spending, banking, identity verification,
-  binding legal acceptance, refunds, and other external actions.
-- Records real prospects, replies, calls, payments, refunds, deliveries, and testimonials.
-- Persists state locally as JSON with atomic writes and a bounded audit trail.
-- Provides a responsive dashboard for computer and phone.
-- Can run a deterministic grill with or without an additional AI red team.
-- Includes a bounded scheduler for queued **internal** tasks while both services are online.
+**BidSprint 48** is the CEO-approved first revenue engine.
 
-It has no runtime dependencies beyond Node.js 20 or newer.
+For Swedish service companies evaluating one public procurement, the founder pilot delivers within
+48 hours after complete input and a confirmed start:
 
-## Commercial mission already loaded
+- a source-traced go/avstå recommendation with a decision score
+- a requirement matrix
+- missing evidence, attachments and attestations
+- critical deadlines, questions and internal responsibilities
+- a bid-structure skeleton
+- a final pre-submission requirement check list
 
-The default mission is **Music Performance Release Pack** under a separate global brand:
+Founder pilot price: **1,900 SEK excluding VAT, paid upfront**.
 
-- One finished performance in.
-- Two musically coherent vertical clips out.
-- One cover concept.
-- Titles, description, captions, and a concise keyword/hashtag set.
-- Upload-ready delivery folder.
-- Founder price: **$29 USD**.
-- Future hypotheses: 5 packs for $99; 12 packs for $179; no subscription initially.
+The first 1–3 pilots must be contracted through an approved self-employment company. Frilans Finans
+is the first route and Cool Company is reserve. The contracting party must be in place before a
+binding order is accepted or work begins.
 
-The seeded score is **80/100**, but the verdict is correctly **TEST**, not `GO`, because:
+## Current deterministic verdict
 
-1. A real customer-grade proof must pass the acceptance test.
-2. A legitimate international payment path must be live and owner-verified.
+The seeded mission scores **80/100** and remains **TEST**, not `GO`, because three hard gates are open:
 
-A full SaaS build remains prohibited until paid founder validation exists.
+1. A customer-grade, source-traced sample must pass its acceptance test.
+2. A 30-company source-backed prospect list must be completed, with ten 8/10 prospects ready for CEO review.
+3. The legitimate contracting and payment path must be operational.
 
-## Work products already included
+No SaaS build is authorized before at least three unrelated customers have paid for and received the
+manual founder service.
 
-- `playbooks/founder-proof-acceptance.md`
-- `playbooks/founder-offer.md`
-- `playbooks/prospect-rubric.md`
-- `playbooks/outreach-framework.md`
-- `playbooks/payment-readiness.md`
+## AI company roles
 
-These are also loaded into the relevant task cards in the dashboard.
+Revenue OS maps nine company roles onto the existing Agent OS agents:
+
+- Chief of Staff / Project Lead
+- Market Intelligence Lead
+- Customer Discovery Lead
+- Offer & Pricing Lead
+- Sales & Distribution Lead
+- Delivery Engineering Lead
+- QA & Red Team Lead
+- Finance & Risk Lead
+- Customer Success Lead
+
+Internal automation is enabled in the default state with a limit of four task runs per UTC day.
+It can produce research, samples, prospect evidence, delivery assets and red-team reports only while
+both Revenue OS and Agent OS are running.
+
+It can never send outreach, publish, spend money, accept contracts, change banking/payment settings,
+log in with BankID/2FA, submit an offer or issue a refund.
+
+## Seeded internal work queue
+
+1. Build one customer-grade BidSprint 48 sample from official Swedish procurement documents.
+2. Complete the 30-company source-backed prospect list; retain existing job reference `job-0371e9a776` where available.
+3. Build the Swedish customer intake and delivery package.
+4. Run the commercial and delivery grill.
+
+The approved offer and proof acceptance standard are already loaded. Contracting/payment verification,
+exact outreach approval and sends remain human-gated.
 
 ## Start on Windows
 
@@ -65,14 +81,13 @@ Then open:
 http://127.0.0.1:3010
 ```
 
-The existing Agent OS is expected at `http://127.0.0.1:3001` by default.
-To use another address:
+The existing Agent OS is expected at `http://127.0.0.1:3001` by default. To use another address:
 
 ```powershell
 .\start.ps1 -AgentOsUrl "http://127.0.0.1:3001"
 ```
 
-When Agent OS itself requires a password/token:
+When Agent OS requires a token:
 
 ```powershell
 .\start.ps1 -AgentOsToken "YOUR_AGENT_OS_TOKEN"
@@ -80,7 +95,7 @@ When Agent OS itself requires a password/token:
 
 ## Private phone access through Tailscale
 
-Bind Revenue OS to all local interfaces **only with an access token**:
+Bind Revenue OS to all local interfaces only with a strong access token:
 
 ```powershell
 .\start.ps1 `
@@ -88,31 +103,16 @@ Bind Revenue OS to all local interfaces **only with an access token**:
   -AccessToken "USE-A-LONG-RANDOM-TOKEN"
 ```
 
-On the phone, open the desktop computer’s private Tailscale IP on port `3010`.
-Do not expose this dashboard directly to the public internet. It contains commercial plans,
-agent outputs, prospect notes, and payment events.
+On the phone, open the desktop computer's private Tailscale IP on port `3010`.
+Do not expose the dashboard directly to the public internet.
 
-## Start on macOS / Linux
+## Start on macOS or Linux
 
 ```bash
 REVENUE_OS_TOKEN='use-a-long-random-token' ./start.sh
 ```
 
 For local-only operation, the token may be omitted because the default bind is `127.0.0.1`.
-
-## Internal automation
-
-Automation is disabled by default. When enabled in the dashboard:
-
-- It runs at most the configured number of internal tasks per UTC day.
-- It uses the assigned Agent OS role.
-- It stops rather than inventing a result when Agent OS is offline.
-- It never runs `human` or `external` tasks.
-- It only runs while this process and the desktop machine are online.
-
-This is not a claim that ChatGPT itself continues working after the conversation ends. A real
-24/7 process requires the local server to remain running on an always-on machine or a separately
-secured host.
 
 ## Tests
 
@@ -121,9 +121,16 @@ npm test
 npm run check
 ```
 
-The eight-test suite verifies the 80-point seeded verdict, the hard-gate requirement for `GO`, kill
-logic, fatal-risk override, internal-only task selection, event/revenue accounting, and safe
-candidate initialization.
+The nine-test suite verifies:
+
+- the seeded 80-point `TEST` decision and its three open gates
+- deterministic `GO` and `KILL` behavior
+- fatal-risk override
+- internal-only task selection
+- failed automation attempts count toward the daily safety limit
+- real SEK payment/refund metrics
+- safe candidate initialization
+- migration from the unused legacy music-release seed without discarding real revenue events
 
 ## Environment variables
 
@@ -137,9 +144,15 @@ candidate initialization.
 | `AGENT_OS_TOKEN` | blank | Existing Agent OS token, when configured |
 | `REVENUE_OS_AUTOMATION_INTERVAL_MS` | `60000` | Internal scheduler poll interval |
 
+## State migration
+
+When an unused version-1 state contains only the original Music Performance Release Pack seed and no
+revenue events, Revenue OS replaces it with BidSprint 48. A state containing any payment or other
+revenue event is preserved rather than silently overwritten.
+
 ## Authority boundary
 
-The CEO remains the only authority for identity verification, BankID/2FA, banking, binding
-legal terms, spending, final brand/offer/price decisions, customer sends, publishing, refunds,
-and irreversible commitments. Revenue OS prepares and records those actions; it does not impersonate
-the owner or silently execute them.
+Jonatan remains the only authority for identity verification, BankID/2FA, banking, binding terms,
+self-employment-company acceptance, spending, final price changes, customer sends, publishing,
+refunds and irreversible commitments. Revenue OS prepares and records those actions; it does not
+impersonate the owner or execute them silently.
