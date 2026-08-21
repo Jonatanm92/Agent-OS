@@ -1,57 +1,43 @@
-# Founder Offer — Draft for CEO Approval
+# BidSprint 48 — godkänt founder-erbjudande
 
-## Headline
-Turn one finished music performance into a publish-ready release pack — without generic AI cuts.
+## Löfte
+Inom 48 timmar får ett svenskt tjänsteföretag ett källspårat go/avstå-underlag och ett kravsäkringspaket för en specifik offentlig upphandling.
 
-## Subhead
-Send one finished performance. Receive two musically coherent vertical clips, a cover concept, and the copy needed to publish the release across your channels.
+Tiden räknas från att komplett underlag har lämnats och en starttid har bekräftats skriftligt.
 
-## Founder price
-**$29 USD for one completed Release Pack**
+## Pilotpris
 
-Future price hypotheses, not part of the first sale:
-- 5 Release Packs — $99
-- 12 Release Packs — $179
-- No subscription initially
-- Credits do not expire
+**1 900 SEK exklusive moms, betalas i förskott.**
 
-## Included
-- 2 vertical performance clips selected and cut around complete musical phrases
-- Music-aware reframing focused on the performer and instrument
-- 1 thumbnail/cover concept
-- 3 title options
-- Description, short-form captions, and a concise hashtag/keyword set
-- Clearly named upload-ready files
-- 1 focused correction round for errors against the agreed brief
+Första 1–3 uppdragen ska avtalas och faktureras genom godkänt egenanställningsföretag. Frilans Finans är förstahandsval och Cool Company är reserv. Avtalspart måste vara klar innan prisaccept blir bindande och innan arbete startar.
 
-## Not included
-- Recording, reshooting, mixing, mastering, stem separation, or music-rights clearance
-- Posting into the creator’s accounts
-- Unlimited creative revisions
-- A guarantee of views, reach, virality, monetization, or platform approval
-- A generic “turn any long video into 20 clips” service
+## Kunden får
+- go/avstå-rekommendation med tydlig score och beslutsmotivering
+- källspårad kravmatris
+- lista över saknade bevis, bilagor och intyg
+- kalender för deadlines, frågor och interna ansvar
+- lista över oklarheter och föreslagna frågor till myndigheten
+- enkel struktur för hur ett anbud kan disponeras
+- kontrollista för slutlig kravsäkring före inlämning
+- kort intern beslutspromemoria
 
-## Founder workflow
-1. Creator supplies the finished performance and the short intake answers.
-2. The pack is produced and checked against the written acceptance test.
-3. Creator receives the exports and copy in one delivery folder.
+## Ingår inte
+- juridisk rådgivning eller garanti för upphandlingsrättslig korrekthet
+- beslut om kundens pris eller kommersiella villkor
+- påhittade eller obestyrkta intyg, referenser eller företagsuppgifter
+- fullständig anbudsskrivning
+- inloggning i upphandlingsportal eller autonom inlämning
+- garanti för kvalificering, tilldelning eller affär
 
-## Intake required
-- Performance/song title and artist attribution
-- Creator/channel name and preferred handles
-- Target platforms
-- Any moment that must or must not be used
-- Brand references, wording restrictions, and approved gear details
-- Confirmation that the creator is authorized to supply the material for editing
+## Kundunderlag
+- länk eller dokument till den specifika upphandlingen
+- kort beskrivning av företagets tjänst och geografiska kapacitet
+- tillgängliga certifikat, referenser och andra bevis
+- ansvarig kontaktperson för sakfrågor
+- bekräftelse på att företaget själv ansvarar för slutligt beslut och inlämning
 
-## Support boundary
-One correction round covers factual errors, export defects, sync defects, or a clear miss against the intake. A new creative direction or replacement source file is a new pack or separately agreed work.
+## Rättelsegräns
+En fokuserad rättelserunda ingår för källfel, missade dokument eller tydlig avvikelse från överenskommen leverans. Ny upphandling, nytt underlag eller utökad anbudsskrivning är ett nytt uppdrag.
 
-## Call to action
-“Send me one finished performance you already plan to release. I’ll confirm whether the source fits the founder pack before you pay.”
-
-## CEO decisions still required
-- Final separate brand name
-- Final turnaround promise
-- Final revision/refund wording
-- Final checkout and outreach copy
+## Första CTA
+Skicka länken till den upphandling ni överväger. Jag kontrollerar först om underlaget passar BidSprint 48 innan något blir bindande.
