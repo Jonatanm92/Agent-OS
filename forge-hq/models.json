@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-24",
+  "policy": {
+    "preferLocal": true,
+    "autoDownload": false,
+    "runHeavyModelsOneAtATime": true,
+    "benchmarkBeforeDefaultSwitch": true,
+    "cloudEscalation": "manual-or-policy-controlled",
+    "rule": "Cloud models may improve difficult jobs, but routine job economics must remain viable without them."
+  },
+  "routes": {
+    "planner": {
+      "model": "ollama/qwen3.8:27b-q4_K_M",
+      "estimatedModelSizeGB": 18,
+      "context": "256K",
+      "purpose": [
+        "task decomposition",
+        "repository understanding",
+        "requirements analysis",
+        "research synthesis",
+        "implementation planning"
+      ],
+      "hardwareFit": "benchmark-required"
+    },
+    "coder": {
+      "model": "ollama/qwen3-coder:30b",
+      "estimatedModelSizeGB": 19,
+      "context": "256K",
+      "purpose": [
+        "implementation",
+        "multi-file edits",
+        "refactors",
+        "test generation",
+        "tool-driven coding"
+      ],
+      "hardwareFit": "benchmark-required"
+    },
+    "reviewer": {
+      "model": "ollama/gpt-oss:20b",
+      "estimatedModelSizeGB": 14,
+      "context": "128K",
+      "purpose": [
+        "independent reasoning",
+        "failure analysis",
+        "test review",
+        "scope and acceptance review",
+        "structured verdicts"
+      ],
+      "hardwareFit": "benchmark-required"
+    },
+    "fallback": {
+      "model": "best-working-installed-local-model",
+      "purpose": [
+        "continue when a preferred model does not fit hardware",
+        "avoid blocking revenue work on model installation"
+      ]
+    }
+  },
+  "workflow": [
+    "planner",
+    "coder",
+    "deterministic-tests",
+    "reviewer",
+    "fixer",
+    "deterministic-tests",
+    "human-qa"
+  ],
+  "installPolicy": [
+    "Never pull a multi-GB model automatically.",
+    "Detect GPU, VRAM, RAM, Ollama and installed models first.",
+    "Benchmark one candidate at a time on representative ForgeHQ tasks.",
+    "Prefer the smallest model that passes the acceptance suite at useful speed.",
+    "Keep a known-good fallback so a new model cannot stop paid work."
+  ]
+}
