@@ -53,25 +53,35 @@ foreach ($gpu in $gpuRows) {
     if ($gpu.VramGB -and $gpu.VramGB -gt $maxVram) { $maxVram = $gpu.VramGB }
 }
 
-Write-Host "`nForgeHQ candidates (model file size, not total runtime memory):" -ForegroundColor Cyan
-$candidates = @(
-    [pscustomobject]@{ Role='Planner'; Model='qwen3.8:27b-q4_K_M'; ModelSizeGB=18; Context='256K' },
-    [pscustomobject]@{ Role='Coder'; Model='qwen3-coder:30b'; ModelSizeGB=19; Context='256K' },
-    [pscustomobject]@{ Role='Reviewer'; Model='gpt-oss:20b'; ModelSizeGB=14; Context='128K' }
+Write-Host "`nForgeHQ core candidates (model file size, not total runtime memory):" -ForegroundColor Cyan
+$core = @(
+    [pscustomobject]@{ Role='Router'; Model='lfm2.5:8b'; ModelSizeGB=5.2; Context='125K' },
+    [pscustomobject]@{ Role='Planner'; Model='qwen3:8b'; ModelSizeGB=5.2; Context='40K' },
+    [pscustomobject]@{ Role='Coder'; Model='ornith:9b'; ModelSizeGB=5.6; Context='256K' },
+    [pscustomobject]@{ Role='Vision'; Model='qwen3-vl:8b'; ModelSizeGB=6.1; Context='256K' }
 )
-$candidates | Format-Table -AutoSize
+$core | Format-Table -AutoSize
+
+Write-Host "Upgrade candidates:" -ForegroundColor Cyan
+$upgrade = @(
+    [pscustomobject]@{ Model='qwen3:14b'; ModelSizeGB=9.3; Note='Try only after core models benchmark well' },
+    [pscustomobject]@{ Model='gpt-oss:20b'; ModelSizeGB=14; Note='Needs substantial memory headroom' },
+    [pscustomobject]@{ Model='qwen3.8:27b-q4_K_M'; ModelSizeGB=18; Note='Stronger hardware tier' },
+    [pscustomobject]@{ Model='qwen3-coder:30b'; ModelSizeGB=19; Note='Stronger hardware tier' }
+)
+$upgrade | Format-Table -AutoSize
 
 Write-Host "Fit guidance:" -ForegroundColor Cyan
-if ($maxVram -ge 24) {
-    Write-Host "- GPU VRAM looks suitable for benchmarking all three candidates one at a time."
-} elseif ($maxVram -ge 16) {
-    Write-Host "- Start by benchmarking gpt-oss:20b. Qwen 27B/30B may require RAM offload and can be slower."
-} elseif ($totalRamGb -ge 32) {
-    Write-Host "- Heavy local models may run with CPU/RAM offload, but speed could be poor. Benchmark before switching defaults."
+if ($maxVram -ge 24 -and $totalRamGb -ge 32) {
+    Write-Host "- Core models should be easy benchmark targets; the 18-19GB upgrade tier is also worth testing one at a time."
+} elseif ($totalRamGb -ge 16 -or $maxVram -ge 8) {
+    Write-Host "- Benchmark lfm2.5:8b and ornith:9b first. They are the preferred ForgeHQ starting pair."
+    Write-Host "- Add qwen3:8b for independent planning/review and qwen3-vl:8b only when visual work is useful."
+    Write-Host "- Do not make the 14-19GB models defaults until measured speed and memory headroom are acceptable."
 } else {
-    Write-Host "- Keep the current smaller local fallback and use hybrid/cloud escalation for heavy jobs unless benchmarks prove otherwise."
+    Write-Host "- Keep the installed small fallback and use hybrid/cloud escalation for heavy jobs unless a core candidate proves usable."
 }
 
 Write-Host "`nNext command is intentionally NOT run automatically:" -ForegroundColor Yellow
 Write-Host "  ollama pull <model>"
-Write-Host "Choose one candidate only after reviewing this probe."
+Write-Host "Benchmark one core candidate at a time before installing larger models."
