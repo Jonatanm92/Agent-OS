@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-24",
+  "northStar": "real_SEK_per_owner_hour",
+  "tracks": [
+    {
+      "id": "paid-fixes-automation",
+      "name": "Paid Fixes & Automation",
+      "status": "ACTIVE",
+      "priority": 1,
+      "commercialScore": 94,
+      "goal": "Convert existing buyer intent into the first paid ForgeHQ-assisted coding deliveries.",
+      "targetShapes": [
+        "API and webhook repair",
+        "CSV/Excel/PDF transformation or extraction",
+        "small deterministic Python/Node utilities",
+        "bounded WordPress/WooCommerce fixes",
+        "n8n/Sheets/CRM workflow implementation",
+        "small internal tools with objective acceptance tests"
+      ],
+      "hardGates": [
+        "A real current buyer or listing exists.",
+        "Scope is bounded enough to estimate and test before delivery.",
+        "The owner can describe experience truthfully without pretending to be a senior specialist.",
+        "ForgeHQ can perform substantial production work with human QA.",
+        "No ToS evasion, stealth scraping, credential abuse or high-stakes regulated decision-making is required.",
+        "A deterministic or observable acceptance test can be written before implementation."
+      ],
+      "reject": [
+        "generic full-site build",
+        "unbounded retainers before proof",
+        "live emergency access as the only debugging method",
+        "roles requiring years of experience or credentials the owner does not have",
+        "work dependent on bypassing platform security controls"
+      ],
+      "execution": [
+        "capture buyer requirement",
+        "score truth-fit and delivery risk",
+        "freeze acceptance test",
+        "plan",
+        "implement in isolated workspace",
+        "run tests",
+        "independent model review",
+        "fix and rerun",
+        "human QA",
+        "proposal/delivery human gate"
+      ]
+    },
+    {
+      "id": "wordpress-micro-products",
+      "name": "WordPress Micro-Products",
+      "status": "ACTIVE_VALIDATION",
+      "priority": 2,
+      "commercialScore": 88,
+      "goal": "Turn repeated verified pain into small reusable assets with marketplace distribution and paid expansion.",
+      "hardGates": [
+        "Current install/search demand or direct willingness-to-pay evidence exists.",
+        "The exact job is not already solved well by a maintained free plugin.",
+        "The first wedge is narrow, useful and independently testable.",
+        "A paid expansion is credible without crippling the free version.",
+        "Security and support burden are manageable.",
+        "No implementation begins while the candidate is only an idea."
+      ],
+      "currentCandidate": {
+        "id": "woo-repeat-customer-context",
+        "status": "VALIDATE_NOT_BUILD",
+        "buyer": "WooCommerce operators who need repeat-customer context while handling an order",
+        "evidence": "There is direct willingness-to-pay evidence for onsite customer summary information, but existing plugins already provide generic totals, AOV, first-order date and average interval metrics.",
+        "requiredWedge": "Operational context inside the order workflow rather than another analytics dashboard: repeat/reorder cadence, product progression, intervention flags and relevant history where the operator is already working.",
+        "killCondition": "Kill or reposition if a maintained free plugin already solves the same order-screen workflow well, or if no repeated buyer evidence can be found."
+      },
+      "execution": [
+        "collect exact buyer complaints and feature requests",
+        "map maintained competitors feature-by-feature",
+        "identify unsolved workflow wedge",
+        "define free and paid boundary",
+        "write acceptance tests",
+        "only then authorize MVP",
+        "security review",
+        "human QA",
+        "submission human gate"
+      ]
+    }
+  ]
+}
