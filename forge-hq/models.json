@@ -1,0 +1,123 @@
+{
+  "version": 2,
+  "updatedAt": "2026-08-24",
+  "policy": {
+    "preferLocal": true,
+    "autoDownload": false,
+    "runHeavyModelsOneAtATime": true,
+    "benchmarkBeforeDefaultSwitch": true,
+    "cloudEscalation": "manual-or-policy-controlled",
+    "rule": "Start with models that fit ordinary consumer hardware. Bigger open models remain an upgrade tier, not a prerequisite for revenue work."
+  },
+  "routes": {
+    "router": {
+      "model": "ollama/lfm2.5:8b",
+      "estimatedModelSizeGB": 5.2,
+      "context": "125K",
+      "purpose": [
+        "fast tool routing",
+        "short planning loops",
+        "task classification",
+        "cheap local orchestration"
+      ],
+      "hardwareFit": "first-benchmark-candidate"
+    },
+    "planner": {
+      "model": "ollama/qwen3:8b",
+      "estimatedModelSizeGB": 5.2,
+      "context": "40K",
+      "purpose": [
+        "task decomposition",
+        "requirements analysis",
+        "implementation planning",
+        "independent reasoning"
+      ],
+      "hardwareFit": "first-benchmark-candidate"
+    },
+    "coder": {
+      "model": "ollama/ornith:9b",
+      "estimatedModelSizeGB": 5.6,
+      "context": "256K",
+      "purpose": [
+        "agentic software engineering",
+        "repository exploration",
+        "implementation",
+        "multi-file edits",
+        "test generation",
+        "terminal and tool-driven coding"
+      ],
+      "hardwareFit": "first-benchmark-candidate"
+    },
+    "vision": {
+      "model": "ollama/qwen3-vl:8b",
+      "estimatedModelSizeGB": 6.1,
+      "context": "256K",
+      "purpose": [
+        "UI and screenshot understanding",
+        "visual QA",
+        "image-to-code assistance"
+      ],
+      "hardwareFit": "optional-after-core-benchmarks"
+    },
+    "reviewer": {
+      "model": "ollama/lfm2.5:8b",
+      "estimatedModelSizeGB": 5.2,
+      "context": "125K",
+      "purpose": [
+        "independent failure analysis",
+        "acceptance-test review",
+        "scope check",
+        "structured verdicts"
+      ],
+      "hardwareFit": "first-benchmark-candidate",
+      "rule": "Do not use the same model instance/output as both author and sole reviewer when deterministic tests are unavailable."
+    },
+    "fallback": {
+      "model": "ollama/qwen2.5-coder:7b",
+      "purpose": [
+        "known small coding fallback",
+        "avoid blocking revenue work if a new candidate fails"
+      ]
+    }
+  },
+  "upgradeTier": [
+    {
+      "model": "ollama/qwen3:14b",
+      "estimatedModelSizeGB": 9.3,
+      "role": "stronger local reasoning/coding candidate when measured speed is acceptable"
+    },
+    {
+      "model": "ollama/gpt-oss:20b",
+      "estimatedModelSizeGB": 14,
+      "role": "larger local reasoning/reviewer candidate; benchmark only with adequate memory headroom"
+    },
+    {
+      "model": "ollama/qwen3.8:27b-q4_K_M",
+      "estimatedModelSizeGB": 18,
+      "role": "high-capability planner/research candidate for materially stronger hardware"
+    },
+    {
+      "model": "ollama/qwen3-coder:30b",
+      "estimatedModelSizeGB": 19,
+      "role": "high-capability coding candidate for materially stronger hardware"
+    }
+  ],
+  "workflow": [
+    "router",
+    "planner",
+    "coder",
+    "deterministic-tests",
+    "reviewer",
+    "fixer",
+    "deterministic-tests",
+    "human-qa"
+  ],
+  "installPolicy": [
+    "Never pull a multi-GB model automatically.",
+    "Detect GPU, VRAM, RAM, Ollama and installed models first.",
+    "Benchmark the 5-6GB core candidates before any 9GB+ model.",
+    "Benchmark one candidate at a time on representative ForgeHQ tasks.",
+    "Prefer the smallest model that passes the acceptance suite at useful speed.",
+    "Keep qwen2.5-coder:7b as a known small fallback until a replacement wins the benchmark."
+  ]
+}
