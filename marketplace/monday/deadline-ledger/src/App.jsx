@@ -133,7 +133,7 @@ function ReasonEditor({ change, onSave, onCancel, saving }) {
   );
 }
 
-function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, saving }) {
+function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, saving, readOnly }) {
   return (
     <article className={`change-row ${change.needsReason ? 'change-row--missing' : ''}`}>
       <div className="change-row__main">
@@ -156,7 +156,7 @@ function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, savi
         {change.needsReason ? (
           <>
             <span className="badge badge--danger">Reason missing</span>
-            {!isEditing && <button className="button button--small" type="button" onClick={onEdit}>Add reason</button>}
+            {!readOnly && !isEditing && <button className="button button--small" type="button" onClick={onEdit}>Add reason</button>}
           </>
         ) : (
           <>
@@ -165,12 +165,12 @@ function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, savi
               {change.reasonCategory && <strong>{change.reasonCategory}: </strong>}
               {change.reason}
             </div>
-            {!isEditing && <button className="link-button" type="button" onClick={onEdit}>Edit</button>}
+            {!readOnly && !isEditing && <button className="link-button" type="button" onClick={onEdit}>Edit</button>}
           </>
         )}
       </div>
 
-      {isEditing && (
+      {!readOnly && isEditing && (
         <ReasonEditor
           change={change}
           onSave={onSave}
@@ -196,6 +196,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [lastLoadedAt, setLastLoadedAt] = useState(null);
 
+  const isViewOnly = Boolean(context?.user?.isViewOnly);
   const changes = useMemo(() => buildDeadlineChanges(logs, reasons), [logs, reasons]);
   const summary = useMemo(() => summarizeChanges(changes), [changes]);
   const visibleChanges = useMemo(() => filterChanges(changes, filter, search), [changes, filter, search]);
@@ -278,6 +279,11 @@ export default function App() {
   }, [loadBoard, loadReasons]);
 
   const saveReason = useCallback(async (change, payload) => {
+    if (isViewOnly) {
+      setError('View-only users can inspect deadline governance but cannot record or edit reasons.');
+      return;
+    }
+
     const entry = {
       reason: payload.reason,
       category: payload.category,
@@ -295,13 +301,20 @@ export default function App() {
       const savedReasons = await saveReasonWithConcurrency(change.id, entry);
       setReasons(savedReasons);
       setEditingId('');
+      if (!change.reason) {
+        try {
+          await monday.execute('valueCreatedForUser');
+        } catch {
+          // Value-created analytics must never block the core customer action.
+        }
+      }
     } catch (err) {
       setReasons(previousReasons);
       setError(err?.message || 'Could not save the reason. Refresh and try again.');
     } finally {
       setSavingId('');
     }
-  }, [context, reasons]);
+  }, [context, isViewOnly, reasons]);
 
   const refresh = async () => {
     await loadReasons();
@@ -329,6 +342,11 @@ export default function App() {
         <span className="scope-note">First 500 activity rows · Date + Timeline changes</span>
       </section>
 
+      {isViewOnly && (
+        <div className="viewer-notice">
+          You have view-only access. You can review deadline changes and recorded reasons, but you cannot add or edit a reason.
+        </div>
+      )}
       {error && <div className="error-box">{error}</div>}
 
       <section className="metrics" aria-label="Deadline governance summary">
@@ -372,6 +390,7 @@ export default function App() {
             onCancel={() => setEditingId('')}
             onSave={(payload) => saveReason(change, payload)}
             saving={savingId === change.id}
+            readOnly={isViewOnly}
           />
         ))}
       </section>
