@@ -167,11 +167,11 @@ The current MVP is intentionally built around that wedge.
 | Competition | 13/20 | Adjacent history/report apps exist; focused change-control wedge remains distinguishable. |
 | Build feasibility | 15/15 | Board logs + storage support MVP without external backend. |
 | Recurring-value potential | 8/10 | Governance value repeats on active project boards. |
-| Support/security burden | 6/10 | Read-heavy MVP is low risk; later background capture raises burden. |
-| Monetization evidence | 6/5 | Adjacent narrow apps are paid and continue to acquire installs. |
+| Support/security burden | 7/10 | Read-heavy MVP is low risk; later background capture raises burden. |
+| Monetization evidence | 5/5 | Adjacent narrow apps are paid and continue to acquire installs. |
 | **Total** | **84/100** | GO to live MVP test. |
 
-The last row intentionally caps the overall decision rather than treating competitor revenue as proven revenue for this exact wedge.
+The score reflects evidence for proceeding to a live product test, not proven revenue for this exact wedge.
 
 ## First pricing hypothesis
 
