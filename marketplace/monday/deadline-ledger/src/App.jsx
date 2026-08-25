@@ -8,6 +8,7 @@ monday.setApiVersion('2026-07');
 
 const REASONS_KEY = 'deadline-ledger-reasons-v1';
 const REASON_CATEGORIES = ['Scope', 'Client', 'Dependency', 'Resource', 'Risk', 'Correction', 'Other'];
+const STORAGE_RETRY_LIMIT = 3;
 
 function formatDateTime(value) {
   if (!value) return 'Unknown time';
@@ -21,6 +22,63 @@ function formatDateTime(value) {
   }
 }
 
+function decodeReasons(value) {
+  if (!value) return {};
+  if (typeof value === 'object' && !Array.isArray(value)) return value;
+  if (typeof value !== 'string') return {};
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function readReasonStore() {
+  const result = await monday.storage.instance.getItem(REASONS_KEY);
+  return {
+    reasons: decodeReasons(result?.data?.value),
+    version: result?.data?.version || '',
+  };
+}
+
+function isVersionConflict(errorLike) {
+  const text = String(
+    errorLike?.data?.error || errorLike?.message || errorLike?.error || errorLike || '',
+  ).toLowerCase();
+  return text.includes('version mismatch');
+}
+
+async function saveReasonWithConcurrency(changeId, entry) {
+  for (let attempt = 0; attempt < STORAGE_RETRY_LIMIT; attempt += 1) {
+    const current = await readReasonStore();
+    const next = {
+      ...current.reasons,
+      [changeId]: entry,
+    };
+
+    try {
+      const options = current.version ? { previous_version: current.version } : undefined;
+      const result = await monday.storage.instance.setItem(
+        REASONS_KEY,
+        JSON.stringify(next),
+        options,
+      );
+
+      if (result?.data?.success === false) {
+        if (isVersionConflict(result)) continue;
+        throw new Error(result?.data?.error || 'Storage write failed.');
+      }
+
+      return next;
+    } catch (error) {
+      if (isVersionConflict(error) && attempt < STORAGE_RETRY_LIMIT - 1) continue;
+      throw error;
+    }
+  }
+  throw new Error('Reason storage changed repeatedly. Refresh and try again.');
+}
+
 function Metric({ label, value, detail, danger = false }) {
   return (
     <div className={`metric ${danger ? 'metric--danger' : ''}`}>
@@ -31,10 +89,10 @@ function Metric({ label, value, detail, danger = false }) {
   );
 }
 
-function ReasonEditor({ change, onSave, onCancel }) {
+function ReasonEditor({ change, onSave, onCancel, saving }) {
   const [reason, setReason] = useState(change.reason || '');
   const [category, setCategory] = useState(change.reasonCategory || '');
-  const canSave = reason.trim().length >= 3;
+  const canSave = reason.trim().length >= 3 && !saving;
 
   return (
     <div className="reason-editor" role="dialog" aria-label="Record deadline change reason">
@@ -44,7 +102,7 @@ function ReasonEditor({ change, onSave, onCancel }) {
       </div>
       <label>
         Category
-        <select value={category} onChange={(event) => setCategory(event.target.value)}>
+        <select value={category} onChange={(event) => setCategory(event.target.value)} disabled={saving}>
           <option value="">Choose a category</option>
           {REASON_CATEGORIES.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
@@ -57,24 +115,25 @@ function ReasonEditor({ change, onSave, onCancel }) {
           onChange={(event) => setReason(event.target.value)}
           placeholder="Example: Client approval moved from Friday to Tuesday."
           rows={3}
+          disabled={saving}
         />
       </label>
       <div className="reason-editor__actions">
-        <button type="button" className="button button--ghost" onClick={onCancel}>Cancel</button>
+        <button type="button" className="button button--ghost" onClick={onCancel} disabled={saving}>Cancel</button>
         <button
           type="button"
           className="button button--primary"
           disabled={!canSave}
           onClick={() => onSave({ reason: reason.trim(), category })}
         >
-          Save reason
+          {saving ? 'Saving…' : 'Save reason'}
         </button>
       </div>
     </div>
   );
 }
 
-function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel }) {
+function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, saving }) {
   return (
     <article className={`change-row ${change.needsReason ? 'change-row--missing' : ''}`}>
       <div className="change-row__main">
@@ -111,7 +170,14 @@ function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel }) {
         )}
       </div>
 
-      {isEditing && <ReasonEditor change={change} onSave={onSave} onCancel={onCancel} />}
+      {isEditing && (
+        <ReasonEditor
+          change={change}
+          onSave={onSave}
+          onCancel={onCancel}
+          saving={saving}
+        />
+      )}
     </article>
   );
 }
@@ -125,6 +191,7 @@ export default function App() {
   const [filter, setFilter] = useState('missing');
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState('');
+  const [savingId, setSavingId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastLoadedAt, setLastLoadedAt] = useState(null);
@@ -135,9 +202,8 @@ export default function App() {
 
   const loadReasons = useCallback(async () => {
     try {
-      const result = await monday.storage.instance.getItem(REASONS_KEY);
-      const stored = result?.data?.value;
-      setReasons(stored && typeof stored === 'object' ? stored : {});
+      const stored = await readReasonStore();
+      setReasons(stored.reasons);
     } catch {
       setReasons({});
     }
@@ -212,26 +278,35 @@ export default function App() {
   }, [loadBoard, loadReasons]);
 
   const saveReason = useCallback(async (change, payload) => {
-    const nextReasons = {
-      ...reasons,
-      [change.id]: {
-        reason: payload.reason,
-        category: payload.category,
-        recordedAt: new Date().toISOString(),
-        recordedBy: String(context?.user?.id || context?.userId || ''),
-      },
+    const entry = {
+      reason: payload.reason,
+      category: payload.category,
+      recordedAt: new Date().toISOString(),
+      recordedBy: String(context?.user?.id || context?.userId || ''),
     };
-    setReasons(nextReasons);
-    setEditingId('');
+    const previousReasons = reasons;
+    const optimisticReasons = { ...reasons, [change.id]: entry };
+
+    setReasons(optimisticReasons);
+    setSavingId(change.id);
+    setError('');
+
     try {
-      await monday.storage.instance.setItem(REASONS_KEY, nextReasons);
+      const savedReasons = await saveReasonWithConcurrency(change.id, entry);
+      setReasons(savedReasons);
+      setEditingId('');
     } catch (err) {
-      setReasons(reasons);
-      setError(err?.message || 'Could not save the reason. Try again.');
+      setReasons(previousReasons);
+      setError(err?.message || 'Could not save the reason. Refresh and try again.');
+    } finally {
+      setSavingId('');
     }
   }, [context, reasons]);
 
-  const refresh = () => context?.boardId && loadBoard(context.boardId);
+  const refresh = async () => {
+    await loadReasons();
+    if (context?.boardId) await loadBoard(context.boardId);
+  };
 
   return (
     <main className="app-shell">
@@ -296,6 +371,7 @@ export default function App() {
             onEdit={() => setEditingId(change.id)}
             onCancel={() => setEditingId('')}
             onSave={(payload) => saveReason(change, payload)}
+            saving={savingId === change.id}
           />
         ))}
       </section>
