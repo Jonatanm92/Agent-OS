@@ -1,0 +1,35 @@
+name: Deadline Ledger CI
+
+on:
+  push:
+    branches:
+      - forge/deadline-ledger-mvp
+    paths:
+      - 'marketplace/monday/deadline-ledger/**'
+      - '.github/workflows/deadline-ledger-ci.yml'
+  pull_request:
+    paths:
+      - 'marketplace/monday/deadline-ledger/**'
+      - '.github/workflows/deadline-ledger-ci.yml'
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: marketplace/monday/deadline-ledger
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: marketplace/monday/deadline-ledger/package-lock.json
+      - name: Install
+        run: npm install
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
