@@ -31,18 +31,41 @@ Public monday community evidence includes teams explicitly asking to:
 
 The initial MVP audits native Date/Timeline edits after they happen and highlights missing governance context.
 
+## Live QA status — 2026-08-25
+
+The MVP has progressed beyond synthetic-only testing:
+
+- a private monday developer app named Deadline Ledger exists
+- the app has only the MVP scopes `boards:read` and `users:read`
+- a private QA board with Date and Timeline columns was created
+- controlled live changes were generated: three Date changes and one Timeline change
+- the exact GraphQL query used by the app returned those four live changes successfully
+- live QA discovered that monday Activity Log represents Timeline columns as `column_type: "timerange"`; the parser now accepts and normalizes that payload
+- the private app was promoted, installed and attached to the QA board as a real Board View
+- a temporary standalone QA surface is attached for iframe/runtime verification
+
+Still intentionally unverified:
+
+- visual iframe rendering in the end-user monday UI
+- `monday.storage.instance` reason save + reload persistence in the actual Board View runtime
+- viewer/guest behavior
+- production hosting
+
+The draft PR remains unmerged until those runtime gates are closed.
+
 ## MVP boundary
 
 ### Included now
 
 1. Board View UI.
 2. Read the current board's Activity Log through the monday GraphQL API.
-3. Parse `update_column_value` events where `column_type` is `date` or `timeline`.
-4. Parse old/new values defensively from monday's JSON-string `data` payload.
-5. Count repeated changes per item + deadline field.
-6. Persist reason/category against the immutable activity event id with `monday.storage.instance`.
-7. Mobile-width responsive layout.
-8. Deterministic parser/metric tests.
+3. Parse `update_column_value` events where `column_type` is `date`, `timerange`, or a compatible `timeline` payload.
+4. Normalize `timerange` to the product concept `timeline`.
+5. Parse old/new values defensively from monday's JSON-string `data` payload.
+6. Count repeated changes per item + deadline field.
+7. Persist reason/category against the immutable activity event id with `monday.storage.instance`.
+8. Mobile-width responsive layout.
+9. Deterministic parser/metric tests including a regression fixture derived from the live monday Timeline payload shape.
 
 ### Explicitly not claimed yet
 
@@ -104,7 +127,7 @@ query DeadlineLedgerActivity($boardId: [ID!]) {
 }
 ```
 
-monday's Activity Log `data` is a JSON string and its payload varies by column type. The parser therefore treats the payload as untrusted/variable data and only extracts fields needed for Date/Timeline changes.
+monday's Activity Log `data` is a JSON string and its payload varies by column type. Live QA confirmed Date uses `column_type: "date"` and Timeline uses `column_type: "timerange"` in the tested account. The parser treats the payload as variable data and extracts only fields required for deadline governance.
 
 ## Local development
 
@@ -117,44 +140,26 @@ npm test
 npm run dev
 ```
 
-For actual monday embedding, follow the current monday app CLI flow:
-
-```bash
-npm i -g @mondaycom/apps-cli
-mapps init -t YOUR_TOKEN
-mapps tunnel:create -p 5173 -a YOUR_APP_ID
-```
-
-In Developer Center:
-
-1. Create an app named `Deadline Ledger` (or a replacement unique name if unavailable).
-2. Add a **Board View** feature.
-3. Add `boards:read` and `users:read` scopes.
-4. Point the feature URL to the secure tunnel URL during development.
-5. Add the view to a test board containing Date and Timeline columns.
-6. Change those dates several times and verify that Deadline Ledger shows the correct old/new values and counts.
-
-For production, build and upload/host using the current monday app deployment flow rather than leaving a development tunnel in place.
-
 ## Acceptance test for v0.1
 
-Create a monday developer test board with two items and one Date column:
+On the private developer QA board:
 
-1. Set Item A to 2026-08-25.
-2. Move Item A to 2026-08-28.
-3. Move Item A again to 2026-09-01.
-4. Move Item B once.
-5. Open Deadline Ledger and refresh.
+1. Move the same Date value twice on one item.
+2. Move a Date value once on a second item.
+3. Move one Timeline range.
+4. Open Deadline Ledger and refresh.
 
 Pass criteria:
 
-- Item A shows two deadline-change events in correct reverse chronology.
-- Item A's latest row shows `change #2`.
-- Item B shows `change #1`.
-- Every unreasoned change is flagged `Reason missing`.
-- Recording a reason removes that event from the Missing Reason filter after save.
-- Refreshing the board view preserves the recorded reason.
-- Non-Date/Timeline activity does not appear.
+- the first item's latest Date row shows `change #2`
+- the second item shows `change #1`
+- the Timeline change appears with the correct old and new range
+- every unreasoned change is flagged `Reason missing`
+- recording a reason removes that event from the Missing Reason filter after save
+- refreshing the Board View preserves the recorded reason
+- non-Date/Timeline activity does not appear
+
+The API/read portion of this acceptance test has passed against live monday data. The iframe/storage portion remains the final browser-runtime gate.
 
 ## Commercial test after functional QA
 
@@ -162,12 +167,13 @@ Do **not** submit to Marketplace purely because the code works.
 
 Before submission:
 
-1. Test with at least three realistic project boards and 100+ mixed activity rows.
-2. Verify Date and Timeline payload shapes against live monday data.
+1. Close the iframe + instance-storage QA gate.
+2. Test with at least three realistic project boards and 100+ mixed activity rows.
 3. Confirm viewer/guest behavior and permission errors.
-4. Search the current Marketplace again for functional duplication.
-5. Prepare privacy policy, Terms of Service and support route required by Marketplace review.
-6. Use monday-native monetization for any paid plan.
+4. Replace the temporary QA host with production-grade hosting.
+5. Re-run the current Marketplace search for functional duplication.
+6. Prepare privacy policy, Terms of Service and support route required by Marketplace review.
+7. Use monday-native monetization for any paid plan.
 
 Initial pricing hypothesis, to validate rather than assume:
 
