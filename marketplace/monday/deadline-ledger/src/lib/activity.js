@@ -47,21 +47,22 @@ export function isDeadlineChange(log) {
   const payload = safeJson(log.data);
   if (!payload) return false;
   const type = String(payload.column_type || '').toLowerCase();
-  return type === 'date' || type === 'timeline';
+  return type === 'date' || type === 'timeline' || type === 'timerange';
 }
 
 export function parseDeadlineChange(log) {
   if (!isDeadlineChange(log)) return null;
   const payload = safeJson(log.data);
   const timestamp = activityTimestampToDate(log.created_at);
+  const rawType = String(payload.column_type ?? '').toLowerCase();
   return {
-    id: String(log.id),
+    id: String(log.id ?? `${payload.board_id ?? ''}:${payload.pulse_id ?? ''}:${payload.column_id ?? ''}:${log.created_at ?? ''}`),
     boardId: String(payload.board_id ?? ''),
     itemId: String(payload.pulse_id ?? payload.pulse?.id ?? ''),
     itemName: String(payload.pulse_name ?? payload.pulse?.name ?? 'Untitled item'),
     columnId: String(payload.column_id ?? ''),
     columnTitle: String(payload.column_title ?? 'Date'),
-    columnType: String(payload.column_type ?? ''),
+    columnType: rawType === 'timerange' ? 'timeline' : rawType,
     previousValue: displayValue(payload, 'previous_value'),
     nextValue: displayValue(payload, 'value'),
     userId: String(log.user_id ?? ''),
