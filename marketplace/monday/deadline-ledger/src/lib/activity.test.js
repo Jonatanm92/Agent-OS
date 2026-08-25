@@ -39,6 +39,28 @@ test('parses date-column old and new values', () => {
   assert.equal(change.nextValue, '2026-08-28');
 });
 
+test('parses live monday timerange payload as timeline', () => {
+  const change = parseDeadlineChange({
+    id: 'timeline-live',
+    event: 'update_column_value',
+    user_id: '114335000',
+    created_at: '17876535066675384',
+    data: JSON.stringify({
+      board_id: 5102872380,
+      pulse_id: 3184341309,
+      pulse_name: 'Project Alpha',
+      column_id: 'timerange_mm6j9vnr',
+      column_title: 'Timeline',
+      column_type: 'timerange',
+      previous_value: { from: '2026-08-25', to: '2026-08-29' },
+      value: { from: '2026-08-26', to: '2026-08-30' },
+    }),
+  });
+  assert.equal(change.columnType, 'timeline');
+  assert.equal(change.previousValue, '2026-08-25 → 2026-08-29');
+  assert.equal(change.nextValue, '2026-08-26 → 2026-08-30');
+});
+
 test('ignores non-date column activity', () => {
   const change = parseDeadlineChange({
     id: 'x',
