@@ -9,6 +9,8 @@ monday.setApiVersion('2026-07');
 const REASONS_KEY = 'deadline-ledger-reasons-v1';
 const REASON_CATEGORIES = ['Scope', 'Client', 'Dependency', 'Resource', 'Risk', 'Correction', 'Other'];
 const STORAGE_RETRY_LIMIT = 3;
+const ACTIVITY_PAGE_SIZE = 500;
+const MAX_ACTIVITY_PAGES = 10;
 
 function formatDateTime(value) {
   if (!value) return 'Unknown time';
@@ -77,6 +79,46 @@ async function saveReasonWithConcurrency(changeId, entry) {
     }
   }
   throw new Error('Reason storage changed repeatedly. Refresh and try again.');
+}
+
+async function fetchBoardActivity(boardId) {
+  const query = `query DeadlineLedgerActivity($boardId: [ID!], $page: Int!) {
+    boards(ids: $boardId) {
+      id
+      name
+      activity_logs(limit: ${ACTIVITY_PAGE_SIZE}, page: $page) {
+        id
+        event
+        data
+        user_id
+        created_at
+      }
+    }
+  }`;
+
+  const logs = [];
+  let boardName = 'Current board';
+  let truncated = false;
+
+  for (let page = 1; page <= MAX_ACTIVITY_PAGES; page += 1) {
+    const result = await monday.api(query, {
+      variables: { boardId: [String(boardId)], page },
+    });
+    const board = result?.data?.boards?.[0];
+    if (!board) throw new Error('This board could not be read. Check app permissions and board access.');
+
+    boardName = board.name || boardName;
+    const pageLogs = board.activity_logs || [];
+    logs.push(...pageLogs);
+
+    if (pageLogs.length < ACTIVITY_PAGE_SIZE) {
+      truncated = false;
+      break;
+    }
+    if (page === MAX_ACTIVITY_PAGES) truncated = true;
+  }
+
+  return { boardName, logs, truncated };
 }
 
 function Metric({ label, value, detail, danger = false }) {
@@ -195,6 +237,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastLoadedAt, setLastLoadedAt] = useState(null);
+  const [activityTruncated, setActivityTruncated] = useState(false);
 
   const isViewOnly = Boolean(context?.user?.isViewOnly);
   const changes = useMemo(() => buildDeadlineChanges(logs, reasons), [logs, reasons]);
@@ -231,28 +274,11 @@ export default function App() {
     setLoading(true);
     setError('');
     try {
-      const result = await monday.api(
-        `query DeadlineLedgerActivity($boardId: [ID!]) {
-          boards(ids: $boardId) {
-            id
-            name
-            activity_logs(limit: 500, page: 1) {
-              id
-              event
-              data
-              user_id
-              created_at
-            }
-          }
-        }`,
-        { variables: { boardId: [String(boardId)] } },
-      );
-      const board = result?.data?.boards?.[0];
-      if (!board) throw new Error('This board could not be read. Check app permissions and board access.');
-      const nextLogs = board.activity_logs || [];
-      setBoardName(board.name || 'Current board');
-      setLogs(nextLogs);
-      await loadUsers(nextLogs.map((log) => String(log.user_id || '')));
+      const activity = await fetchBoardActivity(boardId);
+      setBoardName(activity.boardName);
+      setLogs(activity.logs);
+      setActivityTruncated(activity.truncated);
+      await loadUsers(activity.logs.map((log) => String(log.user_id || '')));
       setLastLoadedAt(new Date());
     } catch (err) {
       setError(err?.message || 'Deadline Ledger could not load this board.');
@@ -339,7 +365,11 @@ export default function App() {
           <strong>{boardName}</strong>
           <span>{lastLoadedAt ? `Loaded ${formatDateTime(lastLoadedAt.toISOString())}` : 'Waiting for board data'}</span>
         </div>
-        <span className="scope-note">First 500 activity rows · Date + Timeline changes</span>
+        <span className="scope-note">
+          {activityTruncated
+            ? `Newest ${ACTIVITY_PAGE_SIZE * MAX_ACTIVITY_PAGES} activity rows checked · older history not loaded`
+            : `${logs.length} activity rows checked · Date + Timeline changes`}
+        </span>
       </section>
 
       {isViewOnly && (
