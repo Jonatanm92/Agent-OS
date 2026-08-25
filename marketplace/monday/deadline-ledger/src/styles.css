@@ -42,7 +42,8 @@ h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); line-height: 1; }
 .change-row,
 .metric,
 .error-box,
-.empty-state {
+.empty-state,
+.viewer-notice {
   background: #fff;
   border: 1px solid #e5e5ea;
   border-radius: 12px;
@@ -58,6 +59,7 @@ h1 { margin: 0; font-size: clamp(28px, 4vw, 44px); line-height: 1; }
 .board-strip > div { display: flex; gap: 10px; flex-wrap: wrap; }
 .board-strip span { color: #8a8b9a; }
 .scope-note { font-size: 13px; }
+.viewer-notice { margin-bottom: 12px; padding: 12px 14px; color: #55565f; background: #f8f8ff; border-color: #dadaff; line-height: 1.45; }
 
 .metrics {
   display: grid;
