@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import mondaySdk from 'monday-sdk-js';
 
 import { buildDeadlineChanges, filterChanges, summarizeChanges } from './lib/activity.js';
+import { createReasonEntry } from './lib/reasons.js';
 
 const monday = mondaySdk();
 monday.setApiVersion('2026-07');
@@ -12,6 +13,7 @@ const STORAGE_RETRY_LIMIT = 3;
 const ACTIVITY_PAGE_SIZE = 500;
 const MAX_ACTIVITY_PAGES = 10;
 const MAX_REASON_LENGTH = 1000;
+const USER_QUERY_CHUNK_SIZE = 100;
 
 function globalReasonsKey(boardId) {
   return `deadline-ledger:reasons:v2:board:${String(boardId)}`;
@@ -90,9 +92,10 @@ function isVersionConflict(errorLike) {
   return text.includes('version mismatch');
 }
 
-async function saveReasonWithConcurrency(boardId, changeId, entry) {
+async function saveReasonWithConcurrency(boardId, changeId, buildEntry) {
   for (let attempt = 0; attempt < STORAGE_RETRY_LIMIT; attempt += 1) {
     const current = await readReasonStore(boardId);
+    const entry = buildEntry(current.reasons[changeId] || {});
     const next = {
       ...current.reasons,
       [changeId]: entry,
@@ -312,13 +315,17 @@ export default function App() {
       setUsers({});
       return;
     }
+
     try {
-      const result = await monday.api(
-        `query DeadlineLedgerUsers($ids: [ID!]) { users(ids: $ids) { id name } }`,
-        { variables: { ids } },
-      );
       const next = {};
-      for (const user of result?.data?.users || []) next[String(user.id)] = user.name;
+      for (let index = 0; index < ids.length; index += USER_QUERY_CHUNK_SIZE) {
+        const chunk = ids.slice(index, index + USER_QUERY_CHUNK_SIZE);
+        const result = await monday.api(
+          `query DeadlineLedgerUsers($ids: [ID!]) { users(ids: $ids) { id name } }`,
+          { variables: { ids: chunk } },
+        );
+        for (const user of result?.data?.users || []) next[String(user.id)] = user.name;
+      }
       setUsers(next);
     } catch {
       setUsers({});
@@ -391,26 +398,23 @@ export default function App() {
 
     const now = new Date().toISOString();
     const currentUserId = String(context?.user?.id || context?.userId || '');
-    const previousEntry = reasons[change.id] || {};
-    const entry = {
-      ...previousEntry,
+    const entryArgs = {
       reason: trimmedReason,
       category: payload.category,
-      createdAt: previousEntry.createdAt || previousEntry.recordedAt || now,
-      createdBy: previousEntry.createdBy || previousEntry.recordedBy || currentUserId,
-      updatedAt: now,
-      updatedBy: currentUserId,
-      revision: Number(previousEntry.revision || 0) + 1,
+      userId: currentUserId,
+      now,
     };
+    const buildEntry = (storedPrevious) => createReasonEntry(storedPrevious, entryArgs);
+    const optimisticEntry = buildEntry(reasons[change.id] || {});
     const previousReasons = reasons;
-    const optimisticReasons = { ...reasons, [change.id]: entry };
+    const optimisticReasons = { ...reasons, [change.id]: optimisticEntry };
 
     setReasons(optimisticReasons);
     setSavingId(change.id);
     setError('');
 
     try {
-      const savedReasons = await saveReasonWithConcurrency(boardId, change.id, entry);
+      const savedReasons = await saveReasonWithConcurrency(boardId, change.id, buildEntry);
       setReasons(savedReasons);
       setEditingId('');
       if (!change.reason) {
