@@ -1,0 +1,42 @@
+name: Deadline Ledger Lockfile
+
+on:
+  push:
+    branches:
+      - forge/deadline-ledger-mvp
+    paths:
+      - '.github/workflows/deadline-ledger-lock.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate-lockfile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: marketplace/monday/deadline-ledger
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: forge/deadline-ledger-mvp
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generate package-lock
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Commit package-lock
+        working-directory: .
+        shell: bash
+        run: |
+          if git diff --quiet -- marketplace/monday/deadline-ledger/package-lock.json && git ls-files --error-unmatch marketplace/monday/deadline-ledger/package-lock.json >/dev/null 2>&1; then
+            echo "package-lock.json already committed and unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add marketplace/monday/deadline-ledger/package-lock.json
+          git commit -m "chore: lock Deadline Ledger dependencies"
+          git push origin HEAD:forge/deadline-ledger-mvp
