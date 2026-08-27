@@ -6,11 +6,15 @@ import { buildDeadlineChanges, filterChanges, summarizeChanges } from './lib/act
 const monday = mondaySdk();
 monday.setApiVersion('2026-07');
 
-const REASONS_KEY = 'deadline-ledger-reasons-v1';
+const LEGACY_INSTANCE_REASONS_KEY = 'deadline-ledger-reasons-v1';
 const REASON_CATEGORIES = ['Scope', 'Client', 'Dependency', 'Resource', 'Risk', 'Correction', 'Other'];
 const STORAGE_RETRY_LIMIT = 3;
 const ACTIVITY_PAGE_SIZE = 500;
 const MAX_ACTIVITY_PAGES = 10;
+
+function globalReasonsKey(boardId) {
+  return `deadline-ledger:reasons:v2:board:${String(boardId)}`;
+}
 
 function formatDateTime(value) {
   if (!value) return 'Unknown time';
@@ -36,12 +40,47 @@ function decodeReasons(value) {
   }
 }
 
-async function readReasonStore() {
-  const result = await monday.storage.instance.getItem(REASONS_KEY);
+function hasReasons(value) {
+  return Object.keys(value || {}).length > 0;
+}
+
+async function readGlobalReasonStore(boardId) {
+  const result = await monday.storage.getItem(globalReasonsKey(boardId));
   return {
     reasons: decodeReasons(result?.data?.value),
     version: result?.data?.version || '',
   };
+}
+
+async function migrateLegacyInstanceReasons(boardId, globalStore) {
+  if (hasReasons(globalStore.reasons)) return globalStore;
+
+  try {
+    const legacy = await monday.storage.instance.getItem(LEGACY_INSTANCE_REASONS_KEY);
+    const legacyReasons = decodeReasons(legacy?.data?.value);
+    if (!hasReasons(legacyReasons)) return globalStore;
+
+    const options = globalStore.version ? { previous_version: globalStore.version } : undefined;
+    const result = await monday.storage.setItem(
+      globalReasonsKey(boardId),
+      JSON.stringify(legacyReasons),
+      options,
+    );
+
+    if (result?.data?.success === false) return globalStore;
+    return {
+      reasons: legacyReasons,
+      version: result?.data?.version || '',
+    };
+  } catch {
+    // Legacy migration is best-effort only. Never block access to the new global store.
+    return globalStore;
+  }
+}
+
+async function readReasonStore(boardId) {
+  const globalStore = await readGlobalReasonStore(boardId);
+  return migrateLegacyInstanceReasons(boardId, globalStore);
 }
 
 function isVersionConflict(errorLike) {
@@ -51,9 +90,9 @@ function isVersionConflict(errorLike) {
   return text.includes('version mismatch');
 }
 
-async function saveReasonWithConcurrency(changeId, entry) {
+async function saveReasonWithConcurrency(boardId, changeId, entry) {
   for (let attempt = 0; attempt < STORAGE_RETRY_LIMIT; attempt += 1) {
-    const current = await readReasonStore();
+    const current = await readReasonStore(boardId);
     const next = {
       ...current.reasons,
       [changeId]: entry,
@@ -61,8 +100,8 @@ async function saveReasonWithConcurrency(changeId, entry) {
 
     try {
       const options = current.version ? { previous_version: current.version } : undefined;
-      const result = await monday.storage.instance.setItem(
-        REASONS_KEY,
+      const result = await monday.storage.setItem(
+        globalReasonsKey(boardId),
         JSON.stringify(next),
         options,
       );
@@ -244,9 +283,13 @@ export default function App() {
   const summary = useMemo(() => summarizeChanges(changes), [changes]);
   const visibleChanges = useMemo(() => filterChanges(changes, filter, search), [changes, filter, search]);
 
-  const loadReasons = useCallback(async () => {
+  const loadReasons = useCallback(async (boardId) => {
+    if (!boardId) {
+      setReasons({});
+      return;
+    }
     try {
-      const stored = await readReasonStore();
+      const stored = await readReasonStore(boardId);
       setReasons(stored.reasons);
     } catch {
       setReasons({});
@@ -274,7 +317,10 @@ export default function App() {
     setLoading(true);
     setError('');
     try {
-      const activity = await fetchBoardActivity(boardId);
+      const [activity] = await Promise.all([
+        fetchBoardActivity(boardId),
+        loadReasons(boardId),
+      ]);
       setBoardName(activity.boardName);
       setLogs(activity.logs);
       setActivityTruncated(activity.truncated);
@@ -285,11 +331,11 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [loadUsers]);
+  }, [loadReasons, loadUsers]);
 
   useEffect(() => {
     let active = true;
-    Promise.all([monday.get('context'), loadReasons()]).then(([contextResult]) => {
+    monday.get('context').then((contextResult) => {
       if (!active) return;
       const nextContext = contextResult?.data || {};
       setContext(nextContext);
@@ -302,11 +348,17 @@ export default function App() {
       }
     });
     return () => { active = false; };
-  }, [loadBoard, loadReasons]);
+  }, [loadBoard]);
 
   const saveReason = useCallback(async (change, payload) => {
     if (isViewOnly) {
       setError('View-only users can inspect deadline governance but cannot record or edit reasons.');
+      return;
+    }
+
+    const boardId = context?.boardId;
+    if (!boardId) {
+      setError('Could not determine the current board. Refresh and try again.');
       return;
     }
 
@@ -324,7 +376,7 @@ export default function App() {
     setError('');
 
     try {
-      const savedReasons = await saveReasonWithConcurrency(change.id, entry);
+      const savedReasons = await saveReasonWithConcurrency(boardId, change.id, entry);
       setReasons(savedReasons);
       setEditingId('');
       if (!change.reason) {
@@ -343,7 +395,6 @@ export default function App() {
   }, [context, isViewOnly, reasons]);
 
   const refresh = async () => {
-    await loadReasons();
     if (context?.boardId) await loadBoard(context.boardId);
   };
 
