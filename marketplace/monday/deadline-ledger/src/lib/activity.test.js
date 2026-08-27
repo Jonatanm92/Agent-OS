@@ -85,6 +85,37 @@ test('counts repeated deadline changes and missing reasons', () => {
   assert.equal(summarizeChanges(changes).impactedItems, 2);
 });
 
+test('maps reason creation, update and revision metadata', () => {
+  const [change] = buildDeadlineChanges(
+    [dateLog('a', '100', '2026-08-25', '2026-08-28')],
+    {
+      a: {
+        reason: 'Client approval moved',
+        category: 'Client',
+        createdAt: '2026-08-25T10:00:00.000Z',
+        createdBy: '7',
+        updatedAt: '2026-08-25T11:00:00.000Z',
+        updatedBy: '8',
+        revision: 2,
+      },
+    },
+  );
+  assert.equal(change.reasonCreatedBy, '7');
+  assert.equal(change.reasonUpdatedBy, '8');
+  assert.equal(change.reasonRevision, 2);
+  assert.equal(change.reasonUpdatedAt, '2026-08-25T11:00:00.000Z');
+});
+
+test('keeps legacy recordedAt and recordedBy compatible', () => {
+  const [change] = buildDeadlineChanges(
+    [dateLog('a', '100', '2026-08-25', '2026-08-28')],
+    { a: { reason: 'Legacy reason', recordedAt: '2026-08-25T09:00:00.000Z', recordedBy: '9' } },
+  );
+  assert.equal(change.reasonCreatedBy, '9');
+  assert.equal(change.reasonUpdatedBy, '9');
+  assert.equal(change.reasonRevision, 1);
+});
+
 test('filters missing reasons and free-text matches', () => {
   const changes = buildDeadlineChanges(
     [dateLog('a', '100', '2026-08-25', '2026-08-28'), dateLog('b', '200', '2026-08-20', '2026-08-22')],
