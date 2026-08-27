@@ -16,6 +16,20 @@ Verified live:
 - monday emits live Timeline Activity Log payloads as `column_type: "timerange"`
 - exact GraphQL query used by the Board View returns those events
 
+## PASS — Activity Log pagination semantics
+
+The private QA board was queried live using three separate Activity Log pages with a small test limit of five rows/page.
+
+Observed:
+
+- page 1: five event IDs
+- page 2: five different event IDs
+- page 3: the remaining three event IDs
+- no overlap between the returned pages
+- event order continued from newer to older activity across pages
+
+This verifies that monday's `activity_logs(limit, page)` paging advances through distinct history rather than repeating page 1. The production app uses the same paging arguments with 500 rows/page and a bounded maximum of 10 pages.
+
 ## PASS — public board Activity Log path
 
 A temporary synthetic public board was created through the monday API, given a Date column/item, and changed from:
