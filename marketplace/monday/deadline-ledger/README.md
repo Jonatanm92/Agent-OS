@@ -1,184 +1,140 @@
 # Deadline Ledger — monday.com Marketplace MVP
 
-A focused monday board view for **deadline-change governance**.
+Deadline Ledger is a focused monday Board View for **schedule change control**.
 
-Deadline Ledger turns raw Date/Timeline activity into a usable project-control ledger:
+It turns raw Date/Timeline activity into an operational governance queue:
 
-- every Date and Timeline change on the current board
-- old value → new value
+- old deadline → new deadline
 - who changed it and when
-- change counter per item + deadline column
-- missing-reason queue
-- free-text reason + reason category stored against the exact activity-log event
-- governance summary: total changes, impacted items, missing reasons, governed percentage
-- search and reason-state filters
+- change counter per item + deadline field
+- missing-reason exceptions
+- free-text reason + optional category
+- who created/last edited the reason, when, and revision number
+- governance summary and filters
 
-## Why this product exists
+## Product boundary
 
-The wedge is deliberately narrower than a generic activity-log/reporting app.
+monday already has a native Activity Log and strong third-party historical reporting apps. Deadline Ledger is **not** another activity-history viewer or report builder.
 
-Current monday native behavior already provides an Activity Log with old/new column values, filtering and Excel export. monday also has baseline/dependency functionality. Building another generic history viewer or baseline app would therefore be weak and risks Marketplace duplication rejection.
+The job is narrower:
 
-The unmet job is different:
+> When a project commitment moves, make that specific transition accountable and reviewable.
 
-> **When a project deadline is moved, make the movement accountable and reviewable.**
+Direct monday Community demand describes a roadmap shared by ten project managers where dates change often and the team wants a mandatory, reportable free-text explanation for each change.
 
-Public monday community evidence includes teams explicitly asking to:
+Current revalidation: `MARKET_VALIDATION_2026-08-27.md`.
 
-- count how many times a deadline/due date changed before completion
-- require a free-text reason whenever a Date field changes
-- make those reasons reportable for project-plan analytics
+## Native-feature kill test
 
-The initial MVP audits native Date/Timeline edits after they happen and highlights missing governance context.
+monday's 2026-07+ Validation API can validate the proposed/current state of an item, including conditional rules such as requiring text under a static condition.
 
-## Live QA status — 2026-08-25
+It cannot compare a column's previous value with its new value and has no transition operator meaning “this Date/Timeline just changed”. Therefore native validations cannot bind an explanation to each specific old → new deadline move.
 
-The MVP has progressed beyond synthetic-only testing:
+Result: **the focused change-control wedge survives**.
 
-- a private monday developer app named Deadline Ledger exists
-- the app has only the MVP scopes `boards:read` and `users:read`
-- a private QA board with Date and Timeline columns was created
-- controlled live changes were generated: three Date changes and one Timeline change
-- the exact GraphQL query used by the app returned those four live changes successfully
-- live QA discovered that monday Activity Log represents Timeline columns as `column_type: "timerange"`; the parser now accepts and normalizes that payload
-- the private app was promoted, installed and attached to the QA board as a real Board View
-- a temporary standalone QA surface is attached for iframe/runtime verification
+## Implemented MVP
 
-Still intentionally unverified:
+1. React/Vite Board View using `monday-sdk-js`.
+2. Board Activity Log reading with pagination (500 rows/page, bounded at 5,000 rows for v0.1).
+3. `update_column_value` parsing for `date`, `timerange`, and compatible `timeline` payloads.
+4. Live-tested normalization of monday's `timerange` activity type to the product concept Timeline.
+5. Old/new value, actor/time and repeated-change sequence.
+6. Missing-reason queue, search and reason-state filters.
+7. Global monday app storage namespaced by board ID for reason metadata.
+8. Optimistic storage concurrency using `previous_version`.
+9. Best-effort migration from the earlier instance-storage prototype.
+10. Reason audit metadata: created/updated actor, timestamps and revision count.
+11. Viewer/read-only handling through `context.user.isViewOnly`.
+12. `valueCreatedForUser` event after first successful reason save.
+13. Responsive layout.
+14. Deterministic parser/metric/audit tests and CI build.
 
-- visual iframe rendering in the end-user monday UI
-- `monday.storage.instance` reason save + reload persistence in the actual Board View runtime
-- viewer/guest behavior
-- production hosting
+## Why global storage
 
-The draft PR remains unmerged until those runtime gates are closed.
+Reason metadata is audit context and must not be tied to one Board View instance. Instance-level storage is scoped to a specific app instance and can reset across major app versions.
 
-## MVP boundary
+Deadline Ledger therefore stores reasons with the global monday storage API under:
 
-### Included now
+`deadline-ledger:reasons:v2:board:<boardId>`
 
-1. Board View UI.
-2. Read the current board's Activity Log through the monday GraphQL API.
-3. Parse `update_column_value` events where `column_type` is `date`, `timerange`, or a compatible `timeline` payload.
-4. Normalize `timerange` to the product concept `timeline`.
-5. Parse old/new values defensively from monday's JSON-string `data` payload.
-6. Count repeated changes per item + deadline field.
-7. Persist reason/category against the immutable activity event id with `monday.storage.instance`.
-8. Mobile-width responsive layout.
-9. Deterministic parser/metric tests including a regression fixture derived from the live monday Timeline payload shape.
+The value is shared at the account+app level while the key keeps each board's governance records isolated.
 
-### Explicitly not claimed yet
+No external database is required for v0.1.
 
-- The app **does not block** a user from editing a native Date/Timeline cell.
-- A reason is therefore not technically mandatory before the edit in v0.1; unreasoned edits are surfaced as governance exceptions.
-- Cross-board reporting is not included in v0.1.
-- Background retention beyond monday's available Activity Log window is not included in v0.1.
-- No AI is required for the product to work.
+## Live QA completed
 
-Those boundaries are intentional. They keep the first version small, useful and testable.
+A private developer app and a private board named `Deadline Ledger — QA` exist in the connected monday account.
 
-## Differentiation against current alternatives
+Controlled live data has verified:
 
-### monday Activity Log
+- three Date changes
+- one Timeline change
+- exact GraphQL activity query
+- old/new Date payload shape
+- old/new Timeline payload shape
+- monday Timeline activity arrives as `column_type: "timerange"`
+- Board View installation exists on the QA board
 
-Native Activity Log already answers: **what changed, when, by whom, old → new**.
+GitHub Actions has repeatedly passed `npm test` and `npm run build` on the feature branch.
 
-Deadline Ledger adds the project-control layer:
+## Remaining runtime gate
 
-- how many times did this deadline move?
-- which moves still have no explanation?
-- what category caused the slip?
-- what percentage of deadline moves are governed?
+Still requires one embedded UI test inside monday:
 
-### Generic historical reporting apps
+1. Open the `Deadline Ledger — QA` board.
+2. Open the `Deadline Ledger` Board View.
+3. Save a reason on one deadline change.
+4. Reload/switch away and return.
+5. Confirm the same reason remains.
 
-Existing apps can report broad historical board data and schedule exports. Deadline Ledger is not a report builder; it is an operational exception queue for deadline changes.
+The QA surface now uses the same global board-scoped storage architecture as the product code, so this test validates the actual persistence design rather than the earlier instance-storage prototype.
 
-### Log/restore apps
+## Explicit v0.1 limitations
 
-Existing restore tools focus on undoing board mistakes. Deadline Ledger focuses on **why schedule commitments moved**, not restoring data.
+- Does **not** intercept or block a native Date/Timeline edit before it occurs.
+- Unreasoned edits are detected and remediated after the change.
+- No cross-board rollup yet.
+- No independent background capture beyond monday's available Activity Log history yet.
+- Activity reading is bounded to the newest 5,000 board activity rows in v0.1.
+- No AI is required in the customer-facing product.
 
-## Technical approach
+A future **Guard mode** may add immediate exception workflow/notifications, but it is not promised until a supported architecture is demonstrated.
 
-Client-side React board view using `monday-sdk-js`.
-
-GraphQL scope required for MVP:
+## Required scopes
 
 - `boards:read`
-- `users:read` for user display names
+- `users:read`
 
-Persistent reason metadata uses monday's instance-level app storage, so the MVP does not need an external database.
+The app intentionally requests no write scope for board data in v0.1.
 
-Activity query:
-
-```graphql
-query DeadlineLedgerActivity($boardId: [ID!]) {
-  boards(ids: $boardId) {
-    id
-    name
-    activity_logs(limit: 500, page: 1) {
-      id
-      event
-      data
-      user_id
-      created_at
-    }
-  }
-}
-```
-
-monday's Activity Log `data` is a JSON string and its payload varies by column type. Live QA confirmed Date uses `column_type: "date"` and Timeline uses `column_type: "timerange"` in the tested account. The parser treats the payload as variable data and extracts only fields required for deadline governance.
-
-## Local development
-
-Requires Node.js and a monday developer account.
+## Development
 
 ```bash
 cd marketplace/monday/deadline-ledger
 npm install
 npm test
+npm run build
 npm run dev
 ```
 
-## Acceptance test for v0.1
+## Release gates
 
-On the private developer QA board:
+Do not submit merely because the code builds.
 
-1. Move the same Date value twice on one item.
-2. Move a Date value once on a second item.
-3. Move one Timeline range.
-4. Open Deadline Ledger and refresh.
+Before Marketplace submission:
 
-Pass criteria:
+1. Pass embedded Board View global-storage save/reload QA.
+2. Replace temporary QA hosting with durable production hosting and verify the deployed feature.
+3. Test public/private/shareable boards plus member/admin/guest/viewer behavior.
+4. Test larger activity histories and uninstall/reinstall behavior.
+5. Re-run functional-duplication search immediately before submission.
+6. Publish privacy policy, Terms and support/how-to pages under a verified domain/entity.
+7. Configure monday native pricing/plans and vendor payout setup.
+8. Prepare listing images/video and reviewer instructions.
 
-- the first item's latest Date row shows `change #2`
-- the second item shows `change #1`
-- the Timeline change appears with the correct old and new range
-- every unreasoned change is flagged `Reason missing`
-- recording a reason removes that event from the Missing Reason filter after save
-- refreshing the Board View preserves the recorded reason
-- non-Date/Timeline activity does not appear
+Current pricing hypothesis (not approved pricing):
 
-The API/read portion of this acceptance test has passed against live monday data. The iframe/storage portion remains the final browser-runtime gate.
-
-## Commercial test after functional QA
-
-Do **not** submit to Marketplace purely because the code works.
-
-Before submission:
-
-1. Close the iframe + instance-storage QA gate.
-2. Test with at least three realistic project boards and 100+ mixed activity rows.
-3. Confirm viewer/guest behavior and permission errors.
-4. Replace the temporary QA host with production-grade hosting.
-5. Re-run the current Marketplace search for functional duplication.
-6. Prepare privacy policy, Terms of Service and support route required by Marketplace review.
-7. Use monday-native monetization for any paid plan.
-
-Initial pricing hypothesis, to validate rather than assume:
-
-- Trial: 14 days
 - Team: $19/month
-- Pro: $49/month with cross-board rollup/digest when that feature exists
+- Pro: $49/month after a real cross-board/Guard feature exists
 
-The north-star metric is not installs. It is **accounts with repeated deadline changes that actively record reasons and retain the app**.
+The north-star metric is **accounts with repeated deadline changes that actively resolve missing-reason exceptions and retain the app**.
