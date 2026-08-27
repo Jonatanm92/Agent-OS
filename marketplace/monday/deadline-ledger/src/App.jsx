@@ -11,6 +11,7 @@ const REASON_CATEGORIES = ['Scope', 'Client', 'Dependency', 'Resource', 'Risk', 
 const STORAGE_RETRY_LIMIT = 3;
 const ACTIVITY_PAGE_SIZE = 500;
 const MAX_ACTIVITY_PAGES = 10;
+const MAX_REASON_LENGTH = 1000;
 
 function globalReasonsKey(boardId) {
   return `deadline-ledger:reasons:v2:board:${String(boardId)}`;
@@ -73,7 +74,6 @@ async function migrateLegacyInstanceReasons(boardId, globalStore) {
       version: result?.data?.version || '',
     };
   } catch {
-    // Legacy migration is best-effort only. Never block access to the new global store.
     return globalStore;
   }
 }
@@ -173,7 +173,8 @@ function Metric({ label, value, detail, danger = false }) {
 function ReasonEditor({ change, onSave, onCancel, saving }) {
   const [reason, setReason] = useState(change.reason || '');
   const [category, setCategory] = useState(change.reasonCategory || '');
-  const canSave = reason.trim().length >= 3 && !saving;
+  const trimmed = reason.trim();
+  const canSave = trimmed.length >= 3 && trimmed.length <= MAX_REASON_LENGTH && !saving;
 
   return (
     <div className="reason-editor" role="dialog" aria-label="Record deadline change reason">
@@ -196,8 +197,10 @@ function ReasonEditor({ change, onSave, onCancel, saving }) {
           onChange={(event) => setReason(event.target.value)}
           placeholder="Example: Client approval moved from Friday to Tuesday."
           rows={3}
+          maxLength={MAX_REASON_LENGTH}
           disabled={saving}
         />
+        <span className="reason-editor__counter">{reason.length}/{MAX_REASON_LENGTH}</span>
       </label>
       <div className="reason-editor__actions">
         <button type="button" className="button button--ghost" onClick={onCancel} disabled={saving}>Cancel</button>
@@ -205,7 +208,7 @@ function ReasonEditor({ change, onSave, onCancel, saving }) {
           type="button"
           className="button button--primary"
           disabled={!canSave}
-          onClick={() => onSave({ reason: reason.trim(), category })}
+          onClick={() => onSave({ reason: trimmed, category })}
         >
           {saving ? 'Saving…' : 'Save reason'}
         </button>
@@ -214,7 +217,7 @@ function ReasonEditor({ change, onSave, onCancel, saving }) {
   );
 }
 
-function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, saving, readOnly }) {
+function ChangeRow({ change, userName, reasonRecorderName, isEditing, onEdit, onSave, onCancel, saving, readOnly }) {
   return (
     <article className={`change-row ${change.needsReason ? 'change-row--missing' : ''}`}>
       <div className="change-row__main">
@@ -245,6 +248,11 @@ function ChangeRow({ change, userName, isEditing, onEdit, onSave, onCancel, savi
             <div className="reason-summary">
               {change.reasonCategory && <strong>{change.reasonCategory}: </strong>}
               {change.reason}
+            </div>
+            <div className="reason-audit">
+              {change.reasonRevision > 1 ? `Revision ${change.reasonRevision} · ` : ''}
+              {change.reasonUpdatedAt ? formatDateTime(change.reasonUpdatedAt) : 'Recorded'}
+              {change.reasonUpdatedBy ? ` · ${reasonRecorderName || `User ${change.reasonUpdatedBy}`}` : ''}
             </div>
             {!readOnly && !isEditing && <button className="link-button" type="button" onClick={onEdit}>Edit</button>}
           </>
@@ -286,19 +294,24 @@ export default function App() {
   const loadReasons = useCallback(async (boardId) => {
     if (!boardId) {
       setReasons({});
-      return;
+      return {};
     }
     try {
       const stored = await readReasonStore(boardId);
       setReasons(stored.reasons);
+      return stored.reasons;
     } catch {
       setReasons({});
+      return {};
     }
   }, []);
 
   const loadUsers = useCallback(async (userIds) => {
-    const ids = [...new Set(userIds.filter(Boolean))];
-    if (!ids.length) return;
+    const ids = [...new Set(userIds.filter(Boolean).map(String))];
+    if (!ids.length) {
+      setUsers({});
+      return;
+    }
     try {
       const result = await monday.api(
         `query DeadlineLedgerUsers($ids: [ID!]) { users(ids: $ids) { id name } }`,
@@ -317,14 +330,22 @@ export default function App() {
     setLoading(true);
     setError('');
     try {
-      const [activity] = await Promise.all([
+      const [activity, storedReasons] = await Promise.all([
         fetchBoardActivity(boardId),
         loadReasons(boardId),
       ]);
       setBoardName(activity.boardName);
       setLogs(activity.logs);
       setActivityTruncated(activity.truncated);
-      await loadUsers(activity.logs.map((log) => String(log.user_id || '')));
+
+      const reasonUserIds = Object.values(storedReasons).flatMap((entry) => [
+        entry?.createdBy || entry?.recordedBy || '',
+        entry?.updatedBy || entry?.recordedBy || '',
+      ]);
+      await loadUsers([
+        ...activity.logs.map((log) => String(log.user_id || '')),
+        ...reasonUserIds,
+      ]);
       setLastLoadedAt(new Date());
     } catch (err) {
       setError(err?.message || 'Deadline Ledger could not load this board.');
@@ -362,11 +383,24 @@ export default function App() {
       return;
     }
 
+    const trimmedReason = String(payload.reason || '').trim();
+    if (trimmedReason.length < 3 || trimmedReason.length > MAX_REASON_LENGTH) {
+      setError(`Reason must be between 3 and ${MAX_REASON_LENGTH} characters.`);
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const currentUserId = String(context?.user?.id || context?.userId || '');
+    const previousEntry = reasons[change.id] || {};
     const entry = {
-      reason: payload.reason,
+      ...previousEntry,
+      reason: trimmedReason,
       category: payload.category,
-      recordedAt: new Date().toISOString(),
-      recordedBy: String(context?.user?.id || context?.userId || ''),
+      createdAt: previousEntry.createdAt || previousEntry.recordedAt || now,
+      createdBy: previousEntry.createdBy || previousEntry.recordedBy || currentUserId,
+      updatedAt: now,
+      updatedBy: currentUserId,
+      revision: Number(previousEntry.revision || 0) + 1,
     };
     const previousReasons = reasons;
     const optimisticReasons = { ...reasons, [change.id]: entry };
@@ -466,6 +500,7 @@ export default function App() {
             key={change.id}
             change={change}
             userName={users[change.userId]}
+            reasonRecorderName={users[change.reasonUpdatedBy]}
             isEditing={editingId === change.id}
             onEdit={() => setEditingId(change.id)}
             onCancel={() => setEditingId('')}
