@@ -86,14 +86,24 @@ export function buildDeadlineChanges(logs = [], reasons = {}) {
     });
 
   return parsed
-    .map((change) => ({
-      ...change,
-      reason: reasons[change.id]?.reason || '',
-      reasonCategory: reasons[change.id]?.category || '',
-      reasonRecordedAt: reasons[change.id]?.recordedAt || '',
-      reasonRecordedBy: reasons[change.id]?.recordedBy || '',
-      needsReason: !String(reasons[change.id]?.reason || '').trim(),
-    }))
+    .map((change) => {
+      const reason = reasons[change.id] || {};
+      const createdAt = reason.createdAt || reason.recordedAt || '';
+      const createdBy = reason.createdBy || reason.recordedBy || '';
+      const updatedAt = reason.updatedAt || reason.recordedAt || createdAt;
+      const updatedBy = reason.updatedBy || reason.recordedBy || createdBy;
+      return {
+        ...change,
+        reason: reason.reason || '',
+        reasonCategory: reason.category || '',
+        reasonCreatedAt: createdAt,
+        reasonCreatedBy: createdBy,
+        reasonUpdatedAt: updatedAt,
+        reasonUpdatedBy: updatedBy,
+        reasonRevision: Number(reason.revision || (reason.reason ? 1 : 0)),
+        needsReason: !String(reason.reason || '').trim(),
+      };
+    })
     .sort((a, b) => b.occurredAtMs - a.occurredAtMs);
 }
 
