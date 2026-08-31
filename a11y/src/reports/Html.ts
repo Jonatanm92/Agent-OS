@@ -1,5 +1,5 @@
 import type { EvidencePack } from '../evidence/EvidencePack.js';
-import type { JourneyStep, Severity } from '../core/Types.js';
+import type { ConsentDecision, JourneyStep, Severity } from '../core/Types.js';
 import { REPORT_CSS } from './Theme.js';
 
 export function escapeHtml(value: string): string {
@@ -57,6 +57,20 @@ const PAGE_TYPE_LABEL: Record<string, string> = {
 
 export function pageTypeLabel(pageType: string): string {
   return PAGE_TYPE_LABEL[pageType] ?? pageType;
+}
+
+/**
+ * Stated in every report: a store tested behind its own cookie wall is a
+ * materially different test, and the reader is entitled to know which one they
+ * are holding.
+ */
+export function consentNote(consent: ConsentDecision | null): string {
+  if (!consent || !consent.detected) return '';
+  const vendor = consent.vendor ? escapeHtml(consent.vendor) : 'en cookiebanner';
+  if (consent.dismissed) {
+    return `<p class="meta">Cookiebanner (${vendor}) fanns på sidan och avvisades genom att tacka nej till icke-nödvändiga kakor innan testet. Inget godkännande gavs för er räkning.</p>`;
+  }
+  return `<div class="callout"><h3>Testet gjordes med cookiebannern kvar</h3><p>${escapeHtml(consent.note)}</p></div>`;
 }
 
 export function journeyTable(journey: JourneyStep[]): string {

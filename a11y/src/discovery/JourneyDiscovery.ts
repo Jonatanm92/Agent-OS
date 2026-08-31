@@ -1,10 +1,11 @@
 import type { BrowserContext, Page } from 'playwright';
 import type { PlatformConfig } from '../core/Config.js';
 import type { Logger } from '../core/Logger.js';
-import type { JourneyStep, PageType, RobotsDecision } from '../core/Types.js';
+import type { ConsentDecision, JourneyStep, PageType, RobotsDecision } from '../core/Types.js';
 import { JOURNEY_PAGE_TYPES } from '../core/Types.js';
 import { BrowserSession, settle } from './Browser.js';
 import { fetchRobots } from './Robots.js';
+import { handleConsentBanner } from './ConsentManager.js';
 import { classifyLinks, deriveSearchTerm, type SiteLink } from './LinkClassifier.js';
 import { collectRawSignals, interpretSignals, type SiteSignals } from './PlatformDetect.js';
 
@@ -23,6 +24,7 @@ export interface JourneyResult {
   steps: JourneyStep[];
   signals: SiteSignals | null;
   robots: RobotsDecision;
+  consent: ConsentDecision;
   pagesVisited: number;
 }
 
@@ -57,11 +59,20 @@ export async function discoverJourney(options: {
   }
 
   const robots = await fetchRobots(context, origin, config.ignoreRobots);
+  let consent: ConsentDecision = {
+    detected: false,
+    vendor: null,
+    dismissed: false,
+    method: 'none_present',
+    containerSelector: null,
+    note: 'No page was loaded, so no consent overlay was evaluated.',
+  };
+
   if (!robots.decision.allowed) {
     for (const type of JOURNEY_PAGE_TYPES) {
       steps.set(type, { pageType: type, url: null, reached: false, reason: 'robots.txt disallows crawling this site' });
     }
-    return { steps: [...steps.values()], signals: null, robots: robots.decision, pagesVisited: 0 };
+    return { steps: [...steps.values()], signals: null, robots: robots.decision, consent, pagesVisited: 0 };
   }
 
   let visited = 0;
@@ -102,6 +113,13 @@ export async function discoverJourney(options: {
       title: visit.title,
     });
     logger.debug('journey page reached', { pageType, url: visit.url });
+
+    // The cookie wall comes down before anything else looks at the page,
+    // otherwise every scan audits somebody's consent manager.
+    const pageConsent = await handleConsentBanner(visit.page);
+    if (pageConsent.detected && (!consent.detected || (pageConsent.dismissed && !consent.dismissed))) consent = pageConsent;
+    else if (!consent.detected && pageType === 'homepage') consent = pageConsent;
+
     // Anything that must read the pristine page runs before the audit: probes
     // move focus, open panels and can navigate away.
     if (beforeAudit) await beforeAudit(visit.page);
@@ -115,7 +133,7 @@ export async function discoverJourney(options: {
     signals = interpretSignals(await collectRawSignals(page));
   });
   if (!homepage || !signals) {
-    return { steps: [...steps.values()], signals, robots: robots.decision, pagesVisited: visited };
+    return { steps: [...steps.values()], signals, robots: robots.decision, consent, pagesVisited: visited };
   }
   const homeLinks: SiteLink[] = (signals as SiteSignals).links;
   const classified = classifyLinks(homeLinks, origin);
@@ -171,7 +189,7 @@ export async function discoverJourney(options: {
     }
   }
 
-  return { steps: [...steps.values()], signals, robots: robots.decision, pagesVisited: visited };
+  return { steps: [...steps.values()], signals, robots: robots.decision, consent, pagesVisited: visited };
 }
 
 async function visitFirst(

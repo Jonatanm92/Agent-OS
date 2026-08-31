@@ -7,7 +7,7 @@
  * by `a11y-os demo`.
  */
 import { createServer } from 'node:http';
-import { renderPage, PRODUCTS, NAV } from './Sites.mjs';
+import { renderPage, PRODUCTS, CATEGORIES, URL_STYLES } from './Sites.mjs';
 
 const NO_BARRIERS = {};
 
@@ -49,6 +49,21 @@ export const SITES = {
     accessibilityStatement: true,
     barriers: NO_BARRIERS,
   },
+  4184: {
+    key: 'gronskan-shop',
+    name: 'Grönskan',
+    email: 'hej@gronskan.example',
+    phone: '+46701234567',
+    urlStyle: 'shopify',
+    barriers: { consentBanner: true, mouseOnlyFilter: true, noFocusStyle: true, badAltText: true },
+  },
+  4185: {
+    key: 'vagbod',
+    name: 'Vägbod',
+    email: 'info@vagbod.example',
+    phone: '+46702345678',
+    barriers: { consentBanner: true, consentNoDecline: true, unlabelledSearch: true },
+  },
   4183: {
     key: 'industripartner',
     name: 'Industripartner Norden',
@@ -59,21 +74,22 @@ export const SITES = {
   },
 };
 
-function routeFor(url) {
+function routeFor(url, urlStyle = 'swedish') {
+  const style = URL_STYLES[urlStyle];
   const parsed = new URL(url, 'http://localhost');
   const path = parsed.pathname.replace(/\/$/, '') || '/';
   if (path === '/') return { type: 'home' };
-  if (path === '/sok' || path === '/search') return { type: 'search', query: parsed.searchParams.get('q') ?? '' };
-  if (path === '/varukorg') return { type: 'cart' };
-  if (path === '/logga-in') return { type: 'login' };
-  if (path === '/kassa') return { type: 'checkout' };
-  if (path.startsWith('/kategori/')) {
-    const slug = path.split('/')[2];
-    const nav = NAV.find((n) => n.href.endsWith(slug));
-    return nav ? { type: 'category', slug, title: nav.label } : { type: '404' };
+  if (path === '/sok' || path === '/search' || path === style.search) return { type: 'search', query: parsed.searchParams.get('q') ?? '' };
+  if (path === style.cart) return { type: 'cart' };
+  if (path === style.login) return { type: 'login' };
+  if (path === style.checkout) return { type: 'checkout' };
+  if (path.startsWith(`${style.category}/`)) {
+    const slug = path.split('/').pop();
+    const category = CATEGORIES.find((c) => c.slug === slug);
+    return category ? { type: 'category', slug, title: category.label } : { type: '404' };
   }
-  if (path.startsWith('/produkt/')) {
-    const product = PRODUCTS.find((p) => p.slug === path.split('/')[2]);
+  if (path.startsWith(`${style.product}/`)) {
+    const product = PRODUCTS.find((p) => p.slug === path.split('/').pop());
     return product ? { type: 'product', product } : { type: '404' };
   }
   if (path === '/kontakt') return { type: 'content', title: 'Kundservice', body: 'Ring oss vardagar 9–17 eller mejla kundservice.' };
@@ -96,7 +112,7 @@ export const REQUEST_LOG = [];
 export function createFixtureServer(port, site) {
   return createServer((req, res) => {
     REQUEST_LOG.push({ port, method: req.method, url: req.url });
-    const route = routeFor(req.url ?? '/');
+    const route = routeFor(req.url ?? '/', site.urlStyle);
     if ((req.url ?? '').startsWith('/img/')) {
       res.writeHead(200, { 'content-type': 'image/svg+xml' });
       res.end('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#dfe5e8"/></svg>');

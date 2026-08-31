@@ -144,6 +144,24 @@ export interface RobotsDecision {
   reason: string;
 }
 
+/**
+ * SYSTEM 2 — what we did about the cookie consent overlay that sits in front of
+ * essentially every European storefront.
+ *
+ * Recorded on the scan so a report can state plainly whether the store was
+ * audited in front of, or behind, its own consent wall.
+ */
+export interface ConsentDecision {
+  detected: boolean;
+  /** Known CMP vendor, when the fingerprint is unambiguous. */
+  vendor: string | null;
+  dismissed: boolean;
+  /** How it was dismissed. We only ever decline non-essential cookies. */
+  method: 'necessary_only' | 'reject_all' | 'close_button' | 'not_dismissible' | 'none_present';
+  containerSelector: string | null;
+  note: string;
+}
+
 export type ScanKind = 'initial' | 'retest' | 'monitor';
 
 export interface Scan {
@@ -156,6 +174,7 @@ export interface Scan {
   error: string | null;
   journey: JourneyStep[];
   robots: RobotsDecision | null;
+  consent: ConsentDecision | null;
   pagesTested: number;
   baselineScanId: string | null;
 }
@@ -208,6 +227,13 @@ export interface Finding {
   /** Stable across scans of the same site — used by retest and monitoring. */
   signature: string;
   componentLabel: string | null;
+  /**
+   * Vendor name when the element belongs to third-party code embedded in the
+   * page (a consent manager, a chat widget, a review badge). The merchant
+   * usually cannot fix these, so they are reported separately and never lead a
+   * mini audit.
+   */
+  thirdParty: string | null;
 }
 
 /** SYSTEM 4 — one systemic problem standing in for N pages. */

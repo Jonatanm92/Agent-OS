@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import SqliteDatabase from 'better-sqlite3';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { openDatabase } from '../src/db/Database.js';
 import { createPlatform, type Platform } from '../src/services/Platform.js';
 import { Queue } from '../src/queue/Queue.js';
 import { ReviewService } from '../src/services/ReviewService.js';
@@ -419,5 +424,35 @@ describe('reviewer efficiency', () => {
     const scan = platform.audits.latestCompletedScan(prospectId)!;
     expect(platform.audits.listFindings(scan.id).every((f) => f.reviewStatus === 'approved')).toBe(true);
     expect(reviews.queue({ prospectId })).toHaveLength(0);
+  });
+});
+
+describe('schema migration', () => {
+  it('adds new columns to a database created before they existed', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'a11y-migrate-'));
+    const file = join(dir, 'old.db');
+    // A database from before consent and third-party attribution shipped.
+    const legacy = new SqliteDatabase(file);
+    legacy.exec(`CREATE TABLE findings (
+                   id TEXT PRIMARY KEY, scan_id TEXT NOT NULL, prospect_id TEXT NOT NULL,
+                   signature TEXT NOT NULL, component_label TEXT);
+                 CREATE TABLE scans (
+                   id TEXT PRIMARY KEY, prospect_id TEXT NOT NULL, robots TEXT);`);
+    legacy.exec("INSERT INTO findings (id, scan_id, prospect_id, signature) VALUES ('fnd_old', 'scn_old', 'pro_old', 'sig')");
+    legacy.close();
+
+    const db = openDatabase({ dataDir: dir, filename: file });
+    const findingColumns = (db.prepare('PRAGMA table_info(findings)').all() as { name: string }[]).map((c) => c.name);
+    const scanColumns = (db.prepare('PRAGMA table_info(scans)').all() as { name: string }[]).map((c) => c.name);
+    expect(findingColumns).toContain('third_party');
+    expect(scanColumns).toContain('consent');
+    // The existing row survives and reads as "not third-party".
+    expect((db.prepare('SELECT third_party FROM findings WHERE id = ?').get('fnd_old') as { third_party: string | null }).third_party).toBeNull();
+    db.close();
+
+    // Re-opening is a no-op rather than an error.
+    const reopened = openDatabase({ dataDir: dir, filename: file });
+    reopened.close();
+    rmSync(dir, { recursive: true, force: true });
   });
 });

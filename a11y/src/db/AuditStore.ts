@@ -2,6 +2,7 @@ import type { Db } from './Database.js';
 import { newId, nowIso } from '../core/Ids.js';
 import * as map from './Rows.js';
 import type {
+  ConsentDecision,
   Finding,
   FindingGroup,
   JourneyStep,
@@ -30,18 +31,26 @@ export class AuditStore {
 
   finishScan(
     id: string,
-    update: { status: Scan['status']; journey?: JourneyStep[]; robots?: RobotsDecision | null; pagesTested?: number; error?: string | null },
+    update: {
+      status: Scan['status'];
+      journey?: JourneyStep[];
+      robots?: RobotsDecision | null;
+      consent?: ConsentDecision | null;
+      pagesTested?: number;
+      error?: string | null;
+    },
   ): Scan | null {
     this.db
       .prepare(
         `UPDATE scans SET status = ?, finished_at = ?, journey = COALESCE(?, journey), robots = COALESCE(?, robots),
-           pages_tested = COALESCE(?, pages_tested), error = ? WHERE id = ?`,
+           consent = COALESCE(?, consent), pages_tested = COALESCE(?, pages_tested), error = ? WHERE id = ?`,
       )
       .run(
         update.status,
         nowIso(),
         update.journey ? JSON.stringify(update.journey) : null,
         update.robots ? JSON.stringify(update.robots) : null,
+        update.consent ? JSON.stringify(update.consent) : null,
         update.pagesTested ?? null,
         update.error ?? null,
         id,
@@ -78,8 +87,8 @@ export class AuditStore {
     const stmt = this.db.prepare(
       `INSERT INTO findings (id, scan_id, prospect_id, group_id, url, page_type, detected_at, rule, wcag, severity,
          confidence, selector, html, screenshot_key, reproduction, keyboard_reproduction, expected_behaviour,
-         observed_behaviour, user_impact, remediation, source_engine, raw, review_status, reviewer_note, signature, component_label)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         observed_behaviour, user_impact, remediation, source_engine, raw, review_status, reviewer_note, signature, component_label, third_party)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const tx = this.db.transaction((batch: Finding[]) => {
       for (const f of batch) {
@@ -110,6 +119,7 @@ export class AuditStore {
           f.reviewerNote,
           f.signature,
           f.componentLabel,
+          f.thirdParty,
         );
       }
     });

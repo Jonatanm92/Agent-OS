@@ -63,6 +63,7 @@ export const toScan = (r: Row): Scan => ({
   error: r.error,
   journey: json(r.journey, []),
   robots: json(r.robots, null),
+  consent: json(r.consent, null),
   pagesTested: r.pages_tested,
   baselineScanId: r.baseline_scan_id,
 });
@@ -94,6 +95,7 @@ export const toFinding = (r: Row): Finding => ({
   reviewerNote: r.reviewer_note,
   signature: r.signature,
   componentLabel: r.component_label,
+  thirdParty: r.third_party ?? null,
 });
 
 export const toGroup = (r: Row): FindingGroup => ({

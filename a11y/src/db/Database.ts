@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS scans (
   error TEXT,
   journey TEXT NOT NULL DEFAULT '[]',
   robots TEXT,
+  consent TEXT,
   pages_tested INTEGER NOT NULL DEFAULT 0,
   baseline_scan_id TEXT REFERENCES scans(id)
 );
@@ -110,7 +111,8 @@ CREATE TABLE IF NOT EXISTS findings (
   review_status TEXT NOT NULL DEFAULT 'unreviewed',
   reviewer_note TEXT,
   signature TEXT NOT NULL,
-  component_label TEXT
+  component_label TEXT,
+  third_party TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_findings_scan ON findings(scan_id);
 CREATE INDEX IF NOT EXISTS idx_findings_prospect ON findings(prospect_id);
@@ -248,6 +250,24 @@ export interface OpenOptions {
   filename?: string;
 }
 
+/**
+ * Columns added after the first release. `CREATE TABLE IF NOT EXISTS` does not
+ * touch an existing table, so new columns are applied here — a database created
+ * before the column existed keeps its data and gains the column.
+ */
+const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
+  { table: 'scans', column: 'consent', definition: 'TEXT' },
+  { table: 'findings', column: 'third_party', definition: 'TEXT' },
+];
+
+function applyMigrations(db: Db): void {
+  for (const { table, column, definition } of ADDED_COLUMNS) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (columns.some((c) => c.name === column)) continue;
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
 export function openDatabase({ dataDir, filename }: OpenOptions): Db {
   const target = filename ?? join(dataDir, 'a11y.db');
   if (target !== ':memory:') mkdirSync(dirname(target), { recursive: true });
@@ -255,5 +275,6 @@ export function openDatabase({ dataDir, filename }: OpenOptions): Db {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(SCHEMA);
+  applyMigrations(db);
   return db;
 }

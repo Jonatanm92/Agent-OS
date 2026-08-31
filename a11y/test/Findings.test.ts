@@ -4,7 +4,8 @@ import { componentSignatureFor, normalizeIssue, ruleTitle } from '../src/finding
 import { groupFindings, rankGroups } from '../src/findings/Dedupe.js';
 import { weightByPageType, isCustomerJourneyBarrier } from '../src/findings/Severity.js';
 import { wcagFromAxeTags } from '../src/findings/WcagMap.js';
-import { selectMiniFindings, categorizeForProfessional, isReportable } from '../src/reports/Selection.js';
+import { selectMiniFindings, categorizeForProfessional, isReportable, isMerchantOwned } from '../src/reports/Selection.js';
+import { detectThirdParty, vendorLabel } from '../src/findings/ThirdParty.js';
 import type { Finding, PageType } from '../src/core/Types.js';
 
 const issue = (overrides: Partial<RawIssue> = {}): RawIssue => ({
@@ -150,5 +151,46 @@ describe('report selection', () => {
     const sections = categorizeForProfessional([confirmed, uncertain]);
     expect(sections.criticalBarriers.map((f) => f.id)).toEqual(['f1']);
     expect(sections.manualValidation.map((f) => f.id)).toEqual(['f2']);
+  });
+});
+
+
+describe('third-party attribution', () => {
+  it('recognises the consent managers and widgets that dominate Swedish storefronts', () => {
+    expect(detectThirdParty('#CybotCookiebotDialog > div > button', '<button>OK</button>')?.id).toBe('cookiebot');
+    expect(detectThirdParty('#onetrust-banner-sdk button', '<button>Godkänn</button>')?.id).toBe('onetrust');
+    expect(detectThirdParty('div.trustpilot-widget', '<div class="trustpilot-widget"></div>')?.id).toBe('trustpilot');
+    expect(detectThirdParty('div', '<iframe src="https://widget.intercom.io/x"></iframe>')?.id).toBe('intercom');
+    expect(vendorLabel('cookiebot')).toBe('Cookiebot');
+  });
+
+  it('treats unrecognised markup as the merchant\'s own, so we never excuse a real defect', () => {
+    expect(detectThirdParty('div.filters > div.btn', '<div class="btn" role="button">Filtrera</div>')).toBeNull();
+  });
+
+  it('tags a finding with the vendor that owns the element', () => {
+    const finding = normalizeIssue(
+      issue({ rule: 'axe.button-name', engine: 'axe-core', selector: '#CybotCookiebotDialog button.close', html: '<button class="close"></button>', observed: 'no name' }),
+      context('homepage'),
+    );
+    expect(finding.thirdParty).toBe('cookiebot');
+    expect(isMerchantOwned(finding)).toBe(false);
+  });
+
+  it('keeps third-party defects out of the mini audit but reports them to a paying customer', () => {
+    const own = normalizeIssue(issue(), context('category'));
+    const vendor = normalizeIssue(
+      issue({ rule: 'keyboard.mouse-only-control', selector: '#CybotCookiebotDialog div.btn', html: '<div class="btn" role="button">Godkänn</div>' }),
+      context('homepage'),
+    );
+    own.id = 'own';
+    own.groupId = 'g1';
+    vendor.id = 'vendor';
+    vendor.groupId = 'g2';
+
+    expect(selectMiniFindings([vendor, own], [], 5).map((f) => f.id)).toEqual(['own']);
+    const sections = categorizeForProfessional([vendor, own]);
+    expect(sections.thirdParty.map((f) => f.id)).toEqual(['vendor']);
+    expect([...sections.criticalBarriers, ...sections.highPriority].map((f) => f.id)).not.toContain('vendor');
   });
 });

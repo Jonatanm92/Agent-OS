@@ -10,12 +10,24 @@
  * produces a badly built store, a well built one and a B2B site.
  */
 
-const NAV = [
-  { href: '/kategori/mattor', label: 'Mattor' },
-  { href: '/kategori/belysning', label: 'Belysning' },
-  { href: '/kategori/textil', label: 'Textil' },
-  { href: '/kategori/forvaring', label: 'Förvaring' },
+const CATEGORIES = [
+  { slug: 'mattor', label: 'Mattor' },
+  { slug: 'belysning', label: 'Belysning' },
+  { slug: 'textil', label: 'Textil' },
+  { slug: 'forvaring', label: 'Förvaring' },
 ];
+
+/** Swedish platforms use /kategori and /produkt; Shopify uses /collections and /products. */
+export const URL_STYLES = {
+  swedish: { category: '/kategori', product: '/produkt', cart: '/varukorg', search: '/sok', login: '/logga-in', checkout: '/kassa' },
+  shopify: { category: '/collections', product: '/products', cart: '/cart', search: '/search', login: '/account/login', checkout: '/checkout' },
+};
+
+function navFor(style) {
+  return CATEGORIES.map((c) => ({ href: `${style.category}/${c.slug}`, label: c.label }));
+}
+
+const NAV = navFor(URL_STYLES.swedish);
 
 const PRODUCTS = [
   { slug: 'ullmatta-lofoten', name: 'Ullmatta Lofoten 170x240', price: 3495, cat: 'mattor' },
@@ -31,6 +43,10 @@ const PRODUCTS = [
 
 const money = (v) => `${v.toLocaleString('sv-SE')} kr`;
 
+function styleOf(site) {
+  return URL_STYLES[site.urlStyle ?? 'swedish'];
+}
+
 function head(site, title, barriers) {
   return `<!DOCTYPE html>
 <html${barriers.noLang ? '' : ' lang="sv"'}>
@@ -39,6 +55,7 @@ function head(site, title, barriers) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${title ? `<title>${title} | ${site.name}</title>` : ''}
 <meta property="og:site_name" content="${site.name}">
+${site.urlStyle === 'shopify' ? '<script>window.Shopify = { shop: "fixture.myshopify.com", locale: "sv" };</script><script src="https://cdn.shopify.com/s/files/theme.js" defer onerror="void 0"></script>' : ''}
 <script type="application/ld+json">${JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'OnlineStore',
@@ -100,22 +117,24 @@ function styles(barriers) {
 }
 
 function header(site, barriers) {
+  const style = styleOf(site);
+  const nav = navFor(style);
   const searchLabel = barriers.unlabelledSearch
     ? '<input type="text" name="q" placeholder="Sök">'
     : '<label for="q" class="visually-hidden">Sök i butiken</label><input id="q" type="search" name="q" placeholder="Sök">';
 
   const cartButton = barriers.iconOnlyButtons
-    ? '<a class="icon-btn" href="/varukorg">🛒</a>'
-    : '<a class="icon-btn" href="/varukorg" aria-label="Varukorg">🛒</a>';
+    ? `<a class="icon-btn" href="${style.cart}">🛒</a>`
+    : `<a class="icon-btn" href="${style.cart}" aria-label="Varukorg">🛒</a>`;
 
   const accountButton = barriers.iconOnlyButtons
-    ? '<a class="icon-btn" href="/logga-in">👤</a>'
-    : '<a class="icon-btn" href="/logga-in" aria-label="Logga in">👤</a>';
+    ? `<a class="icon-btn" href="${style.login}">👤</a>`
+    : `<a class="icon-btn" href="${style.login}" aria-label="Logga in">👤</a>`;
 
   // The off-canvas menu keeps its links focusable while closed — a very common
   // real-world defect that only a real Tab walk detects.
   const offcanvas = barriers.focusableOffcanvas
-    ? `<div class="offcanvas" id="mobilmeny"><h2>Meny</h2><ul>${NAV.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul></div>`
+    ? `<div class="offcanvas" id="mobilmeny"><h2>Meny</h2><ul>${nav.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul></div>`
     : '';
 
   return `${offcanvas}
@@ -123,10 +142,10 @@ function header(site, barriers) {
 <header>
   <div class="logo">${site.name}</div>
   <nav${barriers.unnamedLandmarks ? '' : ' aria-label="Huvudmeny"'}>
-    <ul>${NAV.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul>
+    <ul>${nav.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul>
   </nav>
   <div class="tools">
-    <form class="searchbox" action="/sok" method="get" role="search">${searchLabel}
+    <form class="searchbox" action="${style.search}" method="get" role="search">${searchLabel}
       ${barriers.iconOnlyButtons ? '<button class="icon-btn" type="submit">🔍</button>' : '<button class="icon-btn" type="submit" aria-label="Sök">🔍</button>'}
     </form>
     ${accountButton}
@@ -142,8 +161,36 @@ function footer(site, barriers) {
   <p>© ${new Date().getFullYear()} ${site.name}. Webbdesign av Norrsken Digital.</p>
 </footer>
 ${barriers.newsletterModal && barriers.onHomepage ? modalMarkup(barriers) : ''}
+${barriers.consentBanner ? consentMarkup(barriers) : ''}
 <script>${scripts(barriers)}</script>
 </body></html>`;
+}
+
+/**
+ * A Cookiebot-shaped consent wall: fixed, covers the viewport, traps focus, and
+ * — in the `consentNoDecline` variant — offers no way to refuse. This is what
+ * sits in front of nearly every real European storefront.
+ */
+function consentMarkup(barriers) {
+  const decline = barriers.consentNoDecline
+    ? ''
+    : '<button type="button" id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowessential">Endast nödvändiga</button>';
+  return `<div id="CybotCookiebotDialog" role="dialog" aria-label="Cookies" style="position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:50;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;padding:28px;max-width:520px;border-radius:8px">
+    <h2>Vi använder kakor</h2>
+    <p class="muted">Vi och våra partners använder cookies för att förbättra din upplevelse, mäta trafik och visa personligt anpassad marknadsföring.</p>
+    ${decline}
+    <button type="button" id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll">Tillåt alla</button>
+    <!-- An icon-only close button with no accessible name: the single most
+         common defect in real consent managers, and not the merchant's code. -->
+    <button type="button" id="CybotCookiebotDialogBodyButtonDecline" class="cookiebot-close"><span aria-hidden="true">✕</span></button>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('#CybotCookiebotDialog button').forEach((b) => {
+    b.addEventListener('click', () => document.getElementById('CybotCookiebotDialog')?.remove());
+  });
+</script>`;
 }
 
 function modalMarkup(barriers) {
@@ -189,14 +236,15 @@ function scripts(barriers) {
   `;
 }
 
-function productCard(p, barriers) {
+function productCard(p, barriers, style = URL_STYLES.swedish) {
   const alt = barriers.badAltText ? `alt="${p.slug}.jpg"` : `alt="${p.name}"`;
+  const href = `${style.product}/${p.slug}`;
   return `<article class="card">
-    <a href="/produkt/${p.slug}"><img src="/img/${p.slug}.svg" ${alt}></a>
-    <h3><a href="/produkt/${p.slug}">${p.name}</a></h3>
+    <a href="${href}"><img src="/img/${p.slug}.svg" ${alt}></a>
+    <h3><a href="${href}">${p.name}</a></h3>
     <p class="price">${money(p.price)}</p>
     <p class="muted">Fri frakt · Leverans 2–4 dagar</p>
-    ${barriers.vagueLinks ? `<a href="/produkt/${p.slug}">Läs mer</a>` : `<a href="/produkt/${p.slug}">Läs mer om ${p.name}</a>`}
+    ${barriers.vagueLinks ? `<a href="${href}">Läs mer</a>` : `<a href="${href}">Läs mer om ${p.name}</a>`}
     ${barriers.mouseOnlyFilter
       ? `<div class="icon-btn" role="button" onclick="void 0">♡ Spara</div>`
       : `<button class="icon-btn" type="button">♡ Spara i favoriter</button>`}
@@ -230,10 +278,12 @@ export function renderPage(site, route) {
   // The newsletter modal only appears on the homepage, as it does on real
   // stores — otherwise it would cover every page of the fixture.
   const b = { ...site.barriers, onHomepage: route.type === 'home' };
+  const style = styleOf(site);
+  const nav = navFor(style);
   const heading = (level, text) => `<h${level}>${text}</h${level}>`;
 
   if (route.type === 'home') {
-    const featured = PRODUCTS.slice(0, 6).map((p) => productCard(p, b)).join('');
+    const featured = PRODUCTS.slice(0, 6).map((p) => productCard(p, b, style)).join('');
     // The badly built store also forgets its <title>; the good one does not.
     return `${head(site, b.noH1 ? null : 'Inredning för hela hemmet', b)}${header(site, b)}
 <main>
@@ -242,7 +292,7 @@ export function renderPage(site, route) {
   ${b.headingSkip ? heading(4, 'Populärt just nu') : heading(2, 'Populärt just nu')}
   <div class="grid">${featured}</div>
   ${heading(2, 'Kategorier')}
-  <ul>${NAV.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul>
+  <ul>${nav.map((n) => `<li><a href="${n.href}">${n.label}</a></li>`).join('')}</ul>
   ${b.focusableOffcanvas ? '<button class="icon-btn" data-toggle-menu aria-label="Öppna meny">☰</button>' : ''}
 </main>${footer(site, b)}`;
   }
@@ -253,7 +303,7 @@ export function renderPage(site, route) {
 <main>
   ${b.noH1 ? heading(2, route.title) : heading(1, route.title)}
   ${filterBar(b)}
-  <div class="grid">${items.map((p) => productCard(p, b)).join('')}</div>
+  <div class="grid">${items.map((p) => productCard(p, b, style)).join('')}</div>
 </main>${footer(site, b)}`;
   }
 
@@ -287,7 +337,7 @@ export function renderPage(site, route) {
   ${b.noH1 ? heading(2, `Sökresultat`) : heading(1, `Sökresultat för "${route.query}"`)}
   <p class="muted">${hits.length} produkter</p>
   ${filterBar(b)}
-  <div class="grid">${hits.map((p) => productCard(p, b)).join('')}</div>
+  <div class="grid">${hits.map((p) => productCard(p, b, style)).join('')}</div>
 </main>${footer(site, b)}`;
   }
 
@@ -305,7 +355,7 @@ export function renderPage(site, route) {
     return `${head(site, 'Logga in', b)}${header(site, b)}
 <main>
   ${b.noH1 ? heading(2, 'Logga in') : heading(1, 'Logga in')}
-  <form action="/logga-in" method="post">
+  <form action="${style.login}" method="post">
     ${b.unlabelledSearch
       ? '<input type="email" name="email" placeholder="E-post"><input type="password" name="password" placeholder="Lösenord">'
       : '<label for="epost">E-postadress</label><input id="epost" type="email" name="email" autocomplete="email"><label for="losen">Lösenord</label><input id="losen" type="password" name="password" autocomplete="current-password">'}
@@ -336,4 +386,4 @@ export function renderPage(site, route) {
   return `${head(site, 'Sidan hittades inte', b)}${header(site, b)}<main><h1>404</h1></main>${footer(site, b)}`;
 }
 
-export { NAV, PRODUCTS };
+export { NAV, PRODUCTS, CATEGORIES };

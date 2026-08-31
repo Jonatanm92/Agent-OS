@@ -1,6 +1,6 @@
 import type { Finding, OutreachDraft } from '../core/Types.js';
 import { composeOutreach, looksLikeOptOut } from '../pipeline/Outreach.js';
-import { isReportable, selectMiniFindings } from '../reports/Selection.js';
+import { isMerchantOwned, isReportable, selectMiniFindings } from '../reports/Selection.js';
 import { buildEvidencePack, packQuality } from '../evidence/EvidencePack.js';
 import type { Platform } from './Platform.js';
 
@@ -40,7 +40,7 @@ export class OutreachService {
     const groups = audits.listGroups(scan.id);
 
     // Only findings a reviewer approved, or that an engine confirmed outright.
-    const usable = selectMiniFindings(findings.filter(isReportable), groups, 4);
+    const usable = selectMiniFindings(findings.filter(isReportable).filter(isMerchantOwned), groups, 4);
     const strong = usable.filter((finding) => {
       const pack = buildEvidencePack(finding, { storage, inlineImages: false });
       return packQuality(pack).score >= 60;

@@ -30,6 +30,7 @@ const USAGE = `A11Y Revenue OS
   a11y-os outreach <domain>                     Draft outreach from approved findings
   a11y-os outreach-approve <draftId>
   a11y-os outreach-sent <draftId>
+  a11y-os outreach-reply <domain> --text "..."  Record a reply; honours opt-outs
   a11y-os retest <domain>                       Re-run and classify each finding
   a11y-os monitor [<domain>]                    Run monitoring (all due sites if omitted)
   a11y-os remediation <findingId> [--github]    Remediation guidance / PR plan
@@ -218,6 +219,20 @@ async function main(): Promise<number> {
       case 'outreach-sent': {
         const draft = new OutreachService(platform).markSent(positionals[0]);
         console.log(`Marked ${draft.id} as sent.`);
+        return 0;
+      }
+
+      case 'outreach-reply': {
+        const prospect = requireProspect(platform, positionals[0]);
+        const text = typeof flags.text === 'string' ? flags.text : positionals.slice(1).join(' ');
+        if (!text) throw new Error('outreach-reply needs the reply text: --text "…"');
+        const result = new OutreachService(platform).recordReply(prospect.id, text, typeof flags.contact === 'string' ? flags.contact : undefined);
+        if (result.optedOut) {
+          console.log(`${prospect.domain} asked not to be contacted. Domain suppressed permanently and marked LOST.`);
+        } else {
+          const updated = platform.store.getProspect(prospect.id)!;
+          console.log(`${updated.domain} → ${updated.salesStage}: ${updated.nextAction}`);
+        }
         return 0;
       }
 

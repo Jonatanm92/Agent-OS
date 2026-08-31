@@ -4,6 +4,7 @@ import type { Confidence, Finding, PageType, Severity, SourceEngine } from '../c
 import type { RawIssue } from '../audit/RawIssue.js';
 import { AXE_RULE_OVERRIDES, RULE_CATALOG, type RuleDefinition } from './RuleCatalog.js';
 import { severityFromAxeImpact, weightByPageType } from './Severity.js';
+import { detectThirdParty } from './ThirdParty.js';
 import { wcagFromAxeTags, wcagRefs } from './WcagMap.js';
 
 export interface NormalizeContext {
@@ -122,6 +123,7 @@ export function normalizeIssue(issue: RawIssue, context: NormalizeContext): Find
     reviewerNote: null,
     signature,
     componentLabel: issue.componentLabel ?? null,
+    thirdParty: detectThirdParty(issue.selector, issue.html)?.id ?? null,
   };
 }
 

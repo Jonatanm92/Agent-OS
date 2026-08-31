@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { CHROMIUM_ARGS } from '../discovery/Browser.js';
 import type { Finding, ReportLevel, ReportRecord } from '../core/Types.js';
 import { buildEvidencePack } from '../evidence/EvidencePack.js';
 import { renderDeveloperReport, renderMiniAudit, renderProfessionalAudit, type ReportContext } from '../reports/Renderers.js';
@@ -104,7 +105,7 @@ export class ReportService {
     const browser = await chromium.launch({
       headless: true,
       executablePath: this.platform.config.chromiumPath,
-      args: ['--no-sandbox', '--disable-dev-shm-usage'],
+      args: CHROMIUM_ARGS,
     });
     try {
       const page = await browser.newPage();

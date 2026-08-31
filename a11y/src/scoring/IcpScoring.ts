@@ -114,7 +114,10 @@ export function scoreProspect(input: ScoringInput, config: IcpConfig = DEFAULT_I
 
   const signals = input.signals;
   const strongFindings = input.findings.filter(
-    (f) => severityRank(f.severity) >= severityRank('high') && (f.confidence === 'CONFIRMED_AUTOMATED' || f.confidence === 'HIGH_CONFIDENCE'),
+    (f) =>
+      severityRank(f.severity) >= severityRank('high') &&
+      (f.confidence === 'CONFIRMED_AUTOMATED' || f.confidence === 'HIGH_CONFIDENCE') &&
+      f.thirdParty === null,
   );
   const journeyFindings = strongFindings.filter((f) => JOURNEY_CORE.includes(f.pageType));
   const reachedSteps = input.journey.filter((s) => s.reached && JOURNEY_CORE.includes(s.pageType));
@@ -209,7 +212,11 @@ export function scoreProspect(input: ScoringInput, config: IcpConfig = DEFAULT_I
  */
 export function computeEvidenceScore(findings: Finding[], groups: FindingGroup[]): number {
   const severityWeights: Record<Severity, number> = { critical: 30, high: 20, medium: 8, low: 2 };
-  const usable = findings.filter((f) => f.confidence === 'CONFIRMED_AUTOMATED' || f.confidence === 'HIGH_CONFIDENCE');
+  // Third-party widget defects are excluded: we cannot sell a fix for code the
+  // merchant does not own, so they must not inflate what a prospect is worth.
+  const usable = findings.filter(
+    (f) => (f.confidence === 'CONFIRMED_AUTOMATED' || f.confidence === 'HIGH_CONFIDENCE') && f.thirdParty === null,
+  );
   const systemicByRule = new Map(groups.filter((g) => g.systemic).map((g) => [g.rule, g.affectedPageCount]));
 
   const strengthOf = (finding: Finding): number => {

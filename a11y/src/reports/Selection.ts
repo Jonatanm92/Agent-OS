@@ -24,6 +24,15 @@ export function needsManualValidation(finding: Finding): boolean {
 const JOURNEY_PAGES = ['checkout_entry', 'cart', 'product', 'category', 'search', 'account'];
 
 /**
+ * The merchant cannot fix somebody else's embedded widget, so a mini audit that
+ * leads with one reads as though we did not understand the site. These are
+ * reported to a paying customer in their own section instead.
+ */
+export function isMerchantOwned(finding: Finding): boolean {
+  return finding.thirdParty === null;
+}
+
+/**
  * Mini audit selection. Three to five findings that a busy ecommerce manager
  * will recognise as real problems on their own site — not the five findings
  * with the highest raw counts.
@@ -32,6 +41,7 @@ export function selectMiniFindings(findings: Finding[], groups: FindingGroup[], 
   const groupById = new Map(groups.map((g) => [g.id, g]));
   const candidates = findings
     .filter(isReportable)
+    .filter(isMerchantOwned)
     .filter((f) => severityRank(f.severity) >= severityRank('high'))
     .sort((a, b) => miniScore(b, groupById.get(b.groupId ?? '')) - miniScore(a, groupById.get(a.groupId ?? '')));
 
@@ -85,11 +95,13 @@ export interface ProfessionalSections {
   mediumPriority: Finding[];
   improvements: Finding[];
   manualValidation: Finding[];
+  /** Defects in embedded third-party code, grouped so the vendor can be named. */
+  thirdParty: Finding[];
 }
 
 /** SYSTEM 7 — the professional audit's remediation roadmap. */
 export function categorizeForProfessional(findings: Finding[]): ProfessionalSections {
-  const reportable = findings.filter(isReportable);
+  const reportable = findings.filter(isReportable).filter(isMerchantOwned);
   const inJourney = (f: Finding) => JOURNEY_PAGES.includes(f.pageType);
   const bySeverity = (severity: Severity) => reportable.filter((f) => f.severity === severity);
 
@@ -103,7 +115,8 @@ export function categorizeForProfessional(findings: Finding[]): ProfessionalSect
     highPriority,
     mediumPriority: bySeverity('medium'),
     improvements: bySeverity('low'),
-    manualValidation: findings.filter(needsManualValidation),
+    manualValidation: findings.filter(needsManualValidation).filter(isMerchantOwned),
+    thirdParty: findings.filter(isReportable).filter((f) => f.thirdParty !== null),
   };
 }
 

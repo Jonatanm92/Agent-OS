@@ -1,7 +1,8 @@
 import type { Finding, FindingGroup, JourneyStep, Prospect, Scan } from '../core/Types.js';
 import type { ObjectStorage } from '../evidence/Storage.js';
 import { buildEvidencePack } from '../evidence/EvidencePack.js';
-import { documentShell, escapeHtml, evidenceCard, journeyTable, disclaimer, pageTypeLabel, severityBadge } from './Html.js';
+import { consentNote, documentShell, escapeHtml, evidenceCard, journeyTable, disclaimer, pageTypeLabel, severityBadge } from './Html.js';
+import { vendorLabel } from '../findings/ThirdParty.js';
 import { categorizeForProfessional, countBySeverity, isReportable, needsManualValidation, selectMiniFindings } from './Selection.js';
 
 export interface ReportContext {
@@ -50,6 +51,7 @@ export function renderMiniAudit(context: ReportContext): { html: string; finding
 
 <h2>Vad vi testade</h2>
 <p>Vi gick igenom butikens köpresa som en kund gör det — utan att lägga en order, logga in eller kringgå några spärrar.</p>
+${consentNote(context.scan.consent)}
 ${journeyTable(context.scan.journey)}
 
 <h2>Vad vi hittade</h2>
@@ -104,6 +106,7 @@ export function renderProfessionalAudit(context: ReportContext): { html: string;
 </div>
 
 <h2>Testomfattning</h2>
+${consentNote(context.scan.consent)}
 ${journeyTable(context.scan.journey)}
 
 ${systemic.length
@@ -123,6 +126,8 @@ ${section('Hög prioritet', 'Allvarliga hinder som gör butiken svår att använ
 ${section('Medelprioritet', 'Problem som försämrar upplevelsen och bör planeras in i ordinarie utvecklingsarbete.', sections.mediumPriority)}
 ${section('Förbättringar', 'Mindre brister som höjer kvaliteten när de åtgärdas.', sections.improvements)}
 
+${thirdPartySection(sections.thirdParty, context)}
+
 ${sections.manualValidation.length
       ? `<h2>Kräver manuell validering <span class="badge review">${sections.manualValidation.length}</span></h2>
 <p>Automatiserad testning kunde inte avgöra dessa. De redovisas som öppna punkter, inte som konstaterade fel.</p>
@@ -132,6 +137,28 @@ ${packsFor(sections.manualValidation.slice(0, 20), context).map((p) => evidenceC
 ${disclaimer(context.engines ?? ['axe-core', 'Playwright'], tested.length)}`;
 
   return { html: documentShell(`Tillgänglighetsgranskning — ${name}`, body, { branding: context.branding }), findings: included };
+}
+
+/**
+ * Defects inside embedded third-party code. Reported honestly, but separated
+ * and attributed, because the merchant's own development team cannot fix them —
+ * the vendor has to, or the widget has to be replaced.
+ */
+function thirdPartySection(findings: Finding[], context: ReportContext): string {
+  if (findings.length === 0) return '';
+  const byVendor = new Map<string, Finding[]>();
+  for (const finding of findings) {
+    const label = vendorLabel(finding.thirdParty) ?? 'Okänd leverantör';
+    byVendor.set(label, [...(byVendor.get(label) ?? []), finding]);
+  }
+  const rows = [...byVendor.entries()]
+    .map(([label, items]) => `<tr><td>${escapeHtml(label)}</td><td>${items.length}</td><td>${[...new Set(items.map((f) => f.severity))].join(', ')}</td></tr>`)
+    .join('');
+
+  return `<h2>Inbäddade tredjepartskomponenter <span class="badge">${findings.length}</span></h2>
+<p>Följande brister ligger i kod från externa leverantörer (cookiebanner, chatt, omdömen, betalning). De påverkar era kunder på riktigt, men er utvecklare kan sällan rätta dem själv — de behöver drivas mot leverantören, eller lösas genom att byta komponent.</p>
+<table><thead><tr><th>Leverantör</th><th>Antal fynd</th><th>Allvarlighet</th></tr></thead><tbody>${rows}</tbody></table>
+${packsFor(findings.slice(0, 6), context).map((p) => evidenceCard(p)).join('')}`;
 }
 
 /** DEVELOPER REPORT — selectors, DOM, reproduction and remediation. */

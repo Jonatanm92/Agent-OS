@@ -39,6 +39,7 @@ then Playwright's own download.
 ```
 domain
   → robots.txt check and politeness gate
+  → cookie wall: decline non-essential cookies, or record that we could not
   → journey discovery: homepage, search, category, product, cart, login, checkout entry
   → per page: axe-core + keyboard walk + focus analysis + forms + structure + dialogs + reflow
   → normalization: WCAG mapping, severity weighted by journey position, confidence
@@ -71,6 +72,15 @@ show up when something is operated:
   fields, unlabelled option groups and error text wired to nothing.
 - **`ReflowProbe`** renders at 360 px — roughly 400% zoom — and measures the
   actual overflow.
+
+Two things decide whether any of that survives contact with a real storefront.
+**The cookie wall** sits in front of nearly every European shop; the platform
+declines non-essential cookies to get at the store behind it, never accepts on
+the merchant's behalf, and states in the report which of the two happened.
+**Third-party widgets** — Cookiebot, Klarna, Trustpilot, Zendesk — fail these
+checks constantly and the merchant cannot fix them, so those findings are
+attributed to the vendor, kept out of the mini audit and out of the scoring, and
+reported separately to a paying customer.
 
 The result is a finding like *"Filtrera opens when clicked with a mouse but does
 nothing when it has keyboard focus and Enter is pressed"*, with a screenshot of
@@ -110,6 +120,9 @@ Systemic components are reviewed once, not once per affected page.
 
 ## Safety
 
+New here? [`docs/RUNBOOK.md`](docs/RUNBOOK.md) is the operator guide: seed list
+to sent mini audit, what to do when a scan fails, and which metric to read first.
+
 Read [`docs/SAFETY.md`](docs/SAFETY.md). Short version: read-only crawling,
 robots.txt honoured, per-host rate limiting, nothing purchased or submitted, no
 authentication bypassed, no production system ever modified, no company data
@@ -130,13 +143,15 @@ goes up when the crawler gets noisier, not when the business gets better.
 npm test
 ```
 
-79 tests. The important one is `test/EndToEnd.test.ts`, which runs the real
-browser against three local fixture storefronts — a badly built shop, a well
-built shop and a B2B site — and asserts the whole slice: journey discovery, the
+93 tests. The important one is `test/EndToEnd.test.ts`, which runs the real
+browser against five local fixture storefronts — a badly built shop, a well
+built shop, a B2B site, a Shopify-shaped shop behind a dismissible cookie wall,
+and a shop behind a wall with no way to decline — and asserts the whole slice: journey discovery, the
 keyboard barrier, systemic grouping, that a well built store is *not* worked up
 into a case, that a B2B site is disqualified, that the mini audit contains only
-evidenced findings and no legal claims, and that no request to any fixture was
-ever anything but a `GET`.
+evidenced findings and no legal claims, that the consent wall is declined rather
+than accepted, that a vendor's defects never lead a mini audit, and that no
+request to any fixture was ever anything but a `GET`.
 
 ## Layout
 

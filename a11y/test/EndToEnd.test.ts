@@ -178,3 +178,91 @@ describe('vertical slice 1: one domain in, sendable evidence out', () => {
     expect(forbidden).toEqual([]);
   });
 });
+
+/**
+ * The cookie wall, which sits in front of essentially every European
+ * storefront. Getting this wrong means every scan audits somebody's consent
+ * manager instead of the merchant's checkout.
+ */
+describe('consent walls and third-party widgets', () => {
+  const PORTS = { shopify: 4386, wall: 4387 };
+  let fixtures: { stop(): Promise<void> };
+  let platform: Platform;
+  let dataDir: string;
+  let shopify: ScanOutcome;
+  let wall: ScanOutcome;
+
+  beforeAll(async () => {
+    const { SITES } = await import('../fixtures/Server.mjs' as string);
+    SITES[PORTS.shopify] = SITES[4184];
+    SITES[PORTS.wall] = SITES[4185];
+    fixtures = await startFixtures(Object.values(PORTS));
+    dataDir = mkdtempSync(join(tmpdir(), 'a11y-consent-'));
+    platform = createPlatform({ config: { dataDir, perHostDelayMs: 50 } });
+    const scans = new ScanService(platform);
+    shopify = await scans.scanDomain(`http://localhost:${PORTS.shopify}`);
+    wall = await scans.scanDomain(`http://localhost:${PORTS.wall}`);
+  }, 300_000);
+
+  afterAll(async () => {
+    platform?.close();
+    await fixtures?.stop();
+    if (dataDir) rmSync(dataDir, { recursive: true, force: true });
+  });
+
+  it('declines non-essential cookies to get at the store behind the wall', () => {
+    expect(shopify.consent?.detected).toBe(true);
+    expect(shopify.consent?.vendor).toBe('cookiebot');
+    expect(shopify.consent?.dismissed).toBe(true);
+    expect(shopify.consent?.method).toBe('necessary_only');
+  });
+
+  it('never accepts tracking on the merchant\'s behalf, and says so when it cannot decline', () => {
+    expect(wall.consent?.detected).toBe(true);
+    expect(wall.consent?.dismissed).toBe(false);
+    expect(wall.consent?.method).toBe('not_dismissible');
+    expect(wall.consent?.note).toContain('without accepting them');
+  });
+
+  it('still reaches the buying journey behind a dismissed wall', () => {
+    const reached = shopify.journey.filter((s) => s.reached).map((s) => s.pageType);
+    expect(reached).toContain('category');
+    expect(reached).toContain('product');
+    expect(reached).toContain('cart');
+  });
+
+  it('handles Shopify URL shapes, not just Swedish platform conventions', () => {
+    expect(shopify.prospect.ecommercePlatform).toBe('shopify');
+    const journey = new Map(shopify.journey.map((s) => [s.pageType, s.url ?? '']));
+    expect(journey.get('category')).toContain('/collections/');
+    expect(journey.get('product')).toContain('/products/');
+  });
+
+  it('attributes defects inside the consent manager to its vendor, not the merchant', () => {
+    const vendorFindings = wall.findings.filter((f) => f.thirdParty !== null);
+    expect(vendorFindings.length).toBeGreaterThan(0);
+    expect(new Set(vendorFindings.map((f) => f.thirdParty))).toContain('cookiebot');
+  });
+
+  it('never leads a mini audit with somebody else\'s widget', async () => {
+    const report = await new ReportService(platform).generate(wall.prospect.id, { level: 'mini' });
+    expect(report.findings.length).toBeGreaterThan(0);
+    for (const finding of report.findings) expect(finding.thirdParty).toBeNull();
+  });
+
+  it('tells the reader whether the store was tested in front of or behind its cookie wall', async () => {
+    const behind = await new ReportService(platform).generate(wall.prospect.id, { level: 'professional' });
+    expect(behind.html).toContain('Testet gjordes med cookiebannern kvar');
+    const dismissed = await new ReportService(platform).generate(shopify.prospect.id, { level: 'professional' });
+    expect(dismissed.html).toContain('avvisades genom att tacka nej');
+    expect(behind.html).toContain('Inbäddade tredjepartskomponenter');
+  });
+
+  it('does not let a vendor\'s defects inflate what a prospect is worth', () => {
+    const vendorOnly = wall.findings.filter((f) => f.thirdParty !== null);
+    expect(vendorOnly.length).toBeGreaterThan(0);
+    // Scored signals only ever cite merchant-owned findings.
+    const barrierSignal = wall.scoring?.applied.find((s) => s.id === 'journey_barriers');
+    if (barrierSignal) expect(barrierSignal.evidence).not.toContain('cookiebot');
+  });
+});

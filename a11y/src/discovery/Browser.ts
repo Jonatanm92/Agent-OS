@@ -1,5 +1,28 @@
 import { chromium, type Browser, type BrowserContext, type Page, type Response } from 'playwright';
 import type { PlatformConfig } from '../core/Config.js';
+import { HELPERS_JS } from '../audit/PageHelpers.js';
+
+/**
+ * Chromium talks to Google by default — safebrowsing, autofill, component
+ * updates, sync. Those requests have nothing to do with the site being audited,
+ * they cost seconds per scan on a restricted network, and they undercut the
+ * claim that we only contact the site we were asked to test.
+ */
+export const CHROMIUM_ARGS = [
+  '--no-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-background-networking',
+  '--disable-component-update',
+  '--disable-domain-reliability',
+  '--disable-sync',
+  '--disable-default-apps',
+  '--no-first-run',
+  '--no-default-browser-check',
+  '--metrics-recording-only',
+  '--disable-client-side-phishing-detection',
+  '--safebrowsing-disable-auto-update',
+  '--disable-features=Translate,OptimizationHints,MediaRouter,AutofillServerCommunication,InterestFeedContentSuggestions,CalculateNativeWinOcclusion',
+];
 
 /**
  * Politeness gate: never more than one in-flight navigation per host, and a
@@ -59,7 +82,7 @@ export class BrowserSession {
     this.browser = await chromium.launch({
       headless: this.config.headless,
       executablePath: this.config.chromiumPath,
-      args: ['--no-sandbox', '--disable-dev-shm-usage'],
+      args: CHROMIUM_ARGS,
     });
   }
 
@@ -82,6 +105,9 @@ export class BrowserSession {
     // functions we hand to page.evaluate. Providing a no-op keeps evaluated
     // code identical between `npm run dev` and the compiled build.
     await context.addInitScript({ content: 'globalThis.__name = globalThis.__name || function (fn) { return fn; };' });
+    // Shared page helpers are available from the first byte of every document,
+    // so consent handling and signal collection can run before the audit does.
+    await context.addInitScript({ content: HELPERS_JS });
     context.setDefaultNavigationTimeout(this.config.navigationTimeoutMs);
     context.setDefaultTimeout(Math.min(this.config.navigationTimeoutMs, 10000));
     return context;

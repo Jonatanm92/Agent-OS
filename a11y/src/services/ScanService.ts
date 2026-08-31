@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
 import { toOrigin } from '../core/Ids.js';
-import type { Finding, FindingGroup, JourneyStep, Prospect, Scan } from '../core/Types.js';
+import type { ConsentDecision, Finding, FindingGroup, JourneyStep, Prospect, Scan } from '../core/Types.js';
 import { BrowserSession, settle } from '../discovery/Browser.js';
 import { discoverJourney } from '../discovery/JourneyDiscovery.js';
 import type { SiteSignals } from '../discovery/PlatformDetect.js';
@@ -29,6 +29,7 @@ export interface ScanOutcome {
   groups: FindingGroup[];
   journey: JourneyStep[];
   signals: SiteSignals | null;
+  consent: ConsentDecision | null;
   scoring: ScoringResult | null;
   failedProbes: { probe: string; error: string }[];
 }
@@ -57,6 +58,7 @@ export class ScanService {
     let signals: SiteSignals | null = null;
     let journey: JourneyStep[] = [];
     let robots = null as Scan['robots'];
+    let consent = null as ConsentDecision | null;
     let pagesTested = 0;
 
     try {
@@ -84,14 +86,15 @@ export class ScanService {
       journey = result.steps;
       signals = result.signals;
       robots = result.robots;
+      consent = result.consent;
       await context.close();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error('scan failed', { domain, error: message });
-      audits.finishScan(scan.id, { status: 'failed', error: message, journey, robots, pagesTested });
+      audits.finishScan(scan.id, { status: 'failed', error: message, journey, robots, consent, pagesTested });
       store.setProspectFacts(prospect.id, { scanStatus: 'failed' });
       store.addTimelineEvent(prospect.id, 'scan_failed', `Scan failed: ${message}`, { scanId: scan.id });
-      return { prospect: store.getProspect(prospect.id)!, scan: audits.getScan(scan.id)!, findings: [], groups: [], journey, signals, scoring: null, failedProbes };
+      return { prospect: store.getProspect(prospect.id)!, scan: audits.getScan(scan.id)!, findings: [], groups: [], journey, signals, consent, scoring: null, failedProbes };
     } finally {
       await session.close();
     }
@@ -111,6 +114,7 @@ export class ScanService {
       status,
       journey,
       robots,
+      consent,
       pagesTested,
       error: homepageReached ? null : (journey.find((s) => s.pageType === 'homepage')?.reason ?? 'homepage could not be loaded'),
     });
@@ -136,6 +140,7 @@ export class ScanService {
       groups: grouped.groups,
       journey,
       signals,
+      consent,
       scoring,
       failedProbes,
     };
