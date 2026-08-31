@@ -1,0 +1,44 @@
+[
+  {
+    "contactName": "Demo Restaurang AB",
+    "contactChannel": "demo-restaurant@example.invalid",
+    "subject": "Akut läcka i källaren",
+    "description": "Det läcker mycket vatten från ett rör i källaren och vi behöver hjälp akut.",
+    "location": "Göteborg",
+    "propertyType": "Restauranglokal",
+    "currentSystem": "Okänt"
+  },
+  {
+    "contactName": "Exempelkontoret AB",
+    "contactChannel": "office@example.invalid",
+    "subject": "Dåligt luftflöde i mötesrum",
+    "description": "Ventilationen låter och luftflödet är svagt i två mötesrum.",
+    "location": "Uddevalla",
+    "propertyType": "Kontor"
+  },
+  {
+    "contactName": "Testfamiljen",
+    "contactChannel": "villa@example.invalid",
+    "subject": "Ingen värme från värmepumpen",
+    "description": "Värmepumpen visar felkod och vi har ingen värme. Behöver hjälp snarast.",
+    "location": "Vänersborg",
+    "propertyType": "Villa",
+    "currentSystem": "DemoPump 8 kW"
+  },
+  {
+    "contactName": "Fiktiva Fastigheter AB",
+    "contactChannel": "property@example.invalid",
+    "subject": "Offert på laddboxar",
+    "description": "Vi vill installera sex laddboxar vid vår personalparkering och behöver en offert.",
+    "location": "Trollhättan",
+    "propertyType": "Kommersiell fastighet"
+  },
+  {
+    "contactName": "",
+    "contactChannel": "",
+    "subject": "Behöver hjälp i lokalen",
+    "description": "Något fungerar inte som det ska och vi vill att någon tittar på det.",
+    "location": "",
+    "propertyType": ""
+  }
+]

@@ -1,14 +1,23 @@
+import { timingSafeEqual } from 'node:crypto';
 import type { Server } from 'node:http';
 import { WebSocketServer } from 'ws';
 import { resolveConfig } from './config.js';
 
+function sameSecret(supplied: string, expected: string): boolean {
+  const left = Buffer.from(supplied);
+  const right = Buffer.from(expected);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
 /**
- * In-dashboard terminal: a PTY bridge over WebSocket at /api/terminal.
+ * Optional owner terminal at /api/terminal.
  *
- * The browser (xterm.js) connects, we spawn a real shell via node-pty, and pipe
- * bytes both ways. node-pty is an OPTIONAL dependency — if it isn't installed
- * (e.g. native build skipped), we send a friendly message and close instead of
- * crashing, so the rest of the dashboard is unaffected.
+ * A real shell is never available by default. It requires both:
+ *   AGENT_OS_ENABLE_TERMINAL=true
+ *   AGENT_OS_PASSWORD=<non-empty owner secret>
+ *
+ * The WebSocket Origin must also match the configured local/approved dashboard
+ * origins. This blocks drive-by websites from opening a shell on localhost.
  */
 export function attachTerminal(server: Server): void {
   const wss = new WebSocketServer({ server, path: '/api/terminal' });
@@ -21,19 +30,38 @@ export function attachTerminal(server: Server): void {
         /* socket closed */
       }
     };
-
-    // Auth: browsers can't set WS headers, so the token rides in the query.
-    const { password } = resolveConfig();
-    if (password) {
-      const url = new URL(req.url ?? '', 'http://localhost');
-      if (url.searchParams.get('token') !== password) {
-        send('output', '\r\n\x1b[31mUnauthorized — log in to the dashboard first.\x1b[0m\r\n');
-        ws.close();
-        return;
+    const reject = (message: string) => {
+      send('output', `\r\n\x1b[31m${message}\x1b[0m\r\n`);
+      try {
+        ws.close(1008, 'policy violation');
+      } catch {
+        /* socket already closed */
       }
+    };
+
+    const config = resolveConfig();
+    if (!config.enableTerminal) {
+      reject('Terminal is disabled by policy.');
+      return;
+    }
+    if (!config.password) {
+      reject('Terminal requires AGENT_OS_PASSWORD.');
+      return;
     }
 
-    // Load node-pty lazily so a missing native build doesn't break anything.
+    const origin = String(req.headers.origin ?? '');
+    if (!origin || !config.allowedOrigins.includes(origin)) {
+      reject('WebSocket origin is not approved.');
+      return;
+    }
+
+    const url = new URL(req.url ?? '', 'http://localhost');
+    const supplied = url.searchParams.get('token') ?? '';
+    if (!sameSecret(supplied, config.password)) {
+      reject('Unauthorized — log in to the dashboard first.');
+      return;
+    }
+
     let ptyMod: any;
     try {
       ptyMod = await import('node-pty');
@@ -41,9 +69,7 @@ export function attachTerminal(server: Server): void {
       send(
         'output',
         '\r\n\x1b[33mTerminal support is not installed.\x1b[0m\r\n' +
-          'Install it once, then restart the dashboard:\r\n\r\n' +
-          '    npm run terminal:install\r\n\r\n' +
-          '(That builds node-pty. The rest of Agent OS works without it.)\r\n'
+          'Install node-pty manually after reviewing it, then restart Agent OS.\r\n'
       );
       ws.close();
       return;
@@ -60,36 +86,47 @@ export function attachTerminal(server: Server): void {
         cwd: process.cwd(),
         env: process.env,
       });
-    } catch (e) {
-      send('output', `\r\n\x1b[31mFailed to start shell: ${e instanceof Error ? e.message : e}\x1b[0m\r\n`);
-      ws.close();
+    } catch (error) {
+      reject(`Failed to start shell: ${error instanceof Error ? error.message : String(error)}`);
       return;
     }
 
-    term.onData((d: string) => send('output', d));
+    term.onData((data: string) => send('output', data));
     term.onExit(() => {
       send('output', '\r\n[process exited]\r\n');
       try {
         ws.close();
       } catch {
-        /* noop */
+        /* no-op */
       }
     });
 
     ws.on('message', (raw) => {
-      let msg: { type?: string; data?: string; cols?: number; rows?: number };
+      if (raw.toString().length > 64 * 1024) {
+        reject('Terminal message exceeds the size limit.');
+        return;
+      }
+      let message: { type?: string; data?: string; cols?: number; rows?: number };
       try {
-        msg = JSON.parse(raw.toString());
+        message = JSON.parse(raw.toString());
       } catch {
         return;
       }
-      if (msg.type === 'input' && typeof msg.data === 'string') {
-        term.write(msg.data);
-      } else if (msg.type === 'resize' && msg.cols && msg.rows) {
+      if (message.type === 'input' && typeof message.data === 'string') {
+        term.write(message.data.slice(0, 16 * 1024));
+      } else if (
+        message.type === 'resize' &&
+        Number.isInteger(message.cols) &&
+        Number.isInteger(message.rows) &&
+        Number(message.cols) >= 20 &&
+        Number(message.cols) <= 400 &&
+        Number(message.rows) >= 5 &&
+        Number(message.rows) <= 200
+      ) {
         try {
-          term.resize(msg.cols, msg.rows);
+          term.resize(Number(message.cols), Number(message.rows));
         } catch {
-          /* ignore bad sizes */
+          /* ignore invalid terminal resize */
         }
       }
     });

@@ -11,7 +11,7 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
   const [saving, setSaving] = useState(false);
   const [newName, setNewName] = useState('');
   const [runCmd, setRunCmd] = useState('');
-  const [run, setRun] = useState<{ running: boolean; suggested: string } | null>(null);
+  const [run, setRun] = useState<{ running: boolean; suggested: string; enabled: boolean } | null>(null);
   const [runLogs, setRunLogs] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
   const [port, setPort] = useState('5173');
@@ -38,8 +38,8 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
       try {
         const st = await api.runStatus(activeProject.id);
         if (!alive) return;
-        setRun({ running: st.running, suggested: st.suggested });
-        setRunCmd((c) => c || st.command || st.suggested || '');
+        setRun({ running: st.running, suggested: st.suggested, enabled: st.enabled === true });
+        setRunCmd(st.command || st.suggested || '');
         if (st.running) {
           const { logs } = await api.runLogs(activeProject.id);
           if (alive) setRunLogs(logs);
@@ -63,10 +63,10 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
       await api.runStop(activeProject.id);
       setRun((r) => (r ? { ...r, running: false } : r));
     } else {
-      if (!runCmd.trim()) return;
-      await api.runStart(activeProject.id, runCmd.trim());
+      if (!run?.enabled || !run.suggested) return;
+      await api.runStart(activeProject.id, run.suggested);
       setShowLogs(true);
-      setRun((r) => (r ? { ...r, running: true } : { running: true, suggested: '' }));
+      setRun((r) => (r ? { ...r, running: true } : { running: true, suggested: '', enabled: false }));
     }
   };
 
@@ -143,17 +143,22 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
           <div className="ws-run-row">
             <input
               value={runCmd}
-              placeholder={run?.suggested || 'npm run dev'}
-              onChange={(e) => setRunCmd(e.target.value)}
+              placeholder={run?.enabled ? 'No approved run script found' : 'Host preview disabled by policy'}
+              readOnly
+              aria-label="Approved host preview command"
             />
             <button
               className={`ghost-btn small-btn ${run?.running ? 'running' : ''}`}
               onClick={toggleRun}
-              title="Start/stop a dev server or command"
+              disabled={!run?.running && (!run?.enabled || !run?.suggested)}
+              title={run?.enabled ? 'Start or stop the exact owner-reviewed preview script' : 'Set AGENT_OS_ENABLE_HOST_RUNNER=true only after reviewing this project'}
             >
               {run?.running ? '■ Stop' : '▶ Run'}
             </button>
           </div>
+          {!run?.enabled && (
+            <p className="muted tiny">Host preview is off by default. Build and test automation uses the no-network Docker sandbox.</p>
+          )}
           <div className="ws-run-row">
             <span className="muted tiny">localhost:</span>
             <input

@@ -4,6 +4,7 @@ node_modules/
 # Build output
 server/dist/
 client/dist/
+company/projects/revenue-001/demo/dist/
 *.tsbuildinfo
 
 # Local runtime data
