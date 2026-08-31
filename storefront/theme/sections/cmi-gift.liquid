@@ -24,7 +24,7 @@
 
     {%- if section.settings.cta_label != blank -%}
       <a class="cmi__btn cmi__btn--primary" style="margin-top:24px;"
-         href="{{ section.settings.cta_url | default: '#cmi-personalize' }}">
+         href="{{ section.settings.cta_url | default: '#cmi-personalize' | escape }}">
         {{ section.settings.cta_label | escape }}
       </a>
     {%- endif -%}

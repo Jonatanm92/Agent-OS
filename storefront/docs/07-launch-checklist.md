@@ -73,7 +73,11 @@ to build and deliver their issue without confusion.*
 - [ ] **O7** Order confirmation email shows the personalization details
 - [ ] **O8** You can answer, from the order alone: what to design, and where the
       photos are. If not, the form needs another field.
-- [ ] **O9** Test order refunded/cancelled and **test mode turned off**
+- [ ] **O9** Paste a deliberately long setlist (fill the field) into the test
+      order and confirm it arrives **complete** on the order — Shopify's maximum
+      line item property length is undocumented, and truncation would be silent
+      (`08-known-limitations.md` item 8)
+- [ ] **O10** Test order refunded/cancelled and **test mode turned off**
 
 ## C — Legal (`05-legal-review.md`) — blocking
 

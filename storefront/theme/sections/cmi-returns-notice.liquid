@@ -22,7 +22,7 @@
       </div>
       {%- if section.settings.policy_link_label != blank and section.settings.policy_link_url != blank -%}
         <p style="margin-top:14px;">
-          <a class="cmi__policy-link" href="{{ section.settings.policy_link_url }}">{{ section.settings.policy_link_label | escape }}</a>
+          <a class="cmi__policy-link" href="{{ section.settings.policy_link_url | escape }}">{{ section.settings.policy_link_label | escape }}</a>
         </p>
       {%- endif -%}
     </div>

@@ -98,7 +98,26 @@ anything about Shopify's server behaviour — the checklist covers that.
 Money formatting in particular is the store's own setting; the preview's
 `349,00 kr` is a stand-in.
 
-## 8. Deliberately not built
+## 8. Line item property value length is an unverified limit
+
+The setlist field accepts 1,500 characters and the notes field 900. **Shopify's
+maximum length for a line item property value is not publicly documented**, and
+this could not be tested from here — there are scattered developer reports of an
+undocumented cap, but no authoritative figure, and `shopify.dev` is blocked by
+this session's egress policy.
+
+Realistically a 20-song setlist is about 500 characters, so the limits are
+generous headroom rather than an expected case. The risk is silent truncation:
+the order would look fine with the end of a long setlist missing.
+
+**Handled by test, not by guessing:** launch checklist item O10 pastes a
+deliberately long setlist into the test order and checks it arrives complete.
+
+**If it truncates:** lower `maxlength` on the Setlist field in
+`cmi-personalizer.liquid` to just under whatever survived, and add a line to the
+field's hint telling customers to email longer setlists.
+
+## 9. Deliberately not built
 
 Each of these is cheap to add later and unjustifiable now:
 
@@ -110,7 +129,7 @@ Each of these is cheap to add later and unjustifiable now:
 - No reviews section — there are no reviews.
 - No blog, no collections beyond what exists, no additional products.
 
-## 9. Untestable from here
+## 10. Untestable from here
 
 - Actual Shopify file-upload round trip
 - Cart page rendering of line item properties (theme-dependent)

@@ -66,7 +66,7 @@
         rows="4"
         maxlength="{{ ml }}"
         aria-describedby="{{ describers }}"
-        {% if placeholder != blank %}placeholder="{{ placeholder }}"{% endif %}
+        {% if placeholder != blank %}placeholder="{{ placeholder | escape }}"{% endif %}
         {% if required %}required aria-required="true"{% endif %}></textarea>
 
     {%- else -%}
@@ -87,9 +87,9 @@
         type="{{ input_type }}"
         {% if length_capped %}maxlength="{{ ml }}"{% endif %}
         aria-describedby="{{ describers }}"
-        {% if inputmode != blank %}inputmode="{{ inputmode }}"{% endif %}
-        {% if autocomplete != blank %}autocomplete="{{ autocomplete }}"{% endif %}
-        {% if placeholder != blank %}placeholder="{{ placeholder }}"{% endif %}
+        {% if inputmode != blank %}inputmode="{{ inputmode | escape }}"{% endif %}
+        {% if autocomplete != blank %}autocomplete="{{ autocomplete | escape }}"{% endif %}
+        {% if placeholder != blank %}placeholder="{{ placeholder | escape }}"{% endif %}
         {% if required %}required aria-required="true"{% endif %}>
   {%- endcase -%}
 

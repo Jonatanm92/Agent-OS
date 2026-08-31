@@ -129,6 +129,21 @@ for (const file of PAGES) {
         `step number keeps its accent override (${cascade.stepNumBg})`);
     }
 
+    /* 8. no seams between sections. Each section paints its own background, so
+       any vertical gap shows the page background as a stripe. */
+    const gaps = await page.evaluate(() => {
+      const secs = [...document.querySelectorAll('body > section')];
+      const out = [];
+      for (let i = 0; i < secs.length - 1; i++) {
+        const gap = Math.round(
+          secs[i + 1].getBoundingClientRect().top - secs[i].getBoundingClientRect().bottom
+        );
+        if (gap !== 0) out.push(`${secs[i].id || i}:${gap}px`);
+      }
+      return out;
+    });
+    note(gaps.length === 0, `no seams between sections${gaps.length ? ` — ${gaps.join(', ')}` : ''}`);
+
     await page.screenshot({
       path: path.join(shotDir, `${file.replace('.html', '')}-${width}.png`),
       fullPage: true,
@@ -166,6 +181,42 @@ for (const file of PAGES) {
   note(linkAfter.required === false && linkAfter.hidden === true,
     'photo link is hidden and not required when "email after ordering" is chosen');
 
+  /* Clicking submit on an invalid form. This exercises the real browser path:
+     the browser blocks submission and fires `invalid`, and the `submit` event
+     never fires — so anything hanging off submit would be dead code. */
+  await page.check('[data-cmi-photo-mode="link"]');
+  await page.click('button[type="submit"]');
+  // Focus is moved from a setTimeout so it lands after the burst of `invalid`
+  // events, so wait for it rather than reading activeElement immediately.
+  await page
+    .waitForFunction(() => document.activeElement && document.activeElement.name === 'properties[Artist]',
+      null, { timeout: 2000 })
+    .catch(() => {});
+  const afterClick = await page.evaluate(() => ({
+    banner: document.querySelector('[data-cmi-form-error]').classList.contains('is-shown'),
+    shownErrors: document.querySelectorAll('.cmi__error.is-shown').length,
+    invalidMarked: document.querySelectorAll('[aria-invalid="true"]').length,
+    focused: document.activeElement ? document.activeElement.name : null,
+    engagementWritten: document.querySelector('[data-cmi-engagement]').value,
+  }));
+  note(afterClick.banner === true, 'submitting an invalid form shows the summary banner');
+  note(afterClick.shownErrors >= 8,
+    `${afterClick.shownErrors} inline errors shown at once on a failed submit`);
+  note(afterClick.invalidMarked >= 8, `${afterClick.invalidMarked} controls marked aria-invalid`);
+  note(afterClick.focused === 'properties[Artist]',
+    `browser focused the first failing control (${afterClick.focused})`);
+  note(afterClick.engagementWritten === '',
+    'engagement not written on a blocked submit');
+
+  // Correcting fields clears their errors and retires the banner.
+  await page.fill('#cmi-artist', 'Ghost');
+  const afterFix = await page.evaluate(() => ({
+    artistError: document.querySelector('[data-cmi-error-for="cmi-artist"]').classList.contains('is-shown'),
+    banner: document.querySelector('[data-cmi-form-error]').classList.contains('is-shown'),
+  }));
+  note(afterFix.artistError === false, 'correcting a field clears its inline error');
+  note(afterFix.banner === true, 'banner stays while other fields are still invalid');
+
   // Fill everything and confirm the form becomes submittable.
   await page.check('[data-cmi-photo-mode="link"]');
   await page.fill('#cmi-artist', 'Ghost');
@@ -179,6 +230,10 @@ for (const file of PAGES) {
   await page.check('#cmi-consent');
   const nowValid = await page.evaluate(() => document.getElementById('cmi-personalization-form').checkValidity());
   note(nowValid === true, 'form becomes valid once required fields are filled');
+
+  const bannerGone = await page.evaluate(() =>
+    document.querySelector('[data-cmi-form-error]').classList.contains('is-shown'));
+  note(bannerGone === false, 'banner retires once every field is valid');
 
   // Engagement property is written on submit.
   const engagement = await page.evaluate(() => {

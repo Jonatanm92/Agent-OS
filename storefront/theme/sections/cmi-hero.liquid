@@ -18,7 +18,7 @@
     <p class="cmi__lede">{{ section.settings.subheading | escape }}</p>
 
     {%- if section.settings.cta_label != blank -%}
-      <a class="cmi__btn cmi__btn--primary" href="{{ section.settings.cta_url | default: '#cmi-personalize' }}">
+      <a class="cmi__btn cmi__btn--primary" href="{{ section.settings.cta_url | default: '#cmi-personalize' | escape }}">
         {{ section.settings.cta_label | escape }}
       </a>
     {%- endif -%}

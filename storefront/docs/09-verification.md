@@ -66,7 +66,6 @@ page.
 ## Full automated run
 
 ```
-
 product-one-night.html @ 360px
   PASS  no horizontal overflow (scrollWidth 360 vs 360)
   PASS  tap targets >= 44px
@@ -74,6 +73,7 @@ product-one-night.html @ 360px
   PASS  examples grid is 2-up on mobile (154px 154px)
   PASS  "After" card keeps its dark override (rgb(16, 16, 20))
   PASS  step number keeps its accent override (rgb(242, 112, 58))
+  PASS  no seams between sections
 
 product-one-night.html @ 390px
   PASS  no horizontal overflow (scrollWidth 390 vs 390)
@@ -82,6 +82,7 @@ product-one-night.html @ 390px
   PASS  examples grid is 2-up on mobile (169px 169px)
   PASS  "After" card keeps its dark override (rgb(16, 16, 20))
   PASS  step number keeps its accent override (rgb(242, 112, 58))
+  PASS  no seams between sections
 
 product-one-night.html @ 430px
   PASS  no horizontal overflow (scrollWidth 430 vs 430)
@@ -90,6 +91,7 @@ product-one-night.html @ 430px
   PASS  examples grid is 2-up on mobile (189px 189px)
   PASS  "After" card keeps its dark override (rgb(16, 16, 20))
   PASS  step number keeps its accent override (rgb(242, 112, 58))
+  PASS  no seams between sections
 
 home.html @ 360px
   PASS  no horizontal overflow (scrollWidth 360 vs 360)
@@ -98,6 +100,7 @@ home.html @ 360px
   PASS  examples grid is 2-up on mobile (154px 154px)
   PASS  "After" card keeps its dark override (rgb(16, 16, 20))
   PASS  step number keeps its accent override (rgb(242, 112, 58))
+  PASS  no seams between sections
 
 home.html @ 390px
   PASS  no horizontal overflow (scrollWidth 390 vs 390)
@@ -106,6 +109,7 @@ home.html @ 390px
   PASS  examples grid is 2-up on mobile (169px 169px)
   PASS  "After" card keeps its dark override (rgb(16, 16, 20))
   PASS  step number keeps its accent override (rgb(242, 112, 58))
+  PASS  no seams between sections
 
 home.html @ 430px
   PASS  no horizontal overflow (scrollWidth 430 vs 430)
@@ -114,13 +118,22 @@ home.html @ 430px
   PASS  examples grid is 2-up on mobile (189px 189px)
   PASS  "After" card keeps its dark override (rgb(16, 16, 20))
   PASS  step number keeps its accent override (rgb(242, 112, 58))
+  PASS  no seams between sections
 
 form validation @ 390px (JS on)
   PASS  empty form is invalid (blocked before add-to-cart)
   PASS  9 required controls block submit — properties[Artist], properties[Venue], properties[City], properties[Concert date], properties[Attended with], properties[Favourite song], properties[Favourite moment], properties[Photo link], properties[Acknowledgement]
   PASS  photo link is required when "share link" is chosen
   PASS  photo link is hidden and not required when "email after ordering" is chosen
+  PASS  submitting an invalid form shows the summary banner
+  PASS  9 inline errors shown at once on a failed submit
+  PASS  9 controls marked aria-invalid
+  PASS  browser focused the first failing control (properties[Artist])
+  PASS  engagement not written on a blocked submit
+  PASS  correcting a field clears its inline error
+  PASS  banner stays while other fields are still invalid
   PASS  form becomes valid once required fields are filled
+  PASS  banner retires once every field is valid
   PASS  engagement recorded: "fields=10; seconds=0"
   PASS  enhancement marker present when JS runs
   PASS  contrast .cmi__lede = 9.21:1 (needs 4.5:1)
@@ -159,6 +172,32 @@ real mobile widths, including with JavaScript switched off.
 Those are exactly the items in `07-launch-checklist.md`. Passing the checks above
 is a precondition for launch, not a substitute for the checklist.
 
+## Defects the verification caught
+
+Recorded because they are the argument for having built it. None were visible by
+reading the code.
+
+1. **Fieldset legend drawn through by its own border.** A `<legend>` containing a
+   block-level child straddles the fieldset's top border, so the border ran
+   through the note text. Legend is now single-line, note moved below it.
+2. **Section CSS silently reverted.** Every section links `cmi.css` separately, so
+   a later section's `<link>` sits after an earlier section's inline `<style>`
+   in document order and won every equal-specificity contest. The examples grid
+   was stuck at one column, making the product page ~3,000px longer than
+   intended. All section selectors are now `.cmi`-prefixed; the cascade check
+   above guards it.
+3. **Unreachable failed-submit handling.** When a form fails validation the
+   browser blocks submission and fires `invalid` — the `submit` event never
+   fires — so the summary banner and scroll-to-first-error hung off an event
+   that could not occur. Moved onto `invalid`.
+4. **No focus movement on a failed submit.** Calling `preventDefault()` on
+   `invalid` to suppress the native bubble also suppresses the browser's own
+   scroll-and-focus of the first failing control. On an 11,000px page the
+   customer tapped the button and nothing visible happened. Focus and scroll are
+   now performed explicitly, once, after the burst of `invalid` events.
+5. **Sub-44px tap target** on the refund-policy link (185x17).
+6. **"(optional)" on a field JavaScript makes required** — the photo link.
+
 ## Screenshots
 
 In `storefront/preview/screens/`:
@@ -166,6 +205,7 @@ In `storefront/preview/screens/`:
 - `product-one-night-390.png`, `home-390.png` — full page (360px and 430px are
   regenerated by `verify.mjs`; all three widths pass, see the run above)
 - `form-01-details.png`, `form-02-material.png`, `form-03-submit.png` — the form
+- `form-04-errors.png` — the failed-submit state (defects 3 and 4 above)
 - `compare.png`, `examples.png`, `faq.png`, `home-hero.png` — key sections
 
 ## Page weight

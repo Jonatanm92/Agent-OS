@@ -22,7 +22,7 @@ written up as exact steps.
 | 6 | [`docs/06-analytics.md`](docs/06-analytics.md) | What is measurable for free |
 | 7 | [`docs/07-launch-checklist.md`](docs/07-launch-checklist.md) | Test on a phone before publishing |
 | 8 | [`docs/08-known-limitations.md`](docs/08-known-limitations.md) | Constraints and trade-offs |
-| 9 | [`docs/09-verification.md`](docs/09-verification.md) | 58 automated checks, all passing |
+| 9 | [`docs/09-verification.md`](docs/09-verification.md) | 71 automated checks, all passing |
 | 10 | [`docs/10-seo.md`](docs/10-seo.md) | Honest metadata |
 
 ## Files
@@ -81,7 +81,7 @@ tags `cmi-tier-one-night` and `cmi-tier-full-issue`.
 cd storefront/tools
 npm install
 node render-preview.mjs   # renders the real .liquid files
-node verify.mjs           # 58 checks in Chromium at 360/390/430px
+node verify.mjs           # 71 checks in Chromium at 360/390/430px
 ```
 
 `tools/` and `preview/` are development aids. Do not upload them to Shopify.

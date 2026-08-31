@@ -58,13 +58,47 @@
     if (node) node.classList.remove('is-shown');
   }
 
-  // `invalid` does not bubble, so it has to be captured.
+  // Reads validity WITHOUT firing `invalid` events. `checkValidity()` would fire
+  // them, which here would re-trigger the handler below on every keystroke.
+  function anyInvalid() {
+    return Array.prototype.some.call(
+      form.querySelectorAll('input, select, textarea'),
+      function (el) { return el.willValidate && !el.validity.valid; }
+    );
+  }
+
+  // When a form fails validation the browser blocks submission and fires
+  // `invalid` on each failing control — the `submit` event never fires at all.
+  // So everything shown on a failed attempt has to hang off `invalid`, not
+  // off submit. `invalid` does not bubble, hence the capture phase.
+  var pendingFocus = null;
+
   form.addEventListener(
     'invalid',
     function (event) {
-      // Suppress the native bubble; the inline message replaces it.
+      // Suppress the native bubble; the persistent inline message replaces it.
+      // Note this also suppresses the browser's own scroll-and-focus of the
+      // first failing control, so that has to be done here — without it the
+      // customer taps a button at the bottom of a very long page and nothing
+      // visible happens.
       event.preventDefault();
       showError(event.target);
+      if (summary) summary.classList.add('is-shown');
+
+      // `invalid` fires once per failing control, in document order, as one
+      // synchronous burst. Keep the first and act after the burst settles.
+      if (!pendingFocus) {
+        pendingFocus = event.target;
+        setTimeout(function () {
+          var el = pendingFocus;
+          pendingFocus = null;
+          if (!el) return;
+          // Focus without scrolling, then scroll once — focusing and scrolling
+          // separately makes the viewport jump twice.
+          el.focus({ preventScroll: true });
+          el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 0);
+      }
     },
     true
   );
@@ -74,32 +108,17 @@
     form.addEventListener(type, function (event) {
       var field = event.target;
       if (!field.willValidate) return;
-      if (field.checkValidity()) clearError(field);
+      if (field.validity.valid) clearError(field);
+      if (summary && !anyInvalid()) summary.classList.remove('is-shown');
       markTouched(field);
     });
   });
 
-  form.addEventListener('submit', function (event) {
-    if (form.checkValidity()) {
-      writeEngagement();
-      // Let the browser perform the normal multipart POST to /cart/add.
-      // A file upload cannot be sent through the Ajax cart API, so this
-      // submit is intentionally never intercepted.
-      return;
-    }
-
-    event.preventDefault();
-    if (summary) {
-      summary.classList.add('is-shown');
-      summary.focus();
-    }
-    var firstBad = form.querySelector('input:invalid, select:invalid, textarea:invalid');
-    if (firstBad) {
-      showError(firstBad);
-      firstBad.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      // Focus after the scroll settles so the viewport does not jump twice.
-      setTimeout(function () { firstBad.focus({ preventScroll: true }); }, 250);
-    }
+  // Only reached when the form is already valid — the browser blocks the event
+  // otherwise. Nothing is intercepted: a file upload cannot go through the Ajax
+  // cart API, so this must remain a normal multipart POST to /cart/add.
+  form.addEventListener('submit', function () {
+    writeEngagement();
   });
 
   /* ---------------- conditional photo-link field ---------------- */
