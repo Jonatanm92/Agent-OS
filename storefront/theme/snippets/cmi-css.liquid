@@ -1,0 +1,12 @@
+{% comment %}
+  cmi-css.liquid — loads the shared stylesheet for every Concert Memory Issue section.
+
+  Why an asset file rather than an inline <style>:
+  `{% render %}` runs in an isolated scope, so an "only emit once" Liquid guard is
+  impossible — an inline block would be duplicated once per section (~6KB x 10).
+  A stylesheet_tag is fetched and cached once no matter how many sections link it,
+  which is the cheaper option on mobile.
+
+  Usage: {% render 'cmi-css' %} at the top of each cmi-* section.
+{% endcomment %}
+{{ 'cmi.css' | asset_url | stylesheet_tag }}

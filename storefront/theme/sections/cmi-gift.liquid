@@ -1,0 +1,85 @@
+{% comment %}
+  cmi-gift.liquid — gift positioning. Occasions come from blocks so the owner can
+  reorder or drop them from the theme editor without touching code.
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+<section class="cmi cmi--light cmi__section" aria-labelledby="cmi-gift-heading-{{ section.id }}">
+  <div class="cmi__wrap">
+    <p class="cmi__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="cmi__h2" id="cmi-gift-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+    <p class="cmi__lede">{{ section.settings.intro | escape }}</p>
+
+    <ul class="cmi__occasions">
+      {%- for block in section.blocks -%}
+        <li class="cmi__occasion" {{ block.shopify_attributes }}>
+          <strong>{{ block.settings.title | escape }}</strong>
+          {%- if block.settings.text != blank -%}
+            <span class="cmi__muted">{{ block.settings.text | escape }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {%- if section.settings.cta_label != blank -%}
+      <a class="cmi__btn cmi__btn--primary" style="margin-top:24px;"
+         href="{{ section.settings.cta_url | default: '#cmi-personalize' }}">
+        {{ section.settings.cta_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+  .cmi .cmi__occasions { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .cmi .cmi__occasion {
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--cmi-line-light);
+    background: var(--cmi-paper-soft);
+  }
+  .cmi .cmi__occasion strong { display: block; font-size: 1rem; margin-bottom: 2px; }
+  .cmi .cmi__occasion .cmi__muted { font-size: 0.875rem; }
+  @media (min-width: 750px) { .cmi .cmi__occasions { grid-template-columns: 1fr 1fr; gap: 14px; } }
+</style>
+
+{% schema %}
+{
+  "name": "CMI Gift",
+  "tag": "div",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "As a gift" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "A concert gift they don't already own." },
+    {
+      "type": "textarea", "id": "intro", "label": "Intro",
+      "default": "You cannot buy this in a shop, because it is made from a night only the two of you were at. If you have the photos, you have the gift."
+    },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create Their Issue" },
+    { "type": "url", "id": "cta_url", "label": "Button link", "info": "Leave blank on a product page to scroll to the form." }
+  ],
+  "blocks": [
+    {
+      "type": "occasion", "name": "Occasion",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "text", "id": "text", "label": "Text" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CMI Gift",
+      "blocks": [
+        { "type": "occasion", "settings": { "title": "An anniversary", "text": "The show you went to together, made into something to open." } },
+        { "type": "occasion", "settings": { "title": "A birthday", "text": "For the person who talks about that one night every year." } },
+        { "type": "occasion", "settings": { "title": "A first concert together", "text": "The night that became a story you both retell." } },
+        { "type": "occasion", "settings": { "title": "Their favourite show", "text": "The one they still have the wristband from." } },
+        { "type": "occasion", "settings": { "title": "A festival weekend", "text": "Several days, several bands, one issue." } },
+        { "type": "occasion", "settings": { "title": "A surprise keepsake", "text": "Send us the photos quietly. They find out when they open it." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

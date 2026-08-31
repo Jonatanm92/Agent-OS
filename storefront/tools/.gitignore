@@ -1,0 +1,3 @@
+# Local development aid only. Never uploaded to Shopify, never needed to use the theme.
+node_modules/
+package-lock.json

@@ -1,0 +1,101 @@
+{% comment %}
+  cmi-field.liquid — renders one labelled personalization field as a Shopify
+  line item property.
+
+  Every input is named `properties[<Label>]`, which is the native Shopify
+  mechanism: values submitted this way are attached to the cart line and copied
+  onto the order, visible in Admin, packing slips and notification emails.
+  Property names are deliberately human-readable (not codes) so the person
+  designing the issue can read the order without a lookup table.
+
+  Accepted parameters
+    name            required. The line item property name, e.g. "Artist".
+    type            text (default) | textarea | date | url | tel | email
+    label           required. Visible label text.
+    hint            optional. Help text, linked via aria-describedby.
+    required        optional boolean. Adds `required` + aria-required.
+    placeholder     optional.
+    autocomplete    optional.
+    maxlength       optional. Defaults to 120 (text) / 900 (textarea).
+    error           optional. Message shown when validation fails.
+    inputmode       optional.
+{% endcomment %}
+
+{%- assign field_id = 'cmi-' | append: name | handle -%}
+{%- assign describers = '' -%}
+{%- if hint != blank -%}
+  {%- assign describers = field_id | append: '-hint' -%}
+{%- endif -%}
+{%- assign err_id = field_id | append: '-error' -%}
+{%- if describers != blank -%}
+  {%- assign describers = describers | append: ' ' | append: err_id -%}
+{%- else -%}
+  {%- assign describers = err_id -%}
+{%- endif -%}
+
+{%- if error != blank -%}
+  {%- assign error_text = error -%}
+{%- else -%}
+  {%- assign error_text = 'Please fill in ' | append: label | downcase | append: '.' -%}
+{%- endif -%}
+
+<div class="cmi__field">
+  <label class="cmi__label" for="{{ field_id }}">
+    {{ label }}
+    {%- comment -%}
+      `hide_optional` is for a field that carries no `required` attribute in the
+      HTML but is made required by JavaScript depending on another answer.
+      Labelling it "(optional)" would be a lie in the common case.
+    {%- endcomment -%}
+    {%- unless required or hide_optional -%}
+      <span class="cmi__optional"> (optional)</span>
+    {%- endunless -%}
+  </label>
+
+  {%- if hint != blank -%}
+    <span class="cmi__hint" id="{{ field_id }}-hint">{{ hint }}</span>
+  {%- endif -%}
+
+  {%- case type -%}
+    {%- when 'textarea' -%}
+      {%- if maxlength != blank -%}{%- assign ml = maxlength -%}{%- else -%}{%- assign ml = 900 -%}{%- endif -%}
+      <textarea
+        class="cmi__textarea"
+        id="{{ field_id }}"
+        name="properties[{{ name }}]"
+        rows="4"
+        maxlength="{{ ml }}"
+        aria-describedby="{{ describers }}"
+        {% if placeholder != blank %}placeholder="{{ placeholder }}"{% endif %}
+        {% if required %}required aria-required="true"{% endif %}></textarea>
+
+    {%- else -%}
+      {%- if maxlength != blank -%}{%- assign ml = maxlength -%}{%- else -%}{%- assign ml = 120 -%}{%- endif -%}
+      {%- if type != blank -%}{%- assign input_type = type -%}{%- else -%}{%- assign input_type = 'text' -%}{%- endif -%}
+      {%- comment -%}
+        maxlength is only valid on the text-ish input types. Emitting it on
+        `date` produces invalid HTML that some validators flag.
+      {%- endcomment -%}
+      {%- assign length_capped = false -%}
+      {%- if input_type == 'text' or input_type == 'url' or input_type == 'tel' or input_type == 'email' -%}
+        {%- assign length_capped = true -%}
+      {%- endif -%}
+      <input
+        class="cmi__input"
+        id="{{ field_id }}"
+        name="properties[{{ name }}]"
+        type="{{ input_type }}"
+        {% if length_capped %}maxlength="{{ ml }}"{% endif %}
+        aria-describedby="{{ describers }}"
+        {% if inputmode != blank %}inputmode="{{ inputmode }}"{% endif %}
+        {% if autocomplete != blank %}autocomplete="{{ autocomplete }}"{% endif %}
+        {% if placeholder != blank %}placeholder="{{ placeholder }}"{% endif %}
+        {% if required %}required aria-required="true"{% endif %}>
+  {%- endcase -%}
+
+  {%- comment -%}
+    Empty until JS (or the browser) fills it. `role="alert"` announces the
+    message to screen readers the moment it becomes visible.
+  {%- endcomment -%}
+  <span class="cmi__error" id="{{ err_id }}" role="alert" data-cmi-error-for="{{ field_id }}">{{ error_text }}</span>
+</div>

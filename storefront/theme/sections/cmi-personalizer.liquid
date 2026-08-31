@@ -1,0 +1,347 @@
+{% comment %}
+  cmi-personalizer.liquid — the buy box.
+
+  This is the only section that must be technically exact, because everything the
+  business needs to fulfil an order is captured here.
+
+  HOW IT WORKS (all native Shopify, no app):
+  - Liquid's product `form` tag posts to /cart/add. Inputs named `properties[X]` are
+    stored as line item properties on the cart line and copied to the order.
+  - `enctype: 'multipart/form-data'` enables the native file input. Shopify stores
+    the uploaded file and sets the property value to its CDN URL.
+  - Validation is the browser's own constraint validation (`required`, `type`,
+    `pattern`). It therefore still works with JavaScript disabled. The JS in
+    cmi-personalizer.js only upgrades the *presentation* of those errors.
+  - `{{ form | payment_button }}` is deliberately NOT rendered. Accelerated
+    checkout buttons (Shop Pay / Apple Pay / Google Pay) submit straight to
+    checkout and would let a customer bypass these fields entirely.
+
+  KNOWN PLATFORM CONSTRAINTS (see docs/08-known-limitations.md):
+  - Native file inputs accept ONE file each and are capped at 20MB.
+  - Native file uploads require a real form POST. If the host theme hijacks
+    add-to-cart with AJAX, the file is silently dropped — the theme's cart type
+    must be set to "Page", and the add-to-cart test in the launch checklist
+    exists to catch this.
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+
+  # Tier detection. The two products share this one template, so the copy that
+  # differs between them is driven by a product tag set in Admin.
+  assign tier = 'one-night'
+  if product.tags contains 'cmi-tier-full-issue'
+    assign tier = 'full-issue'
+  endif
+
+  # One JSON template serves both products, and template settings are shared, so
+  # anything that differs per tier has to be chosen here rather than in Admin.
+  assign photo_hint = section.settings.photo_count_one_night
+  if tier == 'full-issue'
+    assign photo_hint = section.settings.photo_count_full_issue
+  endif
+-%}
+
+<section
+  id="cmi-personalize"
+  class="cmi cmi--light cmi__section"
+  data-cmi-tier="{{ tier }}"
+  aria-labelledby="cmi-personalize-heading">
+  <div class="cmi__wrap">
+
+    <p class="cmi__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="cmi__h2" id="cmi-personalize-heading">{{ section.settings.heading | escape }}</h2>
+    <p class="cmi__lede">{{ section.settings.intro | escape }}</p>
+
+    {%- if product.available -%}
+      {%- form 'product', product,
+            id: 'cmi-personalization-form',
+            class: 'cmi__form',
+            enctype: 'multipart/form-data' -%}
+
+        {%- comment -%}
+          Single made-to-order unit per line: each issue is built from one set of
+          personalization answers, so quantity is fixed at 1.
+        {%- endcomment -%}
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="return_to" value="/cart">
+
+        {%- comment -%}
+          Underscore-prefixed properties are retained on the order but hidden from
+          customer-facing cart and email displays. Used here for diagnostics only.
+        {%- endcomment -%}
+        <input type="hidden" name="properties[_form_version]" value="cmi-1.0">
+        <input type="hidden" name="properties[_engagement]" value="" data-cmi-engagement>
+
+        {%- if product.variants.size > 1 -%}
+          <div class="cmi__field">
+            <label class="cmi__label" for="cmi-variant">Edition</label>
+            <select class="cmi__select" id="cmi-variant" name="id">
+              {%- for v in product.variants -%}
+                <option value="{{ v.id }}" {% if v == variant %}selected{% endif %} {% unless v.available %}disabled{% endunless %}>
+                  {{ v.title }} — {{ v.price | money }}
+                </option>
+              {%- endfor -%}
+            </select>
+          </div>
+        {%- else -%}
+          <input type="hidden" name="id" value="{{ variant.id }}">
+        {%- endif -%}
+
+        <p class="cmi__form-error" id="cmi-form-error" role="alert" tabindex="-1" data-cmi-form-error>
+          Some required details are still missing. The fields to complete are marked below.
+        </p>
+
+        <!-- ---------- 1. The night ---------- -->
+        <fieldset class="cmi__fieldset">
+          <legend class="cmi__legend">The night</legend>
+          <p class="cmi__legend-note">This is what we build the issue around.</p>
+
+          {% render 'cmi-field',
+              name: 'Artist',
+              label: 'Artist or band',
+              type: 'text',
+              required: true,
+              placeholder: 'Who did you see?',
+              error: 'Please tell us which artist or band you saw.' %}
+
+          {% render 'cmi-field',
+              name: 'Venue',
+              label: 'Venue',
+              type: 'text',
+              required: true,
+              placeholder: 'e.g. Avicii Arena',
+              error: 'Please tell us the venue.' %}
+
+          {% render 'cmi-field',
+              name: 'City',
+              label: 'City',
+              type: 'text',
+              required: true,
+              placeholder: 'e.g. Stockholm',
+              error: 'Please tell us the city.' %}
+
+          {% render 'cmi-field',
+              name: 'Concert date',
+              label: 'Date of the concert',
+              type: 'date',
+              required: true,
+              hint: 'An approximate date is fine if you cannot remember exactly.',
+              error: 'Please give us the date of the concert.' %}
+
+          {% render 'cmi-field',
+              name: 'Seat or section',
+              label: 'Seat or section',
+              type: 'text',
+              placeholder: 'e.g. Section B, row 14 — or "standing"' %}
+        </fieldset>
+
+        <!-- ---------- 2. The story ---------- -->
+        <fieldset class="cmi__fieldset">
+          <legend class="cmi__legend">Your story</legend>
+          <p class="cmi__legend-note">Written into the issue in your own words.</p>
+
+          {% render 'cmi-field',
+              name: 'Attended with',
+              label: 'Who you were with',
+              type: 'text',
+              required: true,
+              placeholder: 'Names, or simply "on my own"',
+              error: 'Please tell us who you were with — "on my own" is a fine answer.' %}
+
+          {% render 'cmi-field',
+              name: 'Favourite song',
+              label: 'Favourite song of the night',
+              type: 'text',
+              required: true,
+              placeholder: 'The one that stayed with you',
+              error: 'Please name your favourite song of the night.' %}
+
+          {% render 'cmi-field',
+              name: 'Favourite moment',
+              label: 'Your favourite moment',
+              type: 'textarea',
+              required: true,
+              hint: 'A few sentences is plenty. This becomes a full page in your issue.',
+              placeholder: 'What happened, and why it stayed with you.',
+              error: 'Please describe your favourite moment — a sentence or two is enough.' %}
+
+          {% render 'cmi-field',
+              name: 'Setlist',
+              label: 'Setlist or highlights',
+              type: 'textarea',
+              maxlength: 1500,
+              hint: 'Paste a setlist if you have one, or list the songs you remember. Leave blank and we will design around your other material.' %}
+
+          {% render 'cmi-field',
+              name: 'Playlist URL',
+              label: 'Spotify or Apple Music playlist link',
+              type: 'url',
+              inputmode: 'url',
+              placeholder: 'https://',
+              hint: 'Must start with https:// — we include it as a link or scannable code where it fits the layout.' %}
+
+          {% render 'cmi-field',
+              name: 'Notes',
+              label: 'Anything else we should know',
+              type: 'textarea',
+              maxlength: 900,
+              placeholder: 'Inside jokes, spellings of names, a dedication, who it is a gift for.' %}
+        </fieldset>
+
+        <!-- ---------- 3. Material ---------- -->
+        <fieldset class="cmi__fieldset">
+          <legend class="cmi__legend">Your ticket and photos</legend>
+          <p class="cmi__legend-note">Everything visual in your issue comes from what you send.</p>
+
+          <div class="cmi__field">
+            <label class="cmi__label" for="cmi-ticket">
+              Ticket screenshot
+              <span class="cmi__optional"> (optional)</span>
+            </label>
+            <span class="cmi__hint" id="cmi-ticket-hint">
+              One image or PDF, up to 20&nbsp;MB. No ticket any more? Skip this — we design the
+              souvenir page from the details you gave above.
+            </span>
+            <input
+              class="cmi__file"
+              id="cmi-ticket"
+              name="properties[Ticket screenshot]"
+              type="file"
+              accept="image/*,.pdf"
+              aria-describedby="cmi-ticket-hint cmi-ticket-error">
+            <span class="cmi__error" id="cmi-ticket-error" role="alert" data-cmi-error-for="cmi-ticket">
+              That file is larger than 20&nbsp;MB. Please choose a smaller image, or send it with your photos instead.
+            </span>
+          </div>
+
+          <div class="cmi__field">
+            <span class="cmi__label" id="cmi-photos-label">How would you like to send your photos?</span>
+            <span class="cmi__hint" id="cmi-photos-hint">
+              We use roughly {{ photo_hint | escape }} of your own photos.
+            </span>
+            <div class="cmi__choices" role="radiogroup" aria-labelledby="cmi-photos-label" aria-describedby="cmi-photos-hint">
+              <label class="cmi__choice">
+                <input type="radio" name="properties[Photo delivery]" value="Share link — provided at checkout"
+                       data-cmi-photo-mode="link" checked required>
+                <span>
+                  <span class="cmi__choice-title">I have a share link ready</span>
+                  <span class="cmi__choice-note">Google&nbsp;Drive, Dropbox, iCloud or WeTransfer — paste it below.</span>
+                </span>
+              </label>
+              <label class="cmi__choice">
+                <input type="radio" name="properties[Photo delivery]" value="Send by email after ordering"
+                       data-cmi-photo-mode="email">
+                <span>
+                  <span class="cmi__choice-title">Email my photos after I order</span>
+                  <span class="cmi__choice-note">We email you instructions and a reply-to address as soon as your order is confirmed.</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {%- comment -%}
+            Shown when "share link" is selected. Rendered visible by default so
+            that with JavaScript disabled the field is still reachable and
+            submittable; JS then toggles `hidden` and the `required` flag.
+          {%- endcomment -%}
+          <div class="cmi__reveal" data-cmi-reveal="link">
+            {% render 'cmi-field',
+                name: 'Photo link',
+                label: 'Link to your photos',
+                type: 'url',
+                inputmode: 'url',
+                hide_optional: true,
+                placeholder: 'https://',
+                hint: 'Set the link so that anyone with it can view. Must start with https://',
+                error: 'Please paste a link starting with https:// — or choose "Email my photos after I order" above.' %}
+          </div>
+        </fieldset>
+
+        <!-- ---------- 4. Acknowledgement ---------- -->
+        <fieldset class="cmi__fieldset">
+          <legend class="cmi__legend">Before you order</legend>
+          <div class="cmi__field">
+            <label class="cmi__consent" for="cmi-consent">
+              <input
+                type="checkbox"
+                id="cmi-consent"
+                name="properties[Acknowledgement]"
+                value="{{ section.settings.consent_value | escape }}"
+                required
+                aria-describedby="cmi-consent-error">
+              <span>{{ section.settings.consent_label | escape }}</span>
+            </label>
+            <span class="cmi__error" id="cmi-consent-error" role="alert" data-cmi-error-for="cmi-consent">
+              Please tick the box to confirm before ordering.
+            </span>
+          </div>
+        </fieldset>
+
+        <div class="cmi__submit-row">
+          <p class="cmi__price">
+            <span>{{ product.title | escape }}</span>
+            <strong>{{ variant.price | money }}</strong>
+          </p>
+          <button type="submit" name="add" class="cmi__btn cmi__btn--primary">
+            {{ section.settings.submit_label | escape }}
+          </button>
+          <p class="cmi__muted" style="margin-top:12px;">{{ section.settings.reassurance | escape }}</p>
+        </div>
+
+      {%- endform -%}
+    {%- else -%}
+      <div class="cmi__card">
+        <h3 class="cmi__h3">Orders are paused right now</h3>
+        <p class="cmi__muted">{{ section.settings.unavailable_text | escape }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script src="{{ 'cmi-personalizer.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "CMI Personalizer",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Step 1 of 1" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Tell us about the night" },
+    {
+      "type": "textarea", "id": "intro", "label": "Intro",
+      "default": "Everything below goes into your issue. It takes about three minutes, and nothing is designed until you have sent it."
+    },
+    {
+      "type": "text", "id": "photo_count_one_night", "label": "Photo count hint — One Night",
+      "default": "3 to 6",
+      "info": "Shown on products tagged cmi-tier-one-night."
+    },
+    {
+      "type": "text", "id": "photo_count_full_issue", "label": "Photo count hint — Full Issue",
+      "default": "8 to 14",
+      "info": "Shown on products tagged cmi-tier-full-issue."
+    },
+    { "type": "text", "id": "submit_label", "label": "Submit button", "default": "Create My Concert Issue" },
+    {
+      "type": "textarea", "id": "reassurance", "label": "Text under button",
+      "default": "You can review everything in your basket before paying. The current production estimate is shown at checkout."
+    },
+    {
+      "type": "textarea", "id": "consent_label", "label": "Acknowledgement checkbox label",
+      "default": "I have the right to use the photos and material I am sending, and I understand this is a made-to-order personalized item created specifically for me."
+    },
+    {
+      "type": "text", "id": "consent_value", "label": "Acknowledgement value recorded on the order",
+      "default": "Confirmed — rights to material, and made-to-order item"
+    },
+    {
+      "type": "textarea", "id": "unavailable_text", "label": "Unavailable message",
+      "default": "We are not taking new issues at the moment. Check back shortly."
+    }
+  ],
+  "presets": [{ "name": "CMI Personalizer" }]
+}
+{% endschema %}

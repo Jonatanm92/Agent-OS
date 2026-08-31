@@ -1,0 +1,70 @@
+{% comment %}
+  cmi-returns-notice.liquid — made-to-order / withdrawal notice.
+
+  DRAFT COPY. This wording has NOT been reviewed by a lawyer. It states the
+  commercial position in plain language and points at the store's own policy
+  pages, which are the legally operative documents.
+
+  The owner must review this against Swedish and EU consumer law before selling
+  — see docs/05-legal-review.md. In particular the interaction between the
+  made-to-order exemption and the digital-content withdrawal rules is a question
+  for the owner's own advisor, not something this section decides.
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+<section class="cmi cmi--light cmi__section cmi__section--tight" id="cmi-returns" aria-labelledby="cmi-ret-heading-{{ section.id }}">
+  <div class="cmi__wrap">
+    <div class="cmi__card">
+      <h2 class="cmi__h3" id="cmi-ret-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+      <div class="cmi__returns-body">
+        {{ section.settings.body }}
+      </div>
+      {%- if section.settings.policy_link_label != blank and section.settings.policy_link_url != blank -%}
+        <p style="margin-top:14px;">
+          <a class="cmi__policy-link" href="{{ section.settings.policy_link_url }}">{{ section.settings.policy_link_label | escape }}</a>
+        </p>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+<style>
+  .cmi .cmi__returns-body { font-size: 0.9375rem; color: var(--cmi-muted-on-light); }
+  .cmi .cmi__returns-body p { margin: 0 0 10px; }
+  .cmi .cmi__returns-body p:last-child { margin-bottom: 0; }
+  .cmi .cmi__returns-body a { color: inherit; }
+  /* Inline text links are a 17px-tall tap target by default. This one is a real
+     destination, so it gets a 44px hit area like any other control. */
+  .cmi .cmi__policy-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 2px;
+    color: var(--cmi-ink);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-underline-offset: 3px;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "CMI Returns Notice",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "DRAFT COPY — not legal advice and not reviewed by a lawyer. Have this checked against Swedish and EU consumer law before you start selling. See storefront/docs/05-legal-review.md."
+    },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Made to order: what that means for cancelling" },
+    {
+      "type": "richtext", "id": "body", "label": "Body",
+      "default": "<p>Every issue is designed specifically for you, from details and photographs only you can supply. Because it is made to your specification and delivered as digital content, the usual right to change your mind may not apply once we have begun work on it. The exact position, and the point at which it applies, is set out in our refund and terms pages.</p><p>If something is wrong with what we deliver — a misspelling, a wrong date, the wrong photo — tell us and we will put it right. If we cannot produce your issue from the material you send, we will contact you before charging ahead and refund you if we cannot proceed.</p>"
+    },
+    { "type": "text", "id": "policy_link_label", "label": "Policy link label", "default": "Read the full refund policy" },
+    { "type": "url", "id": "policy_link_url", "label": "Policy link URL", "info": "Point this at your Refund policy page once it is written." }
+  ],
+  "presets": [{ "name": "CMI Returns Notice" }]
+}
+{% endschema %}

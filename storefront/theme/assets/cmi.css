@@ -1,0 +1,362 @@
+.cmi {
+  /* Palette. Contrast ratios verified against WCAG AA in docs/09-verification.md */
+  --cmi-ink: #101014;          /* near-black ground        */
+  --cmi-ink-soft: #1B1B21;     /* raised dark surface      */
+  --cmi-paper: #FBF9F6;        /* warm off-white ground    */
+  --cmi-paper-soft: #F1ECE4;   /* raised light surface     */
+  --cmi-accent: #F2703A;       /* ember / stage-light warm */
+  --cmi-accent-dim: #C8552A;
+  --cmi-muted-on-dark: #B9B4AC;
+  --cmi-muted-on-light: #55524C;
+  --cmi-line-dark: rgba(251, 249, 246, 0.16);
+  --cmi-line-light: rgba(16, 16, 20, 0.14);
+  --cmi-error: #B3261E;
+  --cmi-error-on-dark: #FF9A90;
+
+  --cmi-gutter: 20px;
+  --cmi-max: 720px;
+  --cmi-radius: 14px;
+
+  /* Fluid type: readable at 360px, never gigantic on desktop. */
+  --cmi-step-0: 1rem;
+  --cmi-step-1: clamp(1.0625rem, 1rem + 0.5vw, 1.1875rem);
+  --cmi-step-2: clamp(1.375rem, 1.2rem + 1.2vw, 1.75rem);
+  --cmi-step-3: clamp(1.75rem, 1.4rem + 2.2vw, 2.5rem);
+  --cmi-step-4: clamp(2.125rem, 1.5rem + 3.6vw, 3.25rem);
+
+  --cmi-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --cmi-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  font-family: var(--cmi-body);
+  font-size: var(--cmi-step-0);
+  line-height: 1.6;
+  /* Guards against horizontal overflow leaking out of any cmi section. */
+  overflow-x: clip;
+}
+
+/* ---------- layout primitives ---------- */
+.cmi *, .cmi *::before, .cmi *::after { box-sizing: border-box; }
+.cmi img, .cmi svg { max-width: 100%; height: auto; display: block; }
+
+.cmi__section { padding: 44px 0; }
+.cmi__section--tight { padding: 32px 0; }
+.cmi__wrap {
+  width: 100%;
+  max-width: var(--cmi-max);
+  margin-inline: auto;
+  padding-inline: var(--cmi-gutter);
+}
+.cmi--dark { background: var(--cmi-ink); color: var(--cmi-paper); }
+.cmi--light { background: var(--cmi-paper); color: var(--cmi-ink); }
+
+/* ---------- type ---------- */
+.cmi__eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: var(--cmi-accent);
+}
+.cmi--light .cmi__eyebrow { color: var(--cmi-accent-dim); }
+
+.cmi__h1, .cmi__h2, .cmi__h3 {
+  font-family: var(--cmi-display);
+  font-weight: 600;
+  line-height: 1.12;
+  margin: 0 0 14px;
+  text-wrap: balance;
+}
+.cmi__h1 { font-size: var(--cmi-step-4); letter-spacing: -0.015em; }
+.cmi__h2 { font-size: var(--cmi-step-3); letter-spacing: -0.01em; }
+.cmi__h3 { font-size: var(--cmi-step-2); }
+.cmi__lede { font-size: var(--cmi-step-1); margin: 0 0 20px; }
+.cmi--dark .cmi__lede, .cmi--dark .cmi__muted { color: var(--cmi-muted-on-dark); }
+.cmi--light .cmi__lede, .cmi--light .cmi__muted { color: var(--cmi-muted-on-light); }
+.cmi__muted { font-size: 0.9375rem; }
+.cmi p { margin: 0 0 14px; }
+.cmi p:last-child { margin-bottom: 0; }
+
+/* ---------- buttons: 48px min tap target ---------- */
+.cmi__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 22px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+.cmi__btn:active { transform: translateY(1px); }
+.cmi__btn--primary { background: var(--cmi-accent); color: #16110E; }
+.cmi__btn--primary:hover { background: #FF8250; }
+.cmi__btn--ghost { background: transparent; border-color: currentColor; color: inherit; }
+.cmi__btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+/* Visible, high-contrast focus ring for keyboard users on both grounds. */
+.cmi :focus-visible {
+  outline: 3px solid var(--cmi-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.cmi--light :focus-visible { outline-color: var(--cmi-accent-dim); }
+
+.cmi__visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- cards / grids ---------- */
+.cmi__grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+.cmi__card {
+  border-radius: var(--cmi-radius);
+  padding: 20px;
+  border: 1px solid var(--cmi-line-light);
+  background: var(--cmi-paper-soft);
+}
+.cmi--dark .cmi__card { border-color: var(--cmi-line-dark); background: var(--cmi-ink-soft); }
+
+.cmi__list { margin: 0; padding: 0; list-style: none; }
+.cmi__list li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 10px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.cmi__list li:last-child { margin-bottom: 0; }
+.cmi__list li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: 0.55em;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cmi-accent);
+}
+
+@media (min-width: 750px) {
+  .cmi { --cmi-gutter: 32px; --cmi-max: 940px; }
+  .cmi__section { padding: 72px 0; }
+  .cmi__grid--2 { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .cmi__grid--3 { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .cmi__grid--4 { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmi *, .cmi *::before, .cmi *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================================
+   Personalization form
+   Mobile-first. Inputs are 16px minimum so iOS Safari does not zoom on focus.
+   ========================================================================= */
+
+.cmi__form { margin: 0; }
+
+.cmi__fieldset {
+  border: 1px solid var(--cmi-line-light);
+  border-radius: var(--cmi-radius);
+  padding: 18px 16px 20px;
+  margin: 0 0 16px;
+  background: var(--cmi-paper);
+}
+.cmi--dark .cmi__fieldset { border-color: var(--cmi-line-dark); background: var(--cmi-ink-soft); }
+
+.cmi__legend {
+  /* Single-line only. A block child inside <legend> makes the browser draw the
+     fieldset border through the middle of the text. */
+  font-family: var(--cmi-display);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0 8px;
+  margin-left: -8px;
+}
+.cmi__legend-note {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  margin: 6px 0 0;
+  color: var(--cmi-muted-on-light);
+}
+.cmi--dark .cmi__legend-note { color: var(--cmi-muted-on-dark); }
+
+.cmi__field { margin-top: 18px; }
+.cmi__legend-note + .cmi__field { margin-top: 14px; }
+
+.cmi__label {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.cmi__optional {
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: var(--cmi-muted-on-light);
+}
+.cmi--dark .cmi__optional { color: var(--cmi-muted-on-dark); }
+
+.cmi__hint {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  margin: 0 0 8px;
+  color: var(--cmi-muted-on-light);
+}
+.cmi--dark .cmi__hint { color: var(--cmi-muted-on-dark); }
+
+.cmi__input,
+.cmi__textarea,
+.cmi__select {
+  display: block;
+  width: 100%;
+  /* 16px exactly — anything smaller triggers iOS Safari's auto-zoom on focus. */
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--cmi-ink);
+  background: #FFFFFF;
+  border: 1.5px solid rgba(16, 16, 20, 0.28);
+  border-radius: 10px;
+  padding: 13px 14px;
+  min-height: 50px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.cmi__textarea { min-height: 104px; resize: vertical; }
+.cmi__select {
+  /* Chevron drawn inline so no image request is made. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23101014' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  padding-right: 40px;
+}
+.cmi__input::placeholder, .cmi__textarea::placeholder { color: #6E6A63; }
+
+.cmi__input:focus, .cmi__textarea:focus, .cmi__select:focus { border-color: var(--cmi-accent-dim); }
+
+/* Error state is signalled by colour AND an icon-free text message, never
+   colour alone (WCAG 1.4.1). */
+.cmi__input[aria-invalid="true"],
+.cmi__textarea[aria-invalid="true"],
+.cmi__select[aria-invalid="true"] {
+  border-color: var(--cmi-error);
+  border-width: 2px;
+  background: #FFF6F5;
+}
+.cmi__error {
+  display: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 6px;
+  color: var(--cmi-error);
+}
+.cmi--dark .cmi__error { color: var(--cmi-error-on-dark); }
+.cmi__error.is-shown { display: block; }
+
+.cmi__file {
+  display: block;
+  width: 100%;
+  font-size: 0.9375rem;
+  padding: 12px;
+  border: 1.5px dashed rgba(16, 16, 20, 0.32);
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: var(--cmi-ink);
+}
+.cmi__file::file-selector-button {
+  font: inherit;
+  font-weight: 600;
+  margin-right: 12px;
+  padding: 10px 14px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--cmi-ink);
+  color: var(--cmi-paper);
+  cursor: pointer;
+}
+
+/* Radio cards — large tap targets for the photo-delivery choice. */
+.cmi__choices { display: grid; gap: 10px; margin-top: 4px; }
+.cmi__choice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  min-height: 56px;
+  border: 1.5px solid rgba(16, 16, 20, 0.24);
+  border-radius: 10px;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+.cmi__choice input { margin: 2px 0 0; width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--cmi-accent-dim); }
+.cmi__choice:has(input:checked) { border-color: var(--cmi-accent-dim); border-width: 2px; background: #FFF7F3; }
+.cmi__choice-title { display: block; font-weight: 600; font-size: 0.9375rem; }
+.cmi__choice-note { display: block; font-size: 0.8125rem; color: var(--cmi-muted-on-light); margin-top: 2px; }
+
+.cmi__consent {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--cmi-paper-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.cmi__consent input { margin: 1px 0 0; width: 22px; height: 22px; flex: 0 0 auto; accent-color: var(--cmi-accent-dim); }
+
+/* Submit block */
+.cmi__submit-row { margin-top: 22px; }
+.cmi__price {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+}
+.cmi__price strong {
+  font-size: 1.375rem;
+  font-family: var(--cmi-display);
+  /* Never let the amount break across lines. */
+  white-space: nowrap;
+}
+
+.cmi__form-error {
+  display: none;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid var(--cmi-error);
+  background: #FFF6F5;
+  color: #7A1A14;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.cmi__form-error.is-shown { display: block; }
+
+/* JS-conditional visibility. Without JS both blocks stay visible, which keeps
+   the form usable and submittable — see docs/09-verification.md (no-JS test). */
+.cmi__reveal[hidden] { display: none; }

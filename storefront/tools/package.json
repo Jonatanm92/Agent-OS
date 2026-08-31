@@ -1,0 +1,11 @@
+{
+  "name": "cmi-preview",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local-only tool that renders the cmi-* Liquid sections to static HTML so the storefront can be verified (mobile layout, no-JS behaviour, accessibility) without a Shopify store. Not part of the theme and never uploaded to Shopify.",
+  "type": "module",
+  "dependencies": {
+    "liquidjs": "^10.21.1",
+    "playwright": "^1.62.1"
+  }
+}

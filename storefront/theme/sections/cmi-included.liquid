@@ -1,0 +1,176 @@
+{% comment %}
+  cmi-included.liquid — the One Night vs Full Issue comparison.
+
+  Prices and links are read live from the products via `all_products[handle]`, so
+  the comparison can never drift from what the customer is actually charged. If a
+  handle is not found yet (products not created), the card still renders with its
+  copy and a clearly marked "not published yet" note rather than a broken link.
+
+  The card matching the product currently being viewed is marked "You are viewing
+  this" — detected from the product's `cmi-tier-*` tag.
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+{%- liquid
+  assign one = all_products[section.settings.one_night_handle]
+  assign full = all_products[section.settings.full_issue_handle]
+
+  assign current_tier = ''
+  if product != blank
+    assign current_tier = 'one-night'
+    if product.tags contains 'cmi-tier-full-issue'
+      assign current_tier = 'full-issue'
+    endif
+  endif
+-%}
+
+<section class="cmi cmi--light cmi__section" id="cmi-included" aria-labelledby="cmi-inc-heading-{{ section.id }}">
+  <div class="cmi__wrap">
+    <p class="cmi__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="cmi__h2" id="cmi-inc-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+    <p class="cmi__lede">{{ section.settings.intro | escape }}</p>
+
+    <div class="cmi__grid cmi__grid--2">
+      {%- for tier in section.blocks -%}
+        {%- liquid
+          assign tier_key = tier.settings.tier_key
+          if tier_key == 'full-issue'
+            assign tier_product = full
+          else
+            assign tier_product = one
+          endif
+          assign is_current = false
+          if current_tier == tier_key
+            assign is_current = true
+          endif
+        -%}
+        <div class="cmi__card cmi__tier{% if is_current %} cmi__tier--current{% endif %}" {{ tier.shopify_attributes }}>
+          {%- if is_current -%}
+            <p class="cmi__tier-flag">You are viewing this</p>
+          {%- endif -%}
+
+          <h3 class="cmi__h3">{{ tier.settings.title | escape }}</h3>
+          <p class="cmi__tier-price">
+            {%- if tier_product.id -%}
+              {{ tier_product.price | money }}
+            {%- else -%}
+              <span class="cmi__muted">Not published yet</span>
+            {%- endif -%}
+          </p>
+          <p class="cmi__muted">{{ tier.settings.summary | escape }}</p>
+
+          <ul class="cmi__list" style="margin-top:14px;">
+            {%- assign lines = tier.settings.features | newline_to_br | split: '<br />' -%}
+            {%- for line in lines -%}
+              {%- assign clean = line | strip -%}
+              {%- if clean != blank -%}<li>{{ clean | escape }}</li>{%- endif -%}
+            {%- endfor -%}
+          </ul>
+
+          {%- unless is_current -%}
+            {%- if tier_product.id -%}
+              <a class="cmi__btn cmi__btn--ghost" style="margin-top:18px;" href="{{ tier_product.url }}">
+                {{ tier.settings.cta_label | escape }}
+              </a>
+            {%- endif -%}
+          {%- else -%}
+            <a class="cmi__btn cmi__btn--primary" style="margin-top:18px;" href="#cmi-personalize">
+              {{ section.settings.current_cta_label | escape }}
+            </a>
+          {%- endunless -%}
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if section.settings.footnote != blank -%}
+      <p class="cmi__muted" style="margin-top:18px;">{{ section.settings.footnote | escape }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+  .cmi .cmi__tier { display: flex; flex-direction: column; }
+  .cmi .cmi__tier--current { border-color: var(--cmi-accent-dim); border-width: 2px; background: #FFF7F3; }
+  .cmi .cmi__tier-flag {
+    font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 700; color: var(--cmi-accent-dim); margin: 0 0 8px;
+  }
+  .cmi .cmi__tier-price { font-family: var(--cmi-display); font-size: 1.75rem; margin: 0 0 8px; }
+  .cmi .cmi__tier .cmi__btn { margin-top: auto; }
+</style>
+
+{% schema %}
+{
+  "name": "CMI What's Included",
+  "tag": "div",
+  "max_blocks": 2,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "What's included" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Two editions of the same night." },
+    {
+      "type": "textarea", "id": "intro", "label": "Intro",
+      "default": "Both are designed by hand from your own material. The difference is how much of the night fits."
+    },
+    { "type": "text", "id": "current_cta_label", "label": "Button on the tier being viewed", "default": "Create My Concert Issue" },
+    {
+      "type": "text", "id": "one_night_handle", "label": "One Night product handle",
+      "default": "one-night-personalized-concert-memory-issue"
+    },
+    {
+      "type": "text", "id": "full_issue_handle", "label": "Full Issue product handle",
+      "default": "full-issue-personalized-concert-memory-edition"
+    },
+    {
+      "type": "textarea", "id": "footnote", "label": "Footnote",
+      "default": "Both editions are delivered as a digital file. Page counts are approximate — the final layout follows the material you send."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tier", "name": "Edition",
+      "settings": [
+        {
+          "type": "select", "id": "tier_key", "label": "Which edition",
+          "options": [
+            { "value": "one-night", "label": "One Night" },
+            { "value": "full-issue", "label": "Full Issue" }
+          ],
+          "default": "one-night"
+        },
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "text", "id": "summary", "label": "One-line summary" },
+        { "type": "textarea", "id": "features", "label": "Features (one per line)" },
+        { "type": "text", "id": "cta_label", "label": "Button label", "default": "See this edition" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CMI What's Included",
+      "blocks": [
+        {
+          "type": "tier",
+          "settings": {
+            "tier_key": "one-night",
+            "title": "One Night",
+            "summary": "The night, told properly.",
+            "features": "Around 8 designed pages\nCover built around your night\nShow details page\nSouvenir-style ticket page\nTwo photo spreads from 3-6 of your photos\nSetlist or highlights page\nYour favourite memory, in your words\nClosing page\nDelivered as a digital file",
+            "cta_label": "See One Night"
+          }
+        },
+        {
+          "type": "tier",
+          "settings": {
+            "tier_key": "full-issue",
+            "title": "Full Issue",
+            "summary": "The whole night, with room to breathe.",
+            "features": "Around 12-16 designed pages\nEverything in One Night\nRoom for more of your photos\nRicher editorial layout\nExpanded memories and details\nExtended setlist or highlights\nPlaylist link or scannable code where it fits\nOne round of revisions included\nDelivered as a digital file",
+            "cta_label": "See Full Issue"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

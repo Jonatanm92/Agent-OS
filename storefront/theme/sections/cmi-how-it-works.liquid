@@ -1,0 +1,88 @@
+{% comment %}
+  cmi-how-it-works.liquid — four numbered steps.
+  Uses an ordered list so the sequence is conveyed by markup, not just the
+  rendered numerals.
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+<section class="cmi cmi--dark cmi__section" aria-labelledby="cmi-hiw-heading-{{ section.id }}">
+  <div class="cmi__wrap">
+    <p class="cmi__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="cmi__h2" id="cmi-hiw-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+
+    <ol class="cmi__steps">
+      {%- for block in section.blocks -%}
+        <li class="cmi__step" {{ block.shopify_attributes }}>
+          <span class="cmi__step-num" aria-hidden="true">{{ forloop.index }}</span>
+          <div>
+            <h3 class="cmi__step-title">{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}
+              <p class="cmi__muted">{{ block.settings.text | escape }}</p>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+
+    {%- if section.settings.cta_label != blank -%}
+      <a class="cmi__btn cmi__btn--primary" style="margin-top:26px;"
+         href="{{ section.settings.cta_url | default: '#cmi-personalize' }}">
+        {{ section.settings.cta_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+  .cmi .cmi__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .cmi .cmi__step {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 18px; border-radius: var(--cmi-radius);
+    border: 1px solid var(--cmi-line-dark); background: var(--cmi-ink-soft);
+  }
+  .cmi .cmi__step-num {
+    flex: 0 0 auto;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--cmi-accent); color: #16110E;
+    font-weight: 700; font-size: 0.9375rem;
+  }
+  .cmi .cmi__step-title { font-family: var(--cmi-display); font-size: 1.1875rem; margin: 3px 0 4px; }
+  @media (min-width: 750px) { .cmi .cmi__steps { grid-template-columns: 1fr 1fr; gap: 18px; } }
+</style>
+
+{% schema %}
+{
+  "name": "CMI How It Works",
+  "tag": "div",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "How it works" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Four steps, about three minutes." },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create My Concert Issue" },
+    { "type": "url", "id": "cta_url", "label": "Button link", "info": "Leave blank on a product page to scroll to the form." }
+  ],
+  "blocks": [
+    {
+      "type": "step", "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "textarea", "id": "text", "label": "Text" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CMI How It Works",
+      "blocks": [
+        { "type": "step", "settings": { "title": "Send your concert details.", "text": "Artist, venue, city, date, and the moment you remember most." } },
+        { "type": "step", "settings": { "title": "Upload your ticket and favourite photos.", "text": "A ticket screenshot if you still have one, plus your own photos from the night." } },
+        { "type": "step", "settings": { "title": "We design your personalized issue.", "text": "Laid out by hand around the material you sent — no template filled in by a machine." } },
+        { "type": "step", "settings": { "title": "Receive the finished digital edition.", "text": "Delivered as a high-resolution file you can keep, print at home, or send as a gift." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

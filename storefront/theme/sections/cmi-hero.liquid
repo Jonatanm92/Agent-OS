@@ -1,0 +1,52 @@
+{% comment %}
+  cmi-hero.liquid — top-of-page hero. Used on both the product template and the
+  homepage; all copy is a section setting so the two can differ without a second file.
+
+  The CTA is an anchor to #cmi-personalize on the product page. On the homepage
+  the owner points it at the product URL instead (section setting).
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+<section class="cmi cmi--dark cmi__section" aria-labelledby="cmi-hero-heading-{{ section.id }}">
+  <div class="cmi__wrap">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="cmi__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
+    <h1 class="cmi__h1" id="cmi-hero-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h1>
+    <p class="cmi__lede">{{ section.settings.subheading | escape }}</p>
+
+    {%- if section.settings.cta_label != blank -%}
+      <a class="cmi__btn cmi__btn--primary" href="{{ section.settings.cta_url | default: '#cmi-personalize' }}">
+        {{ section.settings.cta_label | escape }}
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.footnote != blank -%}
+      <p class="cmi__muted" style="margin-top:16px;">{{ section.settings.footnote | escape }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "CMI Hero",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Made to order" },
+    { "type": "text", "id": "heading", "label": "Headline", "default": "The concert ended. The memory shouldn't." },
+    {
+      "type": "textarea", "id": "subheading", "label": "Subheading",
+      "default": "Send us your ticket and photos. We'll turn the night into a personalized concert issue made entirely from your memories."
+    },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Create My Concert Issue" },
+    { "type": "url", "id": "cta_url", "label": "Button link", "info": "Leave blank on a product page to scroll to the form." },
+    {
+      "type": "textarea", "id": "footnote", "label": "Footnote",
+      "default": "A personalized fan keepsake. Not official artist, venue or ticketing merchandise."
+    }
+  ],
+  "presets": [{ "name": "CMI Hero" }]
+}
+{% endschema %}

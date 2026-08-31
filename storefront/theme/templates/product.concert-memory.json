@@ -1,0 +1,404 @@
+{
+  "sections": {
+    "hero": {
+      "type": "cmi-hero",
+      "settings": {
+        "eyebrow": "Made to order",
+        "heading": "The concert ended. The memory shouldn't.",
+        "subheading": "Send us your ticket and photos. We'll turn the night into a personalized concert issue made entirely from your memories.",
+        "cta_label": "Create My Concert Issue",
+        "cta_url": "",
+        "footnote": "A personalized fan keepsake. Not official artist, venue or ticketing merchandise."
+      }
+    },
+    "before_after": {
+      "type": "cmi-before-after",
+      "settings": {
+        "eyebrow": "Before and after",
+        "heading": "Scattered pieces of a night, into one thing you keep.",
+        "before_title": "Before",
+        "before_items": "Ticket screenshot.\nCamera roll.\nSetlist.\nA few memories.",
+        "after_title": "After",
+        "after_text": "One finished keepsake that tells the story of the night."
+      }
+    },
+    "how_it_works": {
+      "type": "cmi-how-it-works",
+      "blocks": {
+        "s1": {
+          "type": "step",
+          "settings": {
+            "title": "Send your concert details.",
+            "text": "Artist, venue, city, date, and the moment you remember most."
+          }
+        },
+        "s2": {
+          "type": "step",
+          "settings": {
+            "title": "Upload your ticket and favourite photos.",
+            "text": "A ticket screenshot if you still have one, plus your own photos from the night."
+          }
+        },
+        "s3": {
+          "type": "step",
+          "settings": {
+            "title": "We design your personalized issue.",
+            "text": "Laid out by hand around the material you sent — no template filled in by a machine."
+          }
+        },
+        "s4": {
+          "type": "step",
+          "settings": {
+            "title": "Receive the finished digital edition.",
+            "text": "Delivered as a high-resolution file you can keep, print at home, or send as a gift."
+          }
+        }
+      },
+      "block_order": [
+        "s1",
+        "s2",
+        "s3",
+        "s4"
+      ],
+      "settings": {
+        "eyebrow": "How it works",
+        "heading": "Four steps, about three minutes.",
+        "cta_label": "Create My Concert Issue",
+        "cta_url": ""
+      }
+    },
+    "included": {
+      "type": "cmi-included",
+      "blocks": {
+        "one": {
+          "type": "tier",
+          "settings": {
+            "tier_key": "one-night",
+            "title": "One Night",
+            "summary": "The night, told properly.",
+            "features": "Around 8 designed pages\nCover built around your night\nShow details page\nSouvenir-style ticket page\nTwo photo spreads from 3-6 of your photos\nSetlist or highlights page\nYour favourite memory, in your words\nClosing page\nDelivered as a digital file",
+            "cta_label": "See One Night"
+          }
+        },
+        "full": {
+          "type": "tier",
+          "settings": {
+            "tier_key": "full-issue",
+            "title": "Full Issue",
+            "summary": "The whole night, with room to breathe.",
+            "features": "Around 12-16 designed pages\nEverything in One Night\nRoom for more of your photos\nRicher editorial layout\nExpanded memories and details\nExtended setlist or highlights\nPlaylist link or scannable code where it fits\nOne round of revisions included\nDelivered as a digital file",
+            "cta_label": "See Full Issue"
+          }
+        }
+      },
+      "block_order": [
+        "one",
+        "full"
+      ],
+      "settings": {
+        "eyebrow": "What's included",
+        "heading": "Two editions of the same night.",
+        "intro": "Both are designed by hand from your own material. The difference is how much of the night fits.",
+        "current_cta_label": "Create My Concert Issue",
+        "one_night_handle": "one-night-personalized-concert-memory-issue",
+        "full_issue_handle": "full-issue-personalized-concert-memory-edition",
+        "footnote": "Both editions are delivered as a digital file. Page counts are approximate — the final layout follows the material you send."
+      }
+    },
+    "examples": {
+      "type": "cmi-examples",
+      "blocks": {
+        "e1": {
+          "type": "example",
+          "settings": {
+            "caption": "Cover"
+          }
+        },
+        "e2": {
+          "type": "example",
+          "settings": {
+            "caption": "Night and show details"
+          }
+        },
+        "e3": {
+          "type": "example",
+          "settings": {
+            "caption": "Souvenir ticket page"
+          }
+        },
+        "e4": {
+          "type": "example",
+          "settings": {
+            "caption": "Photo spread"
+          }
+        },
+        "e5": {
+          "type": "example",
+          "settings": {
+            "caption": "Atmosphere spread"
+          }
+        },
+        "e6": {
+          "type": "example",
+          "settings": {
+            "caption": "Setlist and highlights"
+          }
+        },
+        "e7": {
+          "type": "example",
+          "settings": {
+            "caption": "Your favourite memory"
+          }
+        },
+        "e8": {
+          "type": "example",
+          "settings": {
+            "caption": "Closing page"
+          }
+        }
+      },
+      "block_order": [
+        "e1",
+        "e2",
+        "e3",
+        "e4",
+        "e5",
+        "e6",
+        "e7",
+        "e8"
+      ],
+      "settings": {
+        "eyebrow": "Example pages",
+        "heading": "What the finished issue looks like.",
+        "intro": "Your issue is designed around your own photos, so no two look alike. These pages show the layout and the level of finish.",
+        "rights_note": "Example pages are our own demonstration designs. They do not show any real artist's photography, artwork or branding."
+      }
+    },
+    "personalizer": {
+      "type": "cmi-personalizer",
+      "settings": {
+        "eyebrow": "Step 1 of 1",
+        "heading": "Tell us about the night",
+        "intro": "Everything below goes into your issue. It takes about three minutes, and nothing is designed until you have sent it.",
+        "submit_label": "Create My Concert Issue",
+        "reassurance": "You can review everything in your basket before paying. The current production estimate is shown at checkout.",
+        "consent_label": "I have the right to use the photos and material I am sending, and I understand this is a made-to-order personalized item created specifically for me.",
+        "consent_value": "Confirmed — rights to material, and made-to-order item",
+        "unavailable_text": "We are not taking new issues at the moment. Check back shortly.",
+        "photo_count_one_night": "3 to 6",
+        "photo_count_full_issue": "8 to 14"
+      }
+    },
+    "gift": {
+      "type": "cmi-gift",
+      "blocks": {
+        "g1": {
+          "type": "occasion",
+          "settings": {
+            "title": "An anniversary",
+            "text": "The show you went to together, made into something to open."
+          }
+        },
+        "g2": {
+          "type": "occasion",
+          "settings": {
+            "title": "A birthday",
+            "text": "For the person who talks about that one night every year."
+          }
+        },
+        "g3": {
+          "type": "occasion",
+          "settings": {
+            "title": "A first concert together",
+            "text": "The night that became a story you both retell."
+          }
+        },
+        "g4": {
+          "type": "occasion",
+          "settings": {
+            "title": "Their favourite show",
+            "text": "The one they still have the wristband from."
+          }
+        },
+        "g5": {
+          "type": "occasion",
+          "settings": {
+            "title": "A festival weekend",
+            "text": "Several days, several bands, one issue."
+          }
+        },
+        "g6": {
+          "type": "occasion",
+          "settings": {
+            "title": "A surprise keepsake",
+            "text": "Send us the photos quietly. They find out when they open it."
+          }
+        }
+      },
+      "block_order": [
+        "g1",
+        "g2",
+        "g3",
+        "g4",
+        "g5",
+        "g6"
+      ],
+      "settings": {
+        "eyebrow": "As a gift",
+        "heading": "A concert gift they don't already own.",
+        "intro": "You cannot buy this in a shop, because it is made from a night only the two of you were at. If you have the photos, you have the gift.",
+        "cta_label": "Create Their Issue",
+        "cta_url": ""
+      }
+    },
+    "faq": {
+      "type": "cmi-faq",
+      "blocks": {
+        "q1": {
+          "type": "qa",
+          "settings": {
+            "question": "How do I send my photos?",
+            "answer": "<p>Two ways, and you choose in the order form. Either paste a share link from Google Drive, Dropbox, iCloud or WeTransfer, or pick the option to email them after ordering — we reply with an address to send them to as soon as your order is confirmed. You can also attach your ticket screenshot directly to the form.</p>"
+          }
+        },
+        "q2": {
+          "type": "qa",
+          "settings": {
+            "question": "How long does it take?",
+            "answer": "<p>Every issue is designed by hand, so the time depends on the queue and on how much material you send. The current production estimate is shown before you order, and we confirm it again in your order email.</p>"
+          }
+        },
+        "q3": {
+          "type": "qa",
+          "settings": {
+            "question": "Can I use a concert from years ago?",
+            "answer": "<p>Yes. Age makes no difference — old photos and half-remembered details are often the best material. An approximate date is fine.</p>"
+          }
+        },
+        "q4": {
+          "type": "qa",
+          "settings": {
+            "question": "What if I no longer have the ticket?",
+            "answer": "<p>That is fine, and common. The ticket upload is optional. We design the souvenir-style page from the details you give us instead — artist, venue, city, date and seat or section if you remember it.</p>"
+          }
+        },
+        "q5": {
+          "type": "qa",
+          "settings": {
+            "question": "Can I request changes?",
+            "answer": "<p>The Full Issue edition includes one round of revisions. On One Night we will still fix anything we got wrong — a misspelled name, a wrong date, the wrong photo — at no charge.</p>"
+          }
+        },
+        "q6": {
+          "type": "qa",
+          "settings": {
+            "question": "Is this official artist merchandise?",
+            "answer": "<p>No. This is a personalized fan keepsake made from material you supply. It is not official artist, venue, promoter or ticketing-company merchandise, and it is not affiliated with, licensed by or endorsed by any of them.</p>"
+          }
+        },
+        "q7": {
+          "type": "qa",
+          "settings": {
+            "question": "Can I order a printed version?",
+            "answer": "<p>Not yet. Both editions are delivered as a digital file at the moment. The file is prepared at a resolution suitable for printing at home or at a print shop, and printed editions are something we are looking at once we know there is demand for them.</p>"
+          }
+        },
+        "q8": {
+          "type": "qa",
+          "settings": {
+            "question": "What image quality should I upload?",
+            "answer": "<p>Send the originals straight from your phone or camera rather than screenshots or images saved from a chat app, which are compressed. Larger files are better. Dark, grainy concert photos are expected and usually work well — send them even if you think they are too dark, and we will tell you if something genuinely cannot be used.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8"
+      ],
+      "settings": {
+        "eyebrow": "Questions",
+        "heading": "Before you order"
+      }
+    },
+    "trust": {
+      "type": "cmi-trust",
+      "blocks": {
+        "t1": {
+          "type": "point",
+          "settings": {
+            "text": "This is a personalized fan keepsake created from information and material supplied by you."
+          }
+        },
+        "t2": {
+          "type": "point",
+          "settings": {
+            "text": "It is not official artist, venue, promoter or ticketing-company merchandise, and it is not affiliated with, licensed by or endorsed by any of them."
+          }
+        },
+        "t3": {
+          "type": "point",
+          "settings": {
+            "text": "You must have the right to submit and reproduce the photographs and other material you send us."
+          }
+        },
+        "t4": {
+          "type": "point",
+          "settings": {
+            "text": "We do not recreate protected artist logos, album covers, tour graphics or ticketing-company designs."
+          }
+        },
+        "t5": {
+          "type": "point",
+          "settings": {
+            "text": "Any souvenir-ticket-style page is decorative only. It is not a ticket and is not valid for admission to anything."
+          }
+        },
+        "t6": {
+          "type": "point",
+          "settings": {
+            "text": "Your photos are used only to produce your issue. They are not published, resold or used as examples without your permission."
+          }
+        }
+      },
+      "block_order": [
+        "t1",
+        "t2",
+        "t3",
+        "t4",
+        "t5",
+        "t6"
+      ],
+      "settings": {
+        "eyebrow": "What this is, plainly",
+        "heading": "An unofficial keepsake, made from your own material."
+      }
+    },
+    "returns": {
+      "type": "cmi-returns-notice",
+      "settings": {
+        "heading": "Made to order: what that means for cancelling",
+        "body": "<p>Every issue is designed specifically for you, from details and photographs only you can supply. Because it is made to your specification and delivered as digital content, the usual right to change your mind may not apply once we have begun work on it. The exact position, and the point at which it applies, is set out in our refund and terms pages.</p><p>If something is wrong with what we deliver — a misspelling, a wrong date, the wrong photo — tell us and we will put it right. If we cannot produce your issue from the material you send, we will contact you before charging ahead and refund you if we cannot proceed.</p>",
+        "policy_link_label": "Read the full refund policy",
+        "policy_link_url": "/policies/refund-policy"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "before_after",
+    "how_it_works",
+    "included",
+    "examples",
+    "personalizer",
+    "gift",
+    "faq",
+    "trust",
+    "returns"
+  ]
+}

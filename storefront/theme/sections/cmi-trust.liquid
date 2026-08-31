@@ -1,0 +1,58 @@
+{% comment %}
+  cmi-trust.liquid — rights and non-affiliation statement.
+
+  This section is not decoration. It is the store's public statement that the
+  product is unofficial, that the customer warrants their own material, and that
+  souvenir-style designs are decorative. Copy is editable but the section should
+  not be removed from the product template.
+{% endcomment %}
+
+{% render 'cmi-css' %}
+
+<section class="cmi cmi--dark cmi__section cmi__section--tight" id="cmi-trust" aria-labelledby="cmi-trust-heading-{{ section.id }}">
+  <div class="cmi__wrap">
+    <p class="cmi__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="cmi__h3" id="cmi-trust-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+
+    <ul class="cmi__list cmi__trust-list">
+      {%- for block in section.blocks -%}
+        <li {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .cmi .cmi__trust-list li { font-size: 0.9375rem; color: var(--cmi-muted-on-dark); }
+</style>
+
+{% schema %}
+{
+  "name": "CMI Trust & Rights",
+  "tag": "div",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "What this is, plainly" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "An unofficial keepsake, made from your own material." }
+  ],
+  "blocks": [
+    {
+      "type": "point", "name": "Point",
+      "settings": [{ "type": "textarea", "id": "text", "label": "Text" }]
+    }
+  ],
+  "presets": [
+    {
+      "name": "CMI Trust & Rights",
+      "blocks": [
+        { "type": "point", "settings": { "text": "This is a personalized fan keepsake created from information and material supplied by you." } },
+        { "type": "point", "settings": { "text": "It is not official artist, venue, promoter or ticketing-company merchandise, and it is not affiliated with, licensed by or endorsed by any of them." } },
+        { "type": "point", "settings": { "text": "You must have the right to submit and reproduce the photographs and other material you send us." } },
+        { "type": "point", "settings": { "text": "We do not recreate protected artist logos, album covers, tour graphics or ticketing-company designs." } },
+        { "type": "point", "settings": { "text": "Any souvenir-ticket-style page is decorative only. It is not a ticket and is not valid for admission to anything." } },
+        { "type": "point", "settings": { "text": "Your photos are used only to produce your issue. They are not published, resold or used as examples without your permission." } }
+      ]
+    }
+  ]
+}
+{% endschema %}
