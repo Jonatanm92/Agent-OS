@@ -126,6 +126,7 @@ export async function handleConsentBanner(page: Page): Promise<ConsentDecision> 
       dismissed: false,
       method: 'none_present',
       containerSelector: null,
+      coveragePercent: null,
       note: 'No consent overlay was covering the page when it loaded.',
     };
   }
@@ -147,6 +148,7 @@ export async function handleConsentBanner(page: Page): Promise<ConsentDecision> 
           dismissed: true,
           method,
           containerSelector: banner.selector,
+          coveragePercent: Math.round(banner.coverage * 100),
           note: `Consent overlay from ${vendorLabel} was dismissed by choosing "${match.name}". Non-essential cookies were declined; nothing was accepted on the merchant's behalf.`,
         };
       }
@@ -162,6 +164,7 @@ export async function handleConsentBanner(page: Page): Promise<ConsentDecision> 
     dismissed: false,
     method: 'not_dismissible',
     containerSelector: banner.selector,
+    coveragePercent: Math.round(banner.coverage * 100),
     note: `A consent overlay from ${vendorLabel} covers ${Math.round(banner.coverage * 100)}% of the page and offers no way to decline non-essential cookies without accepting them. The pages below were tested with the overlay present, which is also what a visitor who declines sees.`,
   };
 }

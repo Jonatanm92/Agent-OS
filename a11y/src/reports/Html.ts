@@ -66,11 +66,14 @@ export function pageTypeLabel(pageType: string): string {
  */
 export function consentNote(consent: ConsentDecision | null): string {
   if (!consent || !consent.detected) return '';
-  const vendor = consent.vendor ? escapeHtml(consent.vendor) : 'en cookiebanner';
+  const vendor = consent.vendor ? escapeHtml(consent.vendor) : 'en okänd leverantör';
   if (consent.dismissed) {
-    return `<p class="meta">Cookiebanner (${vendor}) fanns på sidan och avvisades genom att tacka nej till icke-nödvändiga kakor innan testet. Inget godkännande gavs för er räkning.</p>`;
+    return `<p class="meta">En cookiebanner från ${vendor} fanns på sidan. Den avvisades genom att tacka nej till icke-nödvändiga kakor innan testet påbörjades — inget godkännande gavs för er räkning.</p>`;
   }
-  return `<div class="callout"><h3>Testet gjordes med cookiebannern kvar</h3><p>${escapeHtml(consent.note)}</p></div>`;
+  const coverage = consent.coveragePercent ? ` Den täcker ${consent.coveragePercent}% av sidan.` : '';
+  return `<div class="callout"><h3>Testet gjordes med cookiebannern kvar</h3>
+<p>Cookiebannern från ${vendor} går inte att avvisa utan att samtidigt godkänna icke-nödvändiga kakor, så vi lämnade den på plats.${coverage} Sidorna nedan testades alltså med bannern uppe — vilket också är vad en besökare som väljer att inte godkänna faktiskt möter.</p>
+<p>Att banner­n inte går att tacka nej till är i sig värt att ta upp med er leverantör, både för tillgängligheten och för samtyckets giltighet.</p></div>`;
 }
 
 export function journeyTable(journey: JourneyStep[]): string {

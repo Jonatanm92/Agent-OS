@@ -68,6 +68,7 @@ export async function discoverJourney(options: {
     dismissed: false,
     method: 'none_present',
     containerSelector: null,
+    coveragePercent: null,
     note: 'No page was loaded, so no consent overlay was evaluated.',
   };
 

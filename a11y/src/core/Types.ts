@@ -159,6 +159,13 @@ export interface ConsentDecision {
   /** How it was dismissed. We only ever decline non-essential cookies. */
   method: 'necessary_only' | 'reject_all' | 'close_button' | 'not_dismissible' | 'none_present';
   containerSelector: string | null;
+  /** Share of the viewport the overlay covered, for the report to describe. */
+  coveragePercent: number | null;
+  /**
+   * Operational record in English, for logs and the JSON export. Customer-facing
+   * wording is composed from the structured fields above, in the market's
+   * language — see `reports/Html.ts`.
+   */
   note: string;
 }
 
