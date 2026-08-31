@@ -312,3 +312,19 @@ agent-os/
 
 MIT. Free Claude Code and obsidian-mcp-server are independent MIT-licensed projects;
 see their repositories for their terms.
+
+## A11Y Revenue OS
+
+`a11y/` is a self-contained accessibility operations platform: prospect
+intelligence, ecommerce journey discovery, an audit engine (axe-core plus
+deterministic keyboard, focus, form, dialog and reflow probes), evidence packs,
+a human review console, three levels of report, remediation guidance, retesting
+and recurring monitoring — wired to a sales pipeline and business metrics.
+
+```bash
+cd a11y && npm install && npm run build
+node dist/cli/Main.js demo       # the whole slice against local fixture storefronts
+node dist/cli/Main.js console    # the internal review console
+```
+
+See [`a11y/README.md`](a11y/README.md) and [`a11y/docs/SAFETY.md`](a11y/docs/SAFETY.md).
