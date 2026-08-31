@@ -3,6 +3,7 @@ import { normalizeDomain, stableHash, toOrigin } from '../src/core/Ids.js';
 import { localize, renderTemplate } from '../src/core/Copy.js';
 import { isAllowed, parseRobots } from '../src/discovery/Robots.js';
 import { classifyLinks, deriveSearchTerm, PRODUCT_PATH } from '../src/discovery/LinkClassifier.js';
+import { isSitemapIndex, parseSitemapLocations, sitemapsFromRobots } from '../src/discovery/Sitemap.js';
 
 describe('domain handling', () => {
   it('normalizes to a stable prospect key', () => {
@@ -101,5 +102,29 @@ describe('link classification', () => {
       { href: '/c', text: 'Lampa', rel: null },
     ]);
     expect(term).toBe('ullmatta');
+  });
+});
+
+describe('sitemap fallback', () => {
+  it('extracts locations and decodes entities', () => {
+    const xml = `<?xml version="1.0"?><urlset>
+      <url><loc>https://butik.se/produkt/matta</loc></url>
+      <url><loc>https://butik.se/sok?q=a&amp;p=2</loc></url>
+    </urlset>`;
+    expect(parseSitemapLocations(xml)).toEqual(['https://butik.se/produkt/matta', 'https://butik.se/sok?q=a&p=2']);
+  });
+
+  it('recognises a sitemap index so nested files can be followed', () => {
+    expect(isSitemapIndex('<sitemapindex xmlns="x"><sitemap><loc>a</loc></sitemap></sitemapindex>')).toBe(true);
+    expect(isSitemapIndex('<urlset><url><loc>a</loc></url></urlset>')).toBe(false);
+  });
+
+  it('reads Sitemap directives out of robots.txt, where large stores put them', () => {
+    const robots = 'User-agent: *\nDisallow: /admin\nSitemap: https://butik.se/sitemap_products.xml\nSitemap: https://butik.se/sitemap_pages.xml\n';
+    expect(sitemapsFromRobots(robots)).toEqual(['https://butik.se/sitemap_products.xml', 'https://butik.se/sitemap_pages.xml']);
+  });
+
+  it('returns nothing rather than guessing when the XML has no locations', () => {
+    expect(parseSitemapLocations('<html><body>Not a sitemap</body></html>')).toEqual([]);
   });
 });

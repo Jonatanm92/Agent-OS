@@ -239,6 +239,16 @@ function scripts(barriers) {
 function productCard(p, barriers, style = URL_STYLES.swedish) {
   const alt = barriers.badAltText ? `alt="${p.slug}.jpg"` : `alt="${p.name}"`;
   const href = `${style.product}/${p.slug}`;
+  if (barriers.clientRendered) {
+    // Router-push on click: no anchor anywhere, so link extraction finds
+    // nothing and only the published sitemap leads to a product page.
+    return `<article class="card" data-product="${p.slug}">
+      <img src="/img/${p.slug}.svg" ${alt}>
+      <h3>${p.name}</h3>
+      <p class="price">${money(p.price)}</p>
+      <div class="btn" role="button" onclick="void 0">Visa produkt</div>
+    </article>`;
+  }
   return `<article class="card">
     <a href="${href}"><img src="/img/${p.slug}.svg" ${alt}></a>
     <h3><a href="${href}">${p.name}</a></h3>
@@ -281,6 +291,33 @@ export function renderPage(site, route) {
   const style = styleOf(site);
   const nav = navFor(style);
   const heading = (level, text) => `<h${level}>${text}</h${level}>`;
+
+  if (route.type === 'home' && b.clientRendered) {
+    // A React-style storefront: an empty shell that builds its navigation after
+    // hydration, with product cards that are click handlers rather than links.
+    // No amount of link extraction finds the product pages here — the site's
+    // own sitemap is the only honest way in.
+    const payload = JSON.stringify({
+      nav: nav,
+      products: PRODUCTS.slice(0, 6).map((p) => ({ slug: p.slug, name: p.name, price: p.price })),
+    });
+    return `${head(site, 'Inredning för hela hemmet', b)}${header(site, b)}
+<main id="app"><p>Laddar…</p></main>
+<script>
+  const data = ${payload};
+  setTimeout(() => {
+    const app = document.getElementById('app');
+    app.innerHTML = '<h1>${site.name}</h1>'
+      + '<nav aria-label="Kategorier"><ul>' + data.nav.map((n) => '<li><a href="' + n.href + '">' + n.label + '</a></li>').join('') + '</ul></nav>'
+      + '<div class="grid">' + data.products.map((p) =>
+          '<article class="card" data-product="' + p.slug + '">'
+          + '<img src="/img/' + p.slug + '.svg" alt="' + p.name + '">'
+          + '<h3>' + p.name + '</h3><p class="price">' + p.price + ' kr</p>'
+          + '<div class="btn" role="button" onclick="void 0">Visa produkt</div></article>').join('')
+      + '</div>';
+  }, 1200);
+</script>${footer(site, b)}`;
+  }
 
   if (route.type === 'home') {
     const featured = PRODUCTS.slice(0, 6).map((p) => productCard(p, b, style)).join('');

@@ -73,7 +73,7 @@ show up when something is operated:
 - **`ReflowProbe`** renders at 360 px — roughly 400% zoom — and measures the
   actual overflow.
 
-Two things decide whether any of that survives contact with a real storefront.
+Four things decide whether any of that survives contact with a real storefront.
 **The cookie wall** sits in front of nearly every European shop; the platform
 declines non-essential cookies to get at the store behind it, never accepts on
 the merchant's behalf, and states in the report which of the two happened.
@@ -81,6 +81,12 @@ the merchant's behalf, and states in the report which of the two happened.
 checks constantly and the merchant cannot fix them, so those findings are
 attributed to the vendor, kept out of the mini audit and out of the scoring, and
 reported separately to a paying customer.
+**Client-rendered stores** build their navigation after hydration and often make
+product cards click handlers rather than links, so the crawler waits for the DOM
+to stop changing and, when there is still nothing to follow, reads the site's own
+published sitemap. **Moved stores** (apex → www, http → https, a rebrand) are
+crawled against the origin they actually landed on; without that, every link
+reads as external and the journey silently comes back empty.
 
 The result is a finding like *"Filtrera opens when clicked with a mouse but does
 nothing when it has keyboard focus and Enter is pressed"*, with a screenshot of
@@ -143,10 +149,12 @@ goes up when the crawler gets noisier, not when the business gets better.
 npm test
 ```
 
-93 tests. The important one is `test/EndToEnd.test.ts`, which runs the real
-browser against five local fixture storefronts — a badly built shop, a well
+102 tests. The important one is `test/EndToEnd.test.ts`, which runs the real
+browser against seven local fixture storefronts — a badly built shop, a well
 built shop, a B2B site, a Shopify-shaped shop behind a dismissible cookie wall,
-and a shop behind a wall with no way to decline — and asserts the whole slice: journey discovery, the
+a shop behind a wall with no way to decline, a client-rendered shop with no
+links to follow, and a shop that redirects somewhere else — and asserts the
+whole slice: journey discovery, the
 keyboard barrier, systemic grouping, that a well built store is *not* worked up
 into a case, that a B2B site is disqualified, that the mini audit contains only
 evidenced findings and no legal claims, that the consent wall is declined rather
@@ -185,8 +193,9 @@ fixtures/         local storefronts used by the tests and the demo
 - **Company size is inferred, not known.** Catalogue breadth is a proxy. The
   scorer raises a review flag rather than asserting a size bucket, and no
   external company register is integrated yet.
-- **Client-rendered stores can under-report.** The crawler waits for network
-  idle with a timeout; a store that renders its navigation after that window may
-  yield fewer journey steps. Untested steps are always shown as untested.
+- **Client-rendered stores can still under-report.** The crawler waits for the
+  DOM to stop changing and falls back to the sitemap, but a store that renders
+  after that bounded window, or publishes no sitemap, may yield fewer journey
+  steps. Untested steps are always shown as untested, never as passing.
 - **The console has no authentication.** It binds to localhost and shows
   customer evidence. Do not expose it.

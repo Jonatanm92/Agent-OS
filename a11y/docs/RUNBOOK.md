@@ -159,9 +159,15 @@ guidance is not doing its job.
 not be declined. The report will say so. Those findings are attributed to the
 CMP vendor and never lead a mini audit.
 
-**A journey step is always untested.** Client-rendered navigation may render
-after the crawler's wait window. Raise `A11Y_NAV_TIMEOUT_MS`, or accept it —
+**A journey step is always untested.** The crawler waits for the DOM to settle
+and falls back to the site's sitemap, so this usually means the store publishes
+no sitemap and renders very late. Raise `A11Y_NAV_TIMEOUT_MS`, or accept it —
 untested steps are always reported as untested, never as passing.
+
+**A whole batch comes back with homepage-only journeys.** Check one of the
+domains by hand: if it redirects (apex → www, or to a new brand), the scan
+follows it and crawls where it landed, so this is more likely a network or bot
+protection problem than a crawler problem.
 
 **A finding looks wrong.** Reject it in the console with a note. That is the
 audit trail working. If the same false positive appears repeatedly, the rule

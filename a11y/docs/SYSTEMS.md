@@ -6,7 +6,7 @@ The build order follows the vertical slices, not the system numbers. A system is
 | # | System | Status | Where |
 |---|---|---|---|
 | 1 | Prospect intelligence | Built | `db/Store.ts`, `scoring/IcpScoring.ts`, provenance in `db/Store.ts` |
-| 2 | Site discovery | Built | `discovery/JourneyDiscovery.ts`, `LinkClassifier.ts`, `Robots.ts`, `ConsentManager.ts` |
+| 2 | Site discovery | Built | `discovery/JourneyDiscovery.ts`, `LinkClassifier.ts`, `Robots.ts`, `ConsentManager.ts`, `Sitemap.ts` |
 | 3 | Audit engine | Built | `audit/` — axe-core, keyboard, focus, forms, structure, dialogs, reflow |
 | 4 | Finding normalization | Built | `findings/Normalize.ts`, `Dedupe.ts`, `RuleCatalog.ts`, `WcagMap.ts`, `ThirdParty.ts` |
 | 5 | Evidence pack | Built | `evidence/EvidencePack.ts`, `Screenshot.ts`, `Storage.ts` |

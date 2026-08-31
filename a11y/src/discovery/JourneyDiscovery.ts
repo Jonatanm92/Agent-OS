@@ -7,6 +7,7 @@ import { BrowserSession, settle } from './Browser.js';
 import { fetchRobots } from './Robots.js';
 import { handleConsentBanner } from './ConsentManager.js';
 import { classifyLinks, deriveSearchTerm, type SiteLink } from './LinkClassifier.js';
+import { fetchSitemapUrls, type SitemapResult } from './Sitemap.js';
 import { collectRawSignals, interpretSignals, type SiteSignals } from './PlatformDetect.js';
 
 export interface JourneyVisit {
@@ -26,6 +27,8 @@ export interface JourneyResult {
   robots: RobotsDecision;
   consent: ConsentDecision;
   pagesVisited: number;
+  /** Set when the DOM gave us nothing and the site's own sitemap did. */
+  sitemap: SitemapResult | null;
 }
 
 const FALLBACK_PATHS: Partial<Record<PageType, string[]>> = {
@@ -72,7 +75,7 @@ export async function discoverJourney(options: {
     for (const type of JOURNEY_PAGE_TYPES) {
       steps.set(type, { pageType: type, url: null, reached: false, reason: 'robots.txt disallows crawling this site' });
     }
-    return { steps: [...steps.values()], signals: null, robots: robots.decision, consent, pagesVisited: 0 };
+    return { steps: [...steps.values()], signals: null, robots: robots.decision, consent, pagesVisited: 0, sitemap: null };
   }
 
   let visited = 0;
@@ -133,43 +136,72 @@ export async function discoverJourney(options: {
     signals = interpretSignals(await collectRawSignals(page));
   });
   if (!homepage || !signals) {
-    return { steps: [...steps.values()], signals, robots: robots.decision, consent, pagesVisited: visited };
+    return { steps: [...steps.values()], signals, robots: robots.decision, consent, pagesVisited: visited, sitemap: null };
   }
+
+  // A store that redirects apex → www, or http → https, or to a rebranded
+  // domain, must be crawled against where it actually landed. Otherwise every
+  // link on the page reads as external and the journey comes back empty.
+  const effectiveOrigin = originOf(steps.get('homepage')?.url) ?? origin;
   const homeLinks: SiteLink[] = (signals as SiteSignals).links;
-  const classified = classifyLinks(homeLinks, origin);
+  const classified = classifyLinks(homeLinks, effectiveOrigin);
   const searchTerm = deriveSearchTerm(homeLinks);
   await homepage.close().catch(() => undefined);
 
+  // The sitemap is read at most once, and only when the page itself did not
+  // give us somewhere to go.
+  let sitemap: SitemapResult | null = null;
+  const sitemapCandidates = async (pageType: PageType): Promise<string[]> => {
+    if (sitemap === null) {
+      sitemap = await fetchSitemapUrls(context, effectiveOrigin, robots.body);
+      if (sitemap.fetched) logger.info('sitemap fallback used', { origin: effectiveOrigin, ...sitemap });
+    }
+    return (sitemap.byType[pageType] ?? []).filter((url) => robots.allows(url));
+  };
+
   // --------------------------------------------------------------- search
-  await visitFirst('search', [...classified.byType.search, ...fallbackUrls(origin, 'search', searchTerm)], open, steps, searchTerm);
+  await visitFirst('search', [...classified.byType.search, ...fallbackUrls(effectiveOrigin, 'search', searchTerm)], open, steps, searchTerm);
 
   // ------------------------------------------------------------- category
-  const categoryPage = await visitFirst('category', classified.byType.category, open, steps);
+  const categoryFromDom = classified.byType.category;
+  const categoryPage = await visitFirst(
+    'category',
+    categoryFromDom.length ? categoryFromDom : await sitemapCandidates('category'),
+    open,
+    steps,
+  );
   let productCandidates = classified.byType.product;
   if (categoryPage) {
     const categoryLinks = await extractLinks(categoryPage);
-    const fromCategory = classifyLinks(categoryLinks, origin).byType.product;
+    const fromCategory = classifyLinks(categoryLinks, effectiveOrigin).byType.product;
     productCandidates = [...fromCategory, ...productCandidates];
     await categoryPage.close().catch(() => undefined);
   }
 
   // -------------------------------------------------------------- product
-  const productPage = await visitFirst('product', productCandidates, open, steps);
+  // Client-rendered listings often build product cards from click handlers
+  // rather than links, so the sitemap is what finds the product page.
+  const productPage = await visitFirst(
+    'product',
+    productCandidates.length ? productCandidates : await sitemapCandidates('product'),
+    open,
+    steps,
+  );
   await productPage?.close().catch(() => undefined);
 
   // ----------------------------------------------------------------- cart
   // The cart is visited empty on purpose: we never add products to a real
   // store's basket, so an empty-cart page is the honest, testable state.
-  const cartPage = await visitFirst('cart', [...classified.byType.cart, ...fallbackUrls(origin, 'cart')], open, steps);
+  const cartPage = await visitFirst('cart', [...classified.byType.cart, ...fallbackUrls(effectiveOrigin, 'cart')], open, steps);
   await cartPage?.close().catch(() => undefined);
 
   // -------------------------------------------------------------- account
   // The login form is tested as a form. No credentials are ever submitted.
-  const accountPage = await visitFirst('account', [...classified.byType.account, ...fallbackUrls(origin, 'account')], open, steps);
+  const accountPage = await visitFirst('account', [...classified.byType.account, ...fallbackUrls(effectiveOrigin, 'account')], open, steps);
   await accountPage?.close().catch(() => undefined);
 
   // ------------------------------------------------------- checkout entry
-  const checkoutPage = await visitFirst('checkout_entry', [...classified.byType.checkout_entry, ...fallbackUrls(origin, 'checkout_entry')], open, steps);
+  const checkoutPage = await visitFirst('checkout_entry', [...classified.byType.checkout_entry, ...fallbackUrls(effectiveOrigin, 'checkout_entry')], open, steps);
   if (checkoutPage) {
     const landed = checkoutPage.url();
     if (/\/(cart|varukorg|kundvagn)/i.test(landed)) {
@@ -189,7 +221,16 @@ export async function discoverJourney(options: {
     }
   }
 
-  return { steps: [...steps.values()], signals, robots: robots.decision, consent, pagesVisited: visited };
+  return { steps: [...steps.values()], signals, robots: robots.decision, consent, pagesVisited: visited, sitemap };
+}
+
+function originOf(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
 }
 
 async function visitFirst(

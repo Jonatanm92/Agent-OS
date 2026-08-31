@@ -11,7 +11,7 @@ These are enforced in code, not just stated. Where a rule is enforced, the file 
 | Never bypass authentication | The login page is tested as a form. No credentials are ever entered or stored. |
 | Never circumvent a CAPTCHA or access control | Nothing in the platform interacts with one. A page we cannot reach is recorded as untested. |
 | Never overload a site | `discovery/Browser.ts` serialises requests per host with a configurable minimum gap (default 1.5 s) and `core/Config.ts` caps pages per scan (default 8). |
-| Respect robots.txt | `discovery/Robots.ts`. A disallowed path is recorded as untested, never fetched. |
+| Respect robots.txt | `discovery/Robots.ts`. A disallowed path is recorded as untested, never fetched. The sitemap fallback filters its URLs through the same gate. |
 | Never leave the page under test | `audit/DialogProbe.ts` aborts and navigates back if a probe causes a navigation. |
 | Never accept cookies on the merchant's behalf | `discovery/ConsentManager.ts` only ever clicks a control that *declines* non-essential cookies, and only inside the identified consent container. "Accept all" is explicitly excluded. When there is no way to decline, the overlay is left in place and the scan records that. |
 | Never contact anything but the site under test | `discovery/Browser.ts` launches Chromium with background networking, sync, safebrowsing updates and autofill telemetry disabled. |

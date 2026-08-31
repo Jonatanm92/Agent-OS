@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openDatabase } from '../src/db/Database.js';
+import { LocalFileStorage } from '../src/evidence/Storage.js';
 import { createPlatform, type Platform } from '../src/services/Platform.js';
 import { Queue } from '../src/queue/Queue.js';
 import { ReviewService } from '../src/services/ReviewService.js';
@@ -453,6 +454,24 @@ describe('schema migration', () => {
     // Re-opening is a no-op rather than an error.
     const reopened = openDatabase({ dataDir: dir, filename: file });
     reopened.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe('evidence storage', () => {
+  it('refuses a key that escapes the storage root', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'a11y-storage-'));
+    const storage = new LocalFileStorage(dir);
+    await storage.put('screenshots/scan/a.png', Buffer.from('ok'), 'image/png');
+    expect(storage.get('screenshots/scan/a.png').toString()).toBe('ok');
+
+    // Keys reach this from the console's /evidence/* route, so they are
+    // attacker-influenced. Every one of these must be refused, not sanitised
+    // into something that happens to be harmless.
+    for (const key of ['../../etc/passwd', '/etc/passwd', 'a/../../../etc/passwd', '....//....//etc/passwd']) {
+      expect(() => storage.get(key)).toThrow();
+      expect(storage.exists(key)).toBe(false);
+    }
     rmSync(dir, { recursive: true, force: true });
   });
 });

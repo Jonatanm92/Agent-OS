@@ -143,11 +143,45 @@ export class BrowserSession {
   }
 }
 
-/** Give client-rendered storefronts a moment, without waiting on trackers forever. */
-export async function settle(page: Page, quietMs = 700): Promise<void> {
+/**
+ * Give client-rendered storefronts a chance to actually render, without waiting
+ * on analytics and chat widgets forever.
+ *
+ * `networkidle` alone is not enough: a React storefront can finish its requests
+ * and only then build the navigation, so the crawler sees an empty shell and
+ * reports a journey it could not find. Waiting for the DOM to stop changing is
+ * what catches that — bounded, so a page with a carousel or a polling widget
+ * cannot hold a scan open.
+ */
+export async function settle(page: Page, quietMs = 700, maxDomWaitMs = 3000): Promise<void> {
   await page.waitForLoadState('domcontentloaded').catch(() => undefined);
   await page.waitForTimeout(quietMs);
   await page.waitForLoadState('networkidle', { timeout: 4000 }).catch(() => undefined);
+  await waitForDomToSettle(page, maxDomWaitMs).catch(() => undefined);
+}
+
+/** Resolves once no DOM mutations have landed for 400 ms, or the cap is hit. */
+async function waitForDomToSettle(page: Page, maxWaitMs: number): Promise<void> {
+  await page.evaluate(
+    ({ maxWait, quiet }: { maxWait: number; quiet: number }) =>
+      new Promise<void>((resolve) => {
+        let timer: ReturnType<typeof setTimeout>;
+        const observer = new MutationObserver(() => {
+          clearTimeout(timer);
+          timer = setTimeout(finish, quiet);
+        });
+        const finish = () => {
+          observer.disconnect();
+          clearTimeout(timer);
+          clearTimeout(cap);
+          resolve();
+        };
+        const cap = setTimeout(finish, maxWait);
+        timer = setTimeout(finish, quiet);
+        observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+      }),
+    { maxWait: maxWaitMs, quiet: 400 },
+  );
 }
 
 export function safeHost(url: string): string {

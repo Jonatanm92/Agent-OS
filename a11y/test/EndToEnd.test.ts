@@ -266,3 +266,65 @@ describe('consent walls and third-party widgets', () => {
     if (barrierSignal) expect(barrierSignal.evidence).not.toContain('cookiebot');
   });
 });
+
+/**
+ * The two ways a scan silently comes back empty on a real storefront: a
+ * client-rendered shop with no links to extract, and a shop that redirects
+ * somewhere else. Both produce a journey full of "no candidate URL found"
+ * unless they are handled explicitly.
+ */
+describe('storefronts that defeat naive crawling', () => {
+  const PORTS = { spa: 4388, moved: 4389, target: 4390 };
+  let fixtures: { stop(): Promise<void> };
+  let platform: Platform;
+  let dataDir: string;
+  let spa: ScanOutcome;
+  let moved: ScanOutcome;
+
+  beforeAll(async () => {
+    const { SITES } = await import('../fixtures/Server.mjs' as string);
+    SITES[PORTS.spa] = SITES[4186];
+    SITES[PORTS.target] = SITES[4181];
+    SITES[PORTS.moved] = { ...SITES[4187], redirectTo: PORTS.target };
+    fixtures = await startFixtures(Object.values(PORTS));
+    dataDir = mkdtempSync(join(tmpdir(), 'a11y-crawl-'));
+    platform = createPlatform({ config: { dataDir, perHostDelayMs: 50 } });
+    const scans = new ScanService(platform);
+    spa = await scans.scanDomain(`http://localhost:${PORTS.spa}`);
+    moved = await scans.scanDomain(`http://localhost:${PORTS.moved}`);
+  }, 300_000);
+
+  afterAll(async () => {
+    platform?.close();
+    await fixtures?.stop();
+    if (dataDir) rmSync(dataDir, { recursive: true, force: true });
+  });
+
+  it('waits for a client-rendered store to actually render its navigation', () => {
+    const category = spa.journey.find((s) => s.pageType === 'category');
+    expect(category?.reached).toBe(true);
+    expect(category?.url).toContain('/kategori/');
+  });
+
+  it('finds a product page through the sitemap when the listing has no links at all', () => {
+    // The fixture's product cards are click handlers, so link extraction finds
+    // nothing — the site's own published sitemap is the only way in.
+    expect(spa.signals?.productLinkCount).toBe(0);
+    const product = spa.journey.find((s) => s.pageType === 'product');
+    expect(product?.reached).toBe(true);
+    expect(product?.url).toContain('/produkt/');
+  });
+
+  it('still reports the barrier that made the listing unlinkable in the first place', () => {
+    expect(spa.findings.map((f) => f.rule)).toContain('keyboard.mouse-only-control');
+  });
+
+  it('crawls a moved store against where it landed, not where it was pointed', () => {
+    const reached = moved.journey.filter((s) => s.reached);
+    expect(reached.length).toBeGreaterThanOrEqual(5);
+    for (const step of reached) expect(step.url).toContain(`localhost:${PORTS.target}`);
+    // The prospect stays keyed on the domain the operator supplied.
+    expect(moved.prospect.domain).toBe(`localhost:${PORTS.moved}`);
+    expect(moved.prospect.companyName).toBe('Nordvik Hem');
+  });
+});

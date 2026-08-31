@@ -56,6 +56,8 @@ export function isAllowed(rules: RobotsRules, pathname: string): boolean {
 export interface RobotsGate {
   decision: RobotsDecision;
   allows(url: string): boolean;
+  /** Raw body, so the sitemap fallback can read any `Sitemap:` directives. */
+  body: string;
 }
 
 export async function fetchRobots(context: BrowserContext, origin: string, ignore: boolean): Promise<RobotsGate> {
@@ -63,6 +65,7 @@ export async function fetchRobots(context: BrowserContext, origin: string, ignor
     return {
       decision: { fetched: false, allowed: true, crawlDelayMs: null, reason: 'robots check disabled by operator config' },
       allows: () => true,
+      body: '',
     };
   }
   try {
@@ -71,9 +74,11 @@ export async function fetchRobots(context: BrowserContext, origin: string, ignor
       return {
         decision: { fetched: false, allowed: true, crawlDelayMs: null, reason: `robots.txt returned ${response.status()} — treating site as crawlable` },
         allows: () => true,
+        body: '',
       };
     }
-    const rules = parseRobots(await response.text());
+    const body = await response.text();
+    const rules = parseRobots(body);
     const rootAllowed = isAllowed(rules, '/');
     return {
       decision: {
@@ -89,6 +94,7 @@ export async function fetchRobots(context: BrowserContext, origin: string, ignor
           return false;
         }
       },
+      body,
     };
   } catch (error) {
     return {
@@ -99,6 +105,7 @@ export async function fetchRobots(context: BrowserContext, origin: string, ignor
         reason: `robots.txt unreachable (${error instanceof Error ? error.message : String(error)}) — treating site as crawlable`,
       },
       allows: () => true,
+      body: '',
     };
   }
 }

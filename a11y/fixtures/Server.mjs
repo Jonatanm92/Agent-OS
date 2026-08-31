@@ -49,6 +49,19 @@ export const SITES = {
     accessibilityStatement: true,
     barriers: NO_BARRIERS,
   },
+  4187: {
+    key: 'flyttad',
+    name: 'Flyttad butik',
+    redirectTo: 4181,
+    barriers: {},
+  },
+  4186: {
+    key: 'skogsro',
+    name: 'Skogsro',
+    email: 'kontakt@skogsro.example',
+    phone: '+46703456789',
+    barriers: { clientRendered: true, noFocusStyle: true, unlabelledSearch: true },
+  },
   4184: {
     key: 'gronskan-shop',
     name: 'Grönskan',
@@ -112,6 +125,12 @@ export const REQUEST_LOG = [];
 export function createFixtureServer(port, site) {
   return createServer((req, res) => {
     REQUEST_LOG.push({ port, method: req.method, url: req.url });
+    // A site that has moved: everything, robots.txt included, redirects.
+    if (site.redirectTo) {
+      res.writeHead(301, { location: `http://localhost:${site.redirectTo}${req.url ?? '/'}` });
+      res.end();
+      return;
+    }
     const route = routeFor(req.url ?? '/', site.urlStyle);
     if ((req.url ?? '').startsWith('/img/')) {
       res.writeHead(200, { 'content-type': 'image/svg+xml' });
@@ -120,7 +139,21 @@ export function createFixtureServer(port, site) {
     }
     if ((req.url ?? '') === '/robots.txt') {
       res.writeHead(200, { 'content-type': 'text/plain' });
-      res.end('User-agent: *\nDisallow: /admin\n');
+      res.end(`User-agent: *\nDisallow: /admin\nSitemap: http://localhost:${port}/sitemap.xml\n`);
+      return;
+    }
+    if ((req.url ?? '') === '/sitemap.xml') {
+      const style = URL_STYLES[site.urlStyle ?? 'swedish'];
+      const base = `http://localhost:${port}`;
+      const urls = [
+        base + '/',
+        ...CATEGORIES.map((c) => `${base}${style.category}/${c.slug}`),
+        ...PRODUCTS.map((p) => `${base}${style.product}/${p.slug}`),
+      ];
+      res.writeHead(200, { 'content-type': 'application/xml' });
+      res.end(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls
+        .map((u) => `<url><loc>${u}</loc></url>`)
+        .join('')}</urlset>`);
       return;
     }
     const url = `http://localhost:${port}`;
