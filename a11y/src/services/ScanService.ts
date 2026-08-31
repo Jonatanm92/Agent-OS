@@ -1,7 +1,7 @@
 import type { Page } from 'playwright';
 import { toOrigin } from '../core/Ids.js';
 import type { Finding, FindingGroup, JourneyStep, Prospect, Scan } from '../core/Types.js';
-import { BrowserSession } from '../discovery/Browser.js';
+import { BrowserSession, settle } from '../discovery/Browser.js';
 import { discoverJourney } from '../discovery/JourneyDiscovery.js';
 import type { SiteSignals } from '../discovery/PlatformDetect.js';
 import { auditPage, removeSupersededIssues } from '../audit/AuditEngine.js';
@@ -11,6 +11,9 @@ import { severityRank } from '../findings/Severity.js';
 import { captureEvidence } from '../evidence/Screenshot.js';
 import { scoreProspect, type ScoringResult } from '../scoring/IcpScoring.js';
 import type { Platform } from './Platform.js';
+
+/** Matches `ReflowProbe`: the viewport a reflow finding is observed and shown at. */
+const NARROW_VIEWPORT = { width: 360, height: 800 };
 
 export interface ScanOptions {
   kind?: Scan['kind'];
@@ -138,16 +141,42 @@ export class ScanService {
     };
   }
 
-  /** Screenshots go to the findings most likely to end up in front of a customer. */
+  /**
+   * Screenshots go to the findings most likely to end up in front of a
+   * customer. A reflow finding is captured at the narrow viewport that produced
+   * it — a desktop screenshot of a reflow problem shows nothing.
+   */
   private async attachEvidence(page: Page, findings: Finding[], scanId: string, budget: number): Promise<void> {
     const worthy = [...findings]
       .filter((f) => f.confidence === 'CONFIRMED_AUTOMATED' || f.confidence === 'HIGH_CONFIDENCE')
       .sort((a, b) => severityRank(b.severity) - severityRank(a.severity))
       .slice(0, budget);
+
+    if (worthy.length === 0) return;
+
+    // The interaction probes leave panels open and focus moved. Evidence must
+    // show the page as a customer meets it, so reload before capturing.
+    await new Promise((resolve) => setTimeout(resolve, this.platform.config.perHostDelayMs));
+    await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => undefined);
+    await settle(page, 500);
+
+    const desktopViewport = page.viewportSize();
+    let narrow = false;
     for (const finding of worthy) {
+      const needsNarrow = finding.rule.startsWith('reflow.');
+      if (needsNarrow !== narrow) {
+        const width = Number((finding.raw as { viewport?: number })?.viewport) || NARROW_VIEWPORT.width;
+        const target = needsNarrow ? { width, height: NARROW_VIEWPORT.height } : desktopViewport;
+        if (target) {
+          await page.setViewportSize(target).catch(() => undefined);
+          await page.waitForTimeout(250);
+        }
+        narrow = needsNarrow;
+      }
       const key = `screenshots/${scanId}/${finding.id}.png`;
       finding.screenshotKey = await captureEvidence(page, finding.selector, this.platform.storage, key);
     }
+    if (narrow && desktopViewport) await page.setViewportSize(desktopViewport).catch(() => undefined);
   }
 
   private applyScanFacts(

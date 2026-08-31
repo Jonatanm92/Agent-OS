@@ -35,7 +35,9 @@ export async function captureEvidence(
           height: `${rect.height + 8}px`,
           border: '3px solid #e11d48',
           borderRadius: '4px',
-          boxShadow: '0 0 0 9999px rgba(15,23,42,0.35)',
+          // A light veil: enough to draw the eye, not so much that the reader
+          // loses the context the screenshot exists to provide.
+          boxShadow: '0 0 0 9999px rgba(15,23,42,0.10), 0 0 0 6px rgba(225,29,72,0.25)',
           pointerEvents: 'none',
           zIndex: '2147483647',
         });
