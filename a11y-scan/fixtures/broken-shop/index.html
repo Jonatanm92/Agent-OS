@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- DEFECTS: no lang attribute; icon links with no name; div used as a button;
+     generic link text; no skip link; images without alt. -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Nordvik Hemtextil</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; color: #333; }
+    header { display: flex; gap: 12px; padding: 12px; border-bottom: 1px solid #ddd; align-items: center; }
+    .icon { width: 18px; height: 18px; display: inline-block; }
+    .fake-button { cursor: pointer; background: #444; color: #fff; padding: 10px 16px; display: inline-block; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 16px; }
+    .low-contrast { color: #b9b9b9; background: #ffffff; }
+    a:focus, button:focus { outline: none; }
+    .tiny { width: 16px; height: 16px; padding: 0; border: 0; background: #eee; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/index.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="60" height="20"></a>
+    <a href="/search.html"><span class="icon">&#128269;</span></a>
+    <a href="/cart.html"><span class="icon">&#128722;</span></a>
+    <button class="tiny"></button>
+  </header>
+
+  <h2>Välkommen till Nordvik</h2>
+
+  <div class="grid">
+    <div>
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="120" height="120">
+      <p class="low-contrast">Handduk Lin</p>
+      <a href="/product.html">Läs mer</a>
+    </div>
+    <div>
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="120" height="120">
+      <p class="low-contrast">Örngott Bomull</p>
+      <a href="/product.html">Läs mer</a>
+    </div>
+    <div>
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="120" height="120">
+      <p class="low-contrast">Duk Vinter</p>
+      <a href="/product.html">Läs mer</a>
+    </div>
+  </div>
+
+  <div class="fake-button" onclick="alert('nope')">Visa fler produkter</div>
+
+  <nav>
+    <a href="/collection.html">Sortiment</a>
+    <a href="/contact.html">Kontakt</a>
+    <a href="/account.html">Mitt konto</a>
+    <a href="/logout.html">Logga ut</a>
+    <a href="/deep.html">Djup sida</a>
+    <a href="/nyhetsbrev.html">Nyhetsbrev</a>
+  </nav>
+</body>
+</html>

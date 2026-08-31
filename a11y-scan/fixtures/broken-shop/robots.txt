@@ -1,0 +1,12 @@
+# The wildcard group disallows /search.html, but the group naming this crawler
+# does not. A specific user-agent group REPLACES the wildcard group, so the
+# scanner may fetch /search.html — tests assert that precedence explicitly.
+User-agent: *
+Disallow: /private/
+Disallow: /search.html
+Allow: /
+
+User-agent: a11yriskscan
+Disallow: /private/
+Disallow: /nyhetsbrev.html
+Crawl-delay: 0

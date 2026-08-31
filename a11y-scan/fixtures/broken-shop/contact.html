@@ -1,0 +1,21 @@
+<!doctype html>
+<!-- DEFECTS: unlabelled form fields; positive tabindex. -->
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kontakt — Nordvik</title>
+  <style>body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }</style>
+</head>
+<body>
+  <main>
+    <h1>Kontakt</h1>
+    <form action="/contact.html" method="get">
+      <input type="text" name="namn" placeholder="Namn" tabindex="3">
+      <input type="email" name="epost" placeholder="E-post" tabindex="1">
+      <textarea name="meddelande" placeholder="Meddelande" tabindex="2"></textarea>
+      <button type="submit">Skicka</button>
+    </form>
+  </main>
+</body>
+</html>

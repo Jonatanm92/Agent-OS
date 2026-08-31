@@ -1,0 +1,81 @@
+════════════════════════════════════════════════════════════
+  INTERNAL LEAD SUMMARY — NOT FOR SENDING TO THE PROSPECT
+════════════════════════════════════════════════════════════
+
+Domain          demo-webshop.example
+Scanned         2026-08-31
+Pages examined  4
+Signal          STRONG
+
+Assessment      At least one observation sits in the purchase flow and may prevent some customers from completing an order.
+
+We observed 7 potential accessibility barrier(s) worth investigating:
+
+  1. [CRITICAL] Form fields have no label
+     Component:  input[value]
+     Occurrences: 2 on 1 page(s)
+     WCAG:       1.3.1 Info and Relationships (A)
+     Effect:     The customer cannot tell what to type. In checkout this stops
+                 the order. A placeholder is not a label: it disappears the
+                 moment typing starts and is often not announced.
+
+  2. [CRITICAL] Images are missing text alternatives
+     Component:  img
+     Occurrences: 1 on 1 page(s)
+     WCAG:       1.1.1 Non-text Content (A)
+     Effect:     Screen reader users hear nothing, or hear a filename, where an
+                 image should be described. On product images this means the
+                 customer cannot tell what is being sold.
+
+  3. [CRITICAL] Form fields have no label
+     Component:  input
+     Occurrences: 1 on 1 page(s)
+     WCAG:       1.3.1 Info and Relationships (A)
+     Effect:     The customer cannot tell what to type. In checkout this stops
+                 the order. A placeholder is not a label: it disappears the
+                 moment typing starts and is often not announced.
+
+  4. [CRITICAL] Buttons have no accessible name
+     Component:  [id] > button
+     Occurrences: 5 on 1 page(s)
+     WCAG:       4.1.2 Name, Role, Value (A)
+     Effect:     A screen reader announces the control as "button" with no
+                 indication of what it does. If this is an add-to-cart,
+                 quantity or checkout button, the customer cannot complete a
+                 purchase.
+
+  5. [CRITICAL] Buttons have no accessible name
+     Component:  button
+     Occurrences: 1 on 1 page(s)
+     WCAG:       4.1.2 Name, Role, Value (A)
+     Effect:     A screen reader announces the control as "button" with no
+                 indication of what it does. If this is an add-to-cart,
+                 quantity or checkout button, the customer cannot complete a
+                 purchase.
+
+  6. [HIGH] Iframe has no title
+     Component:  iframe
+     Occurrences: 1 on 1 page(s)
+     WCAG:       2.4.1 Bypass Blocks (A)
+     Effect:     A screen reader announces an unnamed frame. Payment and map
+                 embeds are the usual case, so this lands in checkout.
+
+  7. [HIGH] Images are missing text alternatives
+     Component:  .product-card__link[href] > img
+     Occurrences: 5 on 1 page(s)
+     WCAG:       1.1.1 Non-text Content (A)
+     Effect:     Screen reader users hear nothing, or hear a filename, where an
+                 image should be described. On product images this means the
+                 customer cannot tell what is being sold.
+
+Notes
+  - 8 further finding(s) were detected but are not listed here — the pre-scan shows only high-confidence observations.
+
+────────────────────────────────────────────────────────────
+Talking points (observational — do not assert non-compliance):
+  "We ran a short automated check of a few public pages and observed
+   some potential accessibility barriers worth investigating."
+
+This summary is based on automated checks of a handful of public pages.
+It is not an audit, not a compliance assessment, and not legal advice.
+════════════════════════════════════════════════════════════

@@ -1,0 +1,46 @@
+<!doctype html>
+<!-- DEFECTS: heading level skipped (h1 -> h4); repeated card defects (same
+     component across many items, to exercise grouping); tiny tap targets. -->
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sortiment — Nordvik</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; }
+    .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px; }
+    .product-card__link { display: block; }
+    .qty { width: 18px; height: 18px; }
+    a:focus { outline: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Sortiment</h1>
+    <h4>Alla produkter</h4>
+    <ul class="product-grid">
+      <li class="product-card" id="product-1001">
+        <a class="product-card__link" href="/product.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="100" height="100"></a>
+        <button class="qty"></button>
+      </li>
+      <li class="product-card" id="product-1002">
+        <a class="product-card__link" href="/product.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="100" height="100"></a>
+        <button class="qty"></button>
+      </li>
+      <li class="product-card" id="product-1003">
+        <a class="product-card__link" href="/product.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="100" height="100"></a>
+        <button class="qty"></button>
+      </li>
+      <li class="product-card" id="product-1004">
+        <a class="product-card__link" href="/product.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="100" height="100"></a>
+        <button class="qty"></button>
+      </li>
+      <li class="product-card" id="product-1005">
+        <a class="product-card__link" href="/product.html"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="100" height="100"></a>
+        <button class="qty"></button>
+      </li>
+    </ul>
+    <a href="/cart.html">Till varukorgen</a>
+  </main>
+</body>
+</html>

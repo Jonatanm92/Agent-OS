@@ -1,0 +1,24 @@
+<!doctype html>
+<!-- DEFECTS: every field placeholder-only (no label), no autocomplete. -->
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kassa — Nordvik</title>
+  <style>body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; } input:focus { outline: none; }</style>
+</head>
+<body>
+  <main>
+    <h1>Kassa</h1>
+    <form action="/checkout.html" method="get">
+      <input type="text" name="fname" placeholder="Förnamn">
+      <input type="text" name="lname" placeholder="Efternamn">
+      <input type="email" name="email" placeholder="E-post">
+      <input type="text" name="adress" placeholder="Adress">
+      <input type="text" name="postnummer" placeholder="Postnummer">
+      <input type="tel" name="telefon" placeholder="Telefon">
+      <button type="submit">Betala</button>
+    </form>
+  </main>
+</body>
+</html>

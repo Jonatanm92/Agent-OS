@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- DEFECTS: remove buttons with no accessible name; unlabelled quantity
+     inputs; checkout is a span. All on the highest-value page for severity. -->
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Varukorg — Nordvik</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+    .remove { background: none; border: 0; cursor: pointer; }
+    .checkout { cursor: pointer; background: #111; color: #fff; padding: 12px 20px; display: inline-block; }
+    button:focus, input:focus { outline: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Varukorg</h1>
+    <table>
+      <tr>
+        <td>Handduk Lin</td>
+        <td><input type="number" value="1"></td>
+        <td><button class="remove">&times;</button></td>
+      </tr>
+      <tr>
+        <td>Örngott Bomull</td>
+        <td><input type="number" value="2"></td>
+        <td><button class="remove">&times;</button></td>
+      </tr>
+    </table>
+    <span class="checkout">Till kassan</span>
+    <p><a href="/checkout.html">Kassa</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,1295 @@
+{
+  "schemaVersion": 1,
+  "disclaimer": "This is a technical accessibility risk scan (pre-audit). It is not legal advice, not a certification, and not a guarantee of compliance with WCAG, the Swedish accessibility legislation (LPTT) or the European Accessibility Act. Automated testing detects only a portion of accessibility barriers; the manual checks in this report are required to form a complete picture.",
+  "scan": {
+    "target": "https://demo-webshop.example",
+    "domain": "demo-webshop.example",
+    "date": "2026-08-31T09:00:00.000Z",
+    "durationMs": 41000,
+    "limits": {
+      "maxPages": 8,
+      "maxDepth": 2
+    },
+    "robotsRespected": true
+  },
+  "summary": {
+    "pagesExamined": 8,
+    "pagesAttempted": 8,
+    "uniqueIssues": 17,
+    "totalOccurrences": 39,
+    "bySeverity": {
+      "critical": 5,
+      "high": 11,
+      "medium": 1,
+      "low": 0
+    },
+    "topFixes": [
+      {
+        "id": "label-1d9edld",
+        "title": "Form fields have no label",
+        "component": "input[value]",
+        "severity": "critical",
+        "effort": "small"
+      },
+      {
+        "id": "image-alt-1tf6e98",
+        "title": "Images are missing text alternatives",
+        "component": "img",
+        "severity": "critical",
+        "effort": "small"
+      },
+      {
+        "id": "label-1rhobva",
+        "title": "Form fields have no label",
+        "component": "input",
+        "severity": "critical",
+        "effort": "small"
+      },
+      {
+        "id": "button-name-1uwm3s7",
+        "title": "Buttons have no accessible name",
+        "component": "[id] > button",
+        "severity": "critical",
+        "effort": "small"
+      },
+      {
+        "id": "button-name-1dvhcjc",
+        "title": "Buttons have no accessible name",
+        "component": "button",
+        "severity": "critical",
+        "effort": "small"
+      }
+    ],
+    "positiveObservations": [
+      "Every page examined has a page title.",
+      "A skip link to the main content was present, saving keyboard users the header on every page."
+    ]
+  },
+  "scope": {
+    "pages": [
+      {
+        "url": "https://demo-webshop.example/",
+        "role": "home",
+        "depth": 0,
+        "title": "Nordvik Hemtextil",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/product.html",
+        "role": "product",
+        "depth": 1,
+        "title": "Handduk Lin — Nordvik",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/collection.html",
+        "role": "collection",
+        "depth": 1,
+        "title": "Sortiment — Nordvik",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/cart.html",
+        "role": "cart",
+        "depth": 1,
+        "title": "Varukorg — Nordvik",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/checkout.html",
+        "role": "checkout-entry",
+        "depth": 2,
+        "title": "Kassa — Nordvik",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/search.html",
+        "role": "search",
+        "depth": 1,
+        "title": "Sök — Nordvik",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/contact.html",
+        "role": "contact",
+        "depth": 1,
+        "title": "Kontakt — Nordvik",
+        "status": 200
+      },
+      {
+        "url": "https://demo-webshop.example/account.html",
+        "role": "account",
+        "depth": 1,
+        "title": "Mitt konto — Nordvik",
+        "status": 200
+      }
+    ],
+    "rolesExamined": [
+      "home",
+      "product",
+      "collection",
+      "cart",
+      "checkout-entry",
+      "search",
+      "contact",
+      "account"
+    ],
+    "notTested": [
+      "https://demo-webshop.example/logout.html — Skipped: could change state on the site.",
+      "https://demo-webshop.example/nyhetsbrev.html — Skipped: disallowed by robots.txt."
+    ],
+    "automatedCoverageNote": "Automated rules cover a minority of WCAG success criteria. Everything listed under manualChecks is unverified until a person performs it."
+  },
+  "issues": [
+    {
+      "id": "label-1d9edld",
+      "ruleId": "label",
+      "title": "Form fields have no label",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.3.1 Info and Relationships (A)",
+        "3.3.2 Labels or Instructions (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "The customer cannot tell what to type. In checkout this stops the order. A placeholder is not a label: it disappears the moment typing starts and is often not announced.",
+      "remediation": "Associate a <label for=\"...\"> with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.",
+      "component": "input[value]",
+      "affectedUrls": [
+        "https://demo-webshop.example/cart.html"
+      ],
+      "affectedRoles": [
+        "cart"
+      ],
+      "instanceCount": 2,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/cart.html",
+          "role": "cart",
+          "selector": "input[value=\"1\"]",
+          "snippet": "<input type=\"number\" value=\"1\">",
+          "detail": "Fix any of the following: Element does not have an implicit (wrapped) <label> Element does not have an explicit <label> aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do no… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALkAAAAWCAIAAAAThaowAAAA0ElEQVR4nOzaIQ7CMBSA4VcyUTlccUjkJBJugIQbIKe2M9TBDZDDTU5yBHBY3OQkrsyRlWW8A/xf0jSp/vNa0SSEIIBC0q+yLAWY5L03RVH0mwCT+oGSCKBDK9CiFWjRCrRmPyfdvTpmqV3lt06Ar6iVtsl3eZ1uMmcFGIhaSbPjpbnkaydAJGrFutXSMlIwhrcttGgFWrQCLVqB1vBt21Y7Z4xZHK6vx3k7N8auT8+3ABLPFbev270AY7iDoEUr0KIVaNEKtEwIgf+2+Mt7/wEAAP//p9CN6QAAAAZJREFUAwB/iiiqAsKhrgAAAABJRU5ErkJggg=="
+        },
+        {
+          "url": "https://demo-webshop.example/cart.html",
+          "role": "cart",
+          "selector": "input[value=\"2\"]",
+          "snippet": "<input type=\"number\" value=\"2\">",
+          "detail": "Fix any of the following: Element does not have an implicit (wrapped) <label> Element does not have an explicit <label> aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do no… [truncated]"
+        }
+      ],
+      "severity": "critical",
+      "effort": "small",
+      "priority": 10
+    },
+    {
+      "id": "image-alt-1tf6e98",
+      "ruleId": "image-alt",
+      "title": "Images are missing text alternatives",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.1.1 Non-text Content (A)"
+      ],
+      "impact": "Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.",
+      "remediation": "Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.",
+      "component": "img",
+      "affectedUrls": [
+        "https://demo-webshop.example/product.html"
+      ],
+      "affectedRoles": [
+        "product"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/product.html",
+          "role": "product",
+          "selector": "img",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"200\" height=\"200\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADJCAIAAADpZupsAAAB+UlEQVR4nOzSMQEAMAjAMA78W2Ym1i/RkL27gd92ICAWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkHgAAAP//O4DYPAAAAAZJREFUAwAauwYiw/crBgAAAABJRU5ErkJggg=="
+        }
+      ],
+      "severity": "critical",
+      "effort": "small",
+      "priority": 10
+    },
+    {
+      "id": "label-1rhobva",
+      "ruleId": "label",
+      "title": "Form fields have no label",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.3.1 Info and Relationships (A)",
+        "3.3.2 Labels or Instructions (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "The customer cannot tell what to type. In checkout this stops the order. A placeholder is not a label: it disappears the moment typing starts and is often not announced.",
+      "remediation": "Associate a <label for=\"...\"> with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.",
+      "component": "input",
+      "affectedUrls": [
+        "https://demo-webshop.example/product.html"
+      ],
+      "affectedRoles": [
+        "product"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/product.html",
+          "role": "product",
+          "selector": "input",
+          "snippet": "<input type=\"number\" name=\"quantity\" value=\"1\" min=\"1\">",
+          "detail": "Fix any of the following: Element does not have an implicit (wrapped) <label> Element does not have an explicit <label> aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do no… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALkAAAAWCAIAAAAThaowAAAA0ElEQVR4nOzaIQ7CMBSA4VcyUTlccUjkJBJugIQbIKe2M9TBDZDDTU5yBHBY3OQkrsyRlWW8A/xf0jSp/vNa0SSEIIBC0q+yLAWY5L03RVH0mwCT+oGSCKBDK9CiFWjRCrRmPyfdvTpmqV3lt06Ar6iVtsl3eZ1uMmcFGIhaSbPjpbnkaydAJGrFutXSMlIwhrcttGgFWrQCLVqB1vBt21Y7Z4xZHK6vx3k7N8auT8+3ABLPFbev270AY7iDoEUr0KIVaNEKtEwIgf+2+Mt7/wEAAP//p9CN6QAAAAZJREFUAwB/iiiqAsKhrgAAAABJRU5ErkJggg=="
+        }
+      ],
+      "severity": "critical",
+      "effort": "small",
+      "priority": 10
+    },
+    {
+      "id": "button-name-1uwm3s7",
+      "ruleId": "button-name",
+      "title": "Buttons have no accessible name",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "A screen reader announces the control as \"button\" with no indication of what it does. If this is an add-to-cart, quantity or checkout button, the customer cannot complete a purchase.",
+      "remediation": "Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (\"Open menu\"), not their icon (\"hamburger\").",
+      "component": "[id] > button",
+      "affectedUrls": [
+        "https://demo-webshop.example/collection.html"
+      ],
+      "affectedRoles": [
+        "collection"
+      ],
+      "instanceCount": 5,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1001 > button",
+          "snippet": "<button class=\"qty\"></button>",
+          "detail": "Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAATCAIAAAAS8MqlAAAAaElEQVR4nOzTMREAIQxE0cDQMKjACzYwBzbwEhWZlLmtryFQ8+u8gWaTmc05RYSZaVettZTSew9jjJxza418rbVUNeIdv0E4Bkmev/0CSXTVY485GLZAh4FE7Adb8Bscg4TLmYLReR8AAAD//9MJlgoAAAAGSURBVAMAGtY1HcH1O3gAAAAASUVORK5CYII="
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1002 > button",
+          "snippet": "<button class=\"qty\"></button>",
+          "detail": "Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]"
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1003 > button",
+          "snippet": "<button class=\"qty\"></button>",
+          "detail": "Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]"
+        }
+      ],
+      "severity": "critical",
+      "effort": "small",
+      "priority": 10
+    },
+    {
+      "id": "button-name-1dvhcjc",
+      "ruleId": "button-name",
+      "title": "Buttons have no accessible name",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "A screen reader announces the control as \"button\" with no indication of what it does. If this is an add-to-cart, quantity or checkout button, the customer cannot complete a purchase.",
+      "remediation": "Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (\"Open menu\"), not their icon (\"hamburger\").",
+      "component": "button",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "button",
+          "snippet": "<button class=\"tiny\"></button>",
+          "detail": "Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAIklEQVR4nOzLMQ0AAADCMA78S50GNHCS0L8G1LBKDw87IQAAAP//DDo7IgAAAAZJREFUAwDwtAMLTqyhTgAAAABJRU5ErkJggg=="
+        }
+      ],
+      "severity": "critical",
+      "effort": "small",
+      "priority": 10
+    },
+    {
+      "id": "frame-title-1getb6k",
+      "ruleId": "frame-title",
+      "title": "Iframe has no title",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "2.4.1 Bypass Blocks (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "A screen reader announces an unnamed frame. Payment and map embeds are the usual case, so this lands in checkout.",
+      "remediation": "Add a title attribute describing the frame’s purpose, e.g. title=\"Card payment\".",
+      "component": "iframe",
+      "affectedUrls": [
+        "https://demo-webshop.example/product.html"
+      ],
+      "affectedRoles": [
+        "product"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/product.html",
+          "role": "product",
+          "selector": "iframe",
+          "snippet": "<iframe src=\"about:blank\" width=\"200\" height=\"100\"></iframe>",
+          "detail": "Fix any of the following: Element has no title attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element's default… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAM0AAABpCAIAAAAWUzDGAAABSElEQVR4nOzVSQ3EMAAEQT+CxryCKiANIXtKS2DdryppGLQ0x33fAzY7nruua8A2c85jwE7z7dfZeZ4D/m2tNT6/CbvpjILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKHw7m3OutQbs8epsvg3Y5gEAAP//91Px3AAAAAZJREFUAwAymRAwcpn6xgAAAABJRU5ErkJggg=="
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "image-alt-63ilt6",
+      "ruleId": "image-alt",
+      "title": "Images are missing text alternatives",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.1.1 Non-text Content (A)"
+      ],
+      "impact": "Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.",
+      "remediation": "Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.",
+      "component": ".product-card__link[href] > img",
+      "affectedUrls": [
+        "https://demo-webshop.example/collection.html"
+      ],
+      "affectedRoles": [
+        "collection"
+      ],
+      "instanceCount": 5,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1001 > .product-card__link[href$=\"product.html\"] > img",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABlCAIAAAA03NGmAAAA2UlEQVR4nOzQMQEAMAjAsB34t8ws0D+RkNndx808zmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZwQcAAP//WAG4jQAAAAZJREFUAwALrgSSyOiraQAAAABJRU5ErkJggg=="
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1002 > .product-card__link[href$=\"product.html\"] > img",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]"
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1003 > .product-card__link[href$=\"product.html\"] > img",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]"
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "link-name-tmmjxs",
+      "ruleId": "link-name",
+      "title": "Links have no accessible name",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "2.4.4 Link Purpose (In Context) (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "A screen reader announces the link as \"link\" with no destination. Icon-only links such as cart, search and account are the usual cause, which puts them in the critical path of a purchase.",
+      "remediation": "Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.",
+      "component": "[id] > .product-card__link[href]",
+      "affectedUrls": [
+        "https://demo-webshop.example/collection.html"
+      ],
+      "affectedRoles": [
+        "collection"
+      ],
+      "instanceCount": 5,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1001 > .product-card__link[href$=\"product.html\"]",
+          "snippet": "<a class=\"product-card__link\" href=\"/product.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\"></a>",
+          "detail": "Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAS8AAABpCAIAAADkyjJKAAABvElEQVR4nOzZMapaURhG0ZvwQEF0DoKlvSAiWDkKx2PpIByLg7ByFBZWNwkP0qYJ3F2sVX3FaTf8cL7GcRyAgK8BaFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESp+DsBEns/n+XxerVan0+n3/jGO4wBM4XA4PB6P773b7dQIk5nP55/P53vPZjOXKkxmu93+3ZvNRo0wmev1ejwel8vlfr+/3W4uVajwwwEVaoQKNUKFGqFCjVChRqj4U+P9fn+/36/X65+v1+v1YrG4XC4D8L/9AgAA//86bK0sAAAABklEQVQDAGutKeP2oPl2AAAAAElFTkSuQmCC"
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1002 > .product-card__link[href$=\"product.html\"]",
+          "snippet": "<a class=\"product-card__link\" href=\"/product.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\"></a>",
+          "detail": "Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]"
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1003 > .product-card__link[href$=\"product.html\"]",
+          "snippet": "<a class=\"product-card__link\" href=\"/product.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\"></a>",
+          "detail": "Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]"
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "image-alt-5g79o2",
+      "ruleId": "image-alt",
+      "title": "Images are missing text alternatives",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.1.1 Non-text Content (A)"
+      ],
+      "impact": "Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.",
+      "remediation": "Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.",
+      "component": "div > img[width][height]",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 3,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div:nth-child(1) > img[width=\"120\"][height=\"120\"]",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"120\" height=\"120\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]"
+        },
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div:nth-child(2) > img[width=\"120\"][height=\"120\"]",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"120\" height=\"120\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]"
+        },
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div:nth-child(3) > img[width=\"120\"][height=\"120\"]",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"120\" height=\"120\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]"
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "meta-viewport-1f63ve2",
+      "ruleId": "meta-viewport",
+      "title": "Page prevents zooming",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.4.4 Resize Text (AA)"
+      ],
+      "impact": "Customers with low vision cannot pinch-zoom on a phone. This is one attribute that affects every page and every user.",
+      "remediation": "Remove user-scalable=no and any maximum-scale below 5 from the viewport meta tag.",
+      "component": "meta[name]",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 2,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "meta[name=\"viewport\"]",
+          "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">",
+          "detail": "Fix any of the following: user-scalable=no on <meta> tag disables zooming on mobile devices"
+        },
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "meta[name=\"viewport\"]",
+          "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">",
+          "detail": "Viewport meta tag sets user-scalable=no."
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "html-has-lang-h8wz4e",
+      "ruleId": "html-has-lang",
+      "title": "Page does not declare its language",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "3.1.1 Language of Page (A)"
+      ],
+      "impact": "A screen reader reads Swedish text with an English voice, or the reverse. The result is close to unintelligible. One attribute affects the entire page.",
+      "remediation": "Add lang=\"sv\" (or the correct language) to the <html> element.",
+      "component": "html",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "html",
+          "snippet": "<html>",
+          "detail": "Fix any of the following: The <html> element does not have a lang attribute"
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "image-alt-1srla2u",
+      "ruleId": "image-alt",
+      "title": "Images are missing text alternatives",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.1.1 Non-text Content (A)"
+      ],
+      "impact": "Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.",
+      "remediation": "Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.",
+      "component": "img[width]",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "img[width=\"60\"]",
+          "snippet": "<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"60\" height=\"20\">",
+          "detail": "Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]"
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "link-name-ccr2d6",
+      "ruleId": "link-name",
+      "title": "Links have no accessible name",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "2.4.4 Link Purpose (In Context) (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ],
+      "impact": "A screen reader announces the link as \"link\" with no destination. Icon-only links such as cart, search and account are the usual cause, which puts them in the critical path of a purchase.",
+      "remediation": "Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.",
+      "component": "a[href]",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "a[href=\"/index.html\"]",
+          "snippet": "<a href=\"/index.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"60\" height=\"20\"></a>",
+          "detail": "Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAAYCAIAAAApowkFAAAANUlEQVR4nOzOQQkAMAwAsT3q33Ln4qCQKMjs7rtm3kHSFemKdEW6Il2RrkhXpCvSFemKdOUDAAD//+yoSqoAAAAGSURBVAMAE7ADXpZuQj8AAAAASUVORK5CYII="
+        }
+      ],
+      "severity": "high",
+      "effort": "small",
+      "priority": 6
+    },
+    {
+      "id": "color-contrast-63bbbn",
+      "ruleId": "color-contrast",
+      "title": "Text does not have enough contrast against its background",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "1.4.3 Contrast (Minimum) (AA)"
+      ],
+      "impact": "Customers with low vision, and anyone on a phone in daylight, cannot read the text. Prices, discounts and error messages are the common victims because they are often set in a light accent colour.",
+      "remediation": "Raise contrast to at least 4.5:1 for body text and 3:1 for text at 24px or 19px bold. Fix it in design tokens rather than per component.",
+      "component": "div > p",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 3,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div:nth-child(1) > p",
+          "snippet": "<p class=\"low-contrast\">Handduk Lin</p>",
+          "detail": "Fix any of the following: Element has insufficient color contrast of 1.96 (foreground color: #b9b9b9, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZYAAAAUCAIAAAAhlYymAAAE3UlEQVR4nOzcXU/iWBgH8LOHUqgNVpAhyOtOSEXUNaw6mfjVJ+7uXMxk1tFR0gWRIQRBpjbdSnlJLdD2uAUB0XWzNWM2snl+V8J57UX/OY85St3c3CAAAJhPFAIAgLkFEQYAmGMQYQCAOYYRsjrVT/vvPpw1jdkGq/V19G3LQs/N0moH+/uHNe3xqa3W2Yf99yeXfaczHVQ7/75JS7/48uu794Lcf+p+AAAvF5zCbJhmOQ4zlAsBAOYLRBhCLmZl880KAgDMH6cR1m9dVOuy2mp3eyamvKw/zK+lgszo3GK0vh4cNTwpnmvWGuq1SaiF5djaZiromRxrLO1bMV+W2gPs9QeTyQi5P7nRuigWK3J3gBf84eTr4F2zXeMdfaog/u1ukr2dzC4zP36WfNm9n0Oeh5u0dLmUExrGcia7GV90I4dGi5Qxv7c9XES/PPlU0ELpOBJrctt+WpoL85l01Pl8AID/jNMII3pXM9z+OJ+gkabKsnyey6Hd3dWl8YtNTLVaw7HV3XXOpYmn+bKQZ/ey0VHG6ZeFw4KEuAif8lP6lXgmdHsE+cczW9qFcFy8ovyxNM9hTW7k89qAYBY9kaVdFk4KMgr/9CazwnxfTUiupYoUTm2+zTKGUskXiwLFvF0LQIgB8NKMI4yg6/rRb/W/NS9MfmBW1nemtVY0nlTyBzlZ7L5emr7XtD+1vhpihn0T6dfy54qo9MJx1mV1pLps+n7c3b7Nu2g4eHZwVO+NhxntWk1F/szOdnx0zoqGluypRRM9idm5OM2VVE8sm10LetD3YyPpdPx2v/zqlSLIUjcVgAwD4KUZRxhG9DK/HvfhaQPRxLOSdNfR6HyrVBqyaheSkzqP0nU7acavNWYCi/S4weVhGIp0NGPYs9dWusQbC/km77/bFwp46+LtB0tX2j3ERgPeybnJw4WWaFFBzhmt81xV1jl+eyu59DwpQ/sC7GQmyuvzIGX2WQEAL8W0kKQYzh+cOWZYVNON0fiagaVf5o8LKvUqHEv5WJbxIDvgyjIhxO4wyh6MKQrfr97s1tFY00TYzdyFI8IU4558JKZpEUzTM2OHM6EnINdXMiJ0LB5eeq6IebgFPHqaybMCAF4MZ78LGzRFdeANb22uj0POQHZqOBqKXMM46PdnehPSt8h4ZTssXJgQcyYfyDj7bmGM761kZ96DBTCX2Ij0yiXhGGe3n6eMBADMCYfnHTtIsJvCk979tqT0nI10ebkgiwbtdm9ycdTS1fZ0sIsJcl6kNTuDSbOhKa3BtJkelqT9rm5OB3e1wcM13GxkYycTMuq541PZwY1YAMD/hbMIoxeDPtyV6pJmWYYmf83nRYcJZqfQYjgRwmr5pPitpff11kVBqLTvzlVuLpn0kz8LQumy0+9rSlUQ6tdopjkS9Pakcnk4WFNqhUK1/djxz8VGN3Y2lo2GcHgq6/94zZ70W01lVkszEABgbjkrJF1sZH1TP6uUPv5SsGNv4VUqk5BKInKGWdl4Q6h8ufhZtNPHu5zgY2pZvJs7vrWNisVK4fcGGc6dSIelcnPS7A7wWxlSrIwGU75Iio/Uisrjm4xu7RDhsCh8QVs76dBjFytM9fwP9XzmCzqc3dt48gUOAMAL8QP8vzAAwPyCPzACAMwxiDAAwByDCAMAzLG/AAAA///Pj55bAAAABklEQVQDAOYmQV4cB01vAAAAAElFTkSuQmCC"
+        },
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div:nth-child(2) > p",
+          "snippet": "<p class=\"low-contrast\">Örngott Bomull</p>",
+          "detail": "Fix any of the following: Element has insufficient color contrast of 1.96 (foreground color: #b9b9b9, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div:nth-child(3) > p",
+          "snippet": "<p class=\"low-contrast\">Duk Vinter</p>",
+          "detail": "Fix any of the following: Element has insufficient color contrast of 1.96 (foreground color: #b9b9b9, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ],
+      "severity": "high",
+      "effort": "medium",
+      "priority": 2.4
+    },
+    {
+      "id": "check-reflow-overflow-1ba2j11",
+      "ruleId": "check:reflow-overflow",
+      "title": "Page scrolls horizontally at 320px wide",
+      "source": "check",
+      "verification": "automatic",
+      "wcag": [
+        "1.4.10 Reflow (AA)"
+      ],
+      "impact": "At 320 CSS pixels — a phone, or a desktop zoomed to 400% — content is cut off or requires scrolling in two directions to read one line.",
+      "remediation": "Find the element wider than the viewport (usually a fixed-width table, image or container) and let it shrink or scroll inside its own box.",
+      "component": "div",
+      "affectedUrls": [
+        "https://demo-webshop.example/"
+      ],
+      "affectedRoles": [
+        "home"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/",
+          "role": "home",
+          "selector": "div",
+          "snippet": "<div> <img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"120\" height=\"120\"> <p class=\"low-contrast\">Duk Vinter</p> <a href=\"/product.html\">Läs mer</a> </div>",
+          "detail": "Page is 408px wide in a 320px viewport. Widest element extends to 408px.",
+          "screenshot": "data:image/png;base64,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"
+        }
+      ],
+      "severity": "high",
+      "effort": "medium",
+      "priority": 2.4
+    },
+    {
+      "id": "check-reflow-overflow-hl3l1f",
+      "ruleId": "check:reflow-overflow",
+      "title": "Page scrolls horizontally at 320px wide",
+      "source": "check",
+      "verification": "automatic",
+      "wcag": [
+        "1.4.10 Reflow (AA)"
+      ],
+      "impact": "At 320 CSS pixels — a phone, or a desktop zoomed to 400% — content is cut off or requires scrolling in two directions to read one line.",
+      "remediation": "Find the element wider than the viewport (usually a fixed-width table, image or container) and let it shrink or scroll inside its own box.",
+      "component": "li.product-card",
+      "affectedUrls": [
+        "https://demo-webshop.example/collection.html"
+      ],
+      "affectedRoles": [
+        "collection"
+      ],
+      "instanceCount": 1,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "li.product-card",
+          "snippet": "<li class=\"product-card\" id=\"product-1004\"> <a class=\"product-card__link\" href=\"/product.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\"></a> <button class=\"qty\"></button> </li>",
+          "detail": "Page is 452px wide in a 320px viewport. Widest element extends to 452px.",
+          "screenshot": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAS8AAAB8CAIAAAC30aFiAAACP0lEQVR4nOzcMUorURhA4VECKkH3ELC0F0QEQXAVrsfSPeg20mYRqbKKEFLljQiveE3yJJBTfF91i/uXh7nMMHey2+0GIGAyAA1qhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNULF+QCcyHK5fH19vbm5eX5+Htdnu91uAE7h8fFxsVj8rO/v79UIJ3N5ebndbn/WFxcXTqpwMnd3d3/Xt7e3aoSTeX9/f3p6ur6+fnh4+Pj4cFKFCl84oEKNUKFGqFAjVKgRKtQIFd81fn19rdfr1Wq1d/dsNptOp29vbwNwbGefn59XV1cvLy8HDszn881mI0g4uvPxqXh4iqNx8zgyAMc2OeSA+o9fjAB7eYsDFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNULFZDabDf/pFyPAXufT6XQ+nx8+MG4eRwbg2L7vU/W3MRS43RgqvMWBij8AAAD//5ksORAAAAAGSURBVAMA9W1UGf1p5RgAAAAASUVORK5CYII="
+        }
+      ],
+      "severity": "high",
+      "effort": "medium",
+      "priority": 2.4
+    },
+    {
+      "id": "target-size-lmyes0",
+      "ruleId": "target-size",
+      "title": "All touch targets must be 24px large, or leave sufficient space",
+      "source": "axe",
+      "verification": "automatic",
+      "wcag": [
+        "2.5.8"
+      ],
+      "impact": "Detected by automated testing. Assess the effect on customers during manual review.",
+      "remediation": "https://dequeuniversity.com/rules/axe/4.13/target-size?application=axeAPI",
+      "component": "[id] > button",
+      "affectedUrls": [
+        "https://demo-webshop.example/collection.html"
+      ],
+      "affectedRoles": [
+        "collection"
+      ],
+      "instanceCount": 5,
+      "examples": [
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1001 > button",
+          "snippet": "<button class=\"qty\"></button>",
+          "detail": "Fix any of the following: Target has insufficient size (18px by 18px, should be at least 24px by 24px) Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 18px instead of at least 24px."
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1002 > button",
+          "snippet": "<button class=\"qty\"></button>",
+          "detail": "Fix any of the following: Target has insufficient size (18px by 18px, should be at least 24px by 24px) Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 18px instead of at least 24px."
+        },
+        {
+          "url": "https://demo-webshop.example/collection.html",
+          "role": "collection",
+          "selector": "#product-1003 > button",
+          "snippet": "<button class=\"qty\"></button>",
+          "detail": "Fix any of the following: Target has insufficient size (18px by 18px, should be at least 24px by 24px) Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 18px instead of at least 24px."
+        }
+      ],
+      "severity": "medium",
+      "effort": "medium",
+      "priority": 1.2
+    }
+  ],
+  "quickWins": [
+    "label-1d9edld",
+    "image-alt-1tf6e98",
+    "label-1rhobva",
+    "button-name-1uwm3s7",
+    "button-name-1dvhcjc",
+    "frame-title-1getb6k",
+    "image-alt-63ilt6",
+    "link-name-tmmjxs",
+    "image-alt-5g79o2",
+    "meta-viewport-1f63ve2",
+    "html-has-lang-h8wz4e",
+    "image-alt-1srla2u",
+    "link-name-ccr2d6"
+  ],
+  "customerJourney": [
+    {
+      "key": "home",
+      "label": "Browse — home page",
+      "examined": true,
+      "issueCount": 8,
+      "worstSeverity": "critical",
+      "topIssues": [
+        {
+          "id": "button-name-1dvhcjc",
+          "title": "Buttons have no accessible name",
+          "severity": "critical"
+        },
+        {
+          "id": "image-alt-5g79o2",
+          "title": "Images are missing text alternatives",
+          "severity": "high"
+        },
+        {
+          "id": "meta-viewport-1f63ve2",
+          "title": "Page prevents zooming",
+          "severity": "high"
+        }
+      ],
+      "verdict": "Contains a defect that may block a customer from completing this step."
+    },
+    {
+      "key": "collection",
+      "label": "Browse — category listing",
+      "examined": true,
+      "issueCount": 5,
+      "worstSeverity": "critical",
+      "topIssues": [
+        {
+          "id": "button-name-1uwm3s7",
+          "title": "Buttons have no accessible name",
+          "severity": "critical"
+        },
+        {
+          "id": "image-alt-63ilt6",
+          "title": "Images are missing text alternatives",
+          "severity": "high"
+        },
+        {
+          "id": "link-name-tmmjxs",
+          "title": "Links have no accessible name",
+          "severity": "high"
+        }
+      ],
+      "verdict": "Contains a defect that may block a customer from completing this step."
+    },
+    {
+      "key": "product",
+      "label": "Product page",
+      "examined": true,
+      "issueCount": 3,
+      "worstSeverity": "critical",
+      "topIssues": [
+        {
+          "id": "image-alt-1tf6e98",
+          "title": "Images are missing text alternatives",
+          "severity": "critical"
+        },
+        {
+          "id": "label-1rhobva",
+          "title": "Form fields have no label",
+          "severity": "critical"
+        },
+        {
+          "id": "frame-title-1getb6k",
+          "title": "Iframe has no title",
+          "severity": "high"
+        }
+      ],
+      "verdict": "Contains a defect that may block a customer from completing this step."
+    },
+    {
+      "key": "cart",
+      "label": "Cart",
+      "examined": true,
+      "issueCount": 1,
+      "worstSeverity": "critical",
+      "topIssues": [
+        {
+          "id": "label-1d9edld",
+          "title": "Form fields have no label",
+          "severity": "critical"
+        }
+      ],
+      "verdict": "Contains a defect that may block a customer from completing this step."
+    },
+    {
+      "key": "checkout-entry",
+      "label": "Checkout entry",
+      "examined": true,
+      "issueCount": 0,
+      "worstSeverity": null,
+      "topIssues": [],
+      "verdict": "No automated failures detected at this stage. Manual checks still required."
+    }
+  ],
+  "manualChecks": [
+    {
+      "id": "kb-01",
+      "area": "Keyboard-only navigation",
+      "instruction": "Put the mouse away. Using Tab, Shift+Tab, Enter, Space and the arrow keys only, complete: open the menu, open a category, open a product, add it to the cart, open the cart, change the quantity, and reach the checkout entry.",
+      "passCriteria": "Every step is completable. Focus never disappears, never gets stuck, and never leaves the page unexpectedly.",
+      "wcag": [
+        "2.1.1 Keyboard (A)",
+        "2.1.2 No Keyboard Trap (A)"
+      ],
+      "flaggedBy": "Automated scan found: Buttons have no accessible name; Links have no accessible name."
+    },
+    {
+      "id": "kb-02",
+      "area": "Visible focus",
+      "instruction": "Tab through the header, the product grid, the product page and the cart. Watch where focus lands at each stop.",
+      "passCriteria": "The focused element is always clearly identifiable, with an indicator visible against its own background, including over images and coloured buttons.",
+      "wcag": [
+        "2.4.7 Focus Visible (AA)",
+        "2.4.11 Focus Not Obscured (AA, WCAG 2.2)"
+      ]
+    },
+    {
+      "id": "kb-03",
+      "area": "Focus order",
+      "instruction": "Tab through each page and note whether the order matches the visual reading order.",
+      "passCriteria": "Focus moves in a logical sequence. It does not jump between columns or backwards up the page.",
+      "wcag": [
+        "2.4.3 Focus Order (A)"
+      ]
+    },
+    {
+      "id": "menu-01",
+      "area": "Menus",
+      "instruction": "Open the main navigation with the keyboard. Move through its items. Close it with Escape. Repeat on a phone-sized viewport.",
+      "passCriteria": "The menu opens and closes from the keyboard, arrow keys or Tab move between items, Escape closes it, and focus returns to the trigger.",
+      "wcag": [
+        "2.1.1 Keyboard (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ]
+    },
+    {
+      "id": "modal-01",
+      "area": "Modal dialogs",
+      "instruction": "Trigger every dialog you can find — size guide, quick view, newsletter popup, cart drawer. For each, Tab repeatedly and then press Escape.",
+      "passCriteria": "Focus moves into the dialog when it opens, stays inside while it is open, Escape closes it, and focus returns to the element that opened it.",
+      "wcag": [
+        "2.1.2 No Keyboard Trap (A)",
+        "2.4.3 Focus Order (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ]
+    },
+    {
+      "id": "cookie-01",
+      "area": "Cookie consent",
+      "instruction": "Load the site in a fresh private window. Before touching the mouse, press Tab and try to reach and operate the consent banner.",
+      "passCriteria": "The banner is reachable by keyboard, all options including \"reject\" are operable, and it does not trap focus or hide the page behind it.",
+      "wcag": [
+        "2.1.1 Keyboard (A)",
+        "2.4.3 Focus Order (A)"
+      ]
+    },
+    {
+      "id": "variant-01",
+      "area": "Product variants",
+      "instruction": "On a product with size or colour options, select each variant using only the keyboard, and listen with a screen reader if available.",
+      "passCriteria": "Every option is reachable and selectable, the current selection is announced, and an unavailable combination is communicated in text and not by colour alone.",
+      "wcag": [
+        "1.4.1 Use of Color (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ]
+    },
+    {
+      "id": "qty-01",
+      "area": "Quantity selectors",
+      "instruction": "Change the quantity using the keyboard, both on the product page and in the cart.",
+      "passCriteria": "Plus and minus controls are real buttons with names, the field itself is labelled and editable, and the updated total is announced.",
+      "wcag": [
+        "4.1.2 Name, Role, Value (A)",
+        "4.1.3 Status Messages (AA)"
+      ]
+    },
+    {
+      "id": "cart-01",
+      "area": "Add to cart feedback",
+      "instruction": "Add a product to the cart with a screen reader running. Wait without moving focus and listen for what is announced.",
+      "passCriteria": "The result is announced without the user having to hunt for it — a live region, or focus deliberately moved to the confirmation.",
+      "wcag": [
+        "4.1.3 Status Messages (AA)"
+      ]
+    },
+    {
+      "id": "cart-02",
+      "area": "Cart editing",
+      "instruction": "Change a quantity and remove a line, using the keyboard only.",
+      "passCriteria": "Remove controls name the product they remove (\"Remove Blue Shirt\", not \"Remove\"), and the updated total is announced.",
+      "wcag": [
+        "2.4.4 Link Purpose (A)",
+        "4.1.3 Status Messages (AA)"
+      ],
+      "flaggedBy": "Automated scan found: Buttons have no accessible name; Links have no accessible name."
+    },
+    {
+      "id": "search-01",
+      "area": "Search",
+      "instruction": "Use the search field by keyboard. Type a query that returns suggestions, then one that returns nothing.",
+      "passCriteria": "The field is labelled, suggestions are reachable by arrow keys, the number of results is announced, and the empty state is conveyed in text.",
+      "wcag": [
+        "4.1.3 Status Messages (AA)",
+        "3.3.2 Labels or Instructions (A)"
+      ]
+    },
+    {
+      "id": "form-01",
+      "area": "Form validation errors",
+      "instruction": "Submit the contact form and the checkout form empty, then with one invalid field. Observe with a screen reader.",
+      "passCriteria": "Errors are announced, focus moves to or names the first failing field, each message says what to do, and errors are not signalled by red colour alone.",
+      "wcag": [
+        "3.3.1 Error Identification (A)",
+        "3.3.3 Error Suggestion (AA)",
+        "1.4.1 Use of Color (A)"
+      ],
+      "flaggedBy": "Automated scan found: Form fields have no label."
+    },
+    {
+      "id": "mobile-01",
+      "area": "Mobile navigation",
+      "instruction": "On a real phone with the screen reader on (VoiceOver or TalkBack), open the menu, browse to a product and add it to the cart.",
+      "passCriteria": "Every step is completable by swipe navigation. The menu toggle is named and its expanded state is announced.",
+      "wcag": [
+        "2.1.1 Keyboard (A)",
+        "4.1.2 Name, Role, Value (A)"
+      ]
+    },
+    {
+      "id": "zoom-01",
+      "area": "Zoom and reflow",
+      "instruction": "On a 1280px desktop window, zoom the browser to 400%. Read a product page and the cart.",
+      "passCriteria": "Content reflows into one column, nothing is clipped, and no horizontal scrolling is needed to read a line of text.",
+      "wcag": [
+        "1.4.10 Reflow (AA)",
+        "1.4.4 Resize Text (AA)"
+      ],
+      "flaggedBy": "Automated scan found: Page prevents zooming; Page scrolls horizontally at 320px wide."
+    },
+    {
+      "id": "sr-01",
+      "area": "Screen-reader labels are meaningful",
+      "instruction": "With a screen reader, listen to the product images, the icon buttons in the header, and the product cards in a category listing.",
+      "passCriteria": "Alt text describes what the image shows rather than repeating the filename or the product title; icon buttons are named by their action.",
+      "wcag": [
+        "1.1.1 Non-text Content (A)",
+        "2.4.6 Headings and Labels (AA)"
+      ],
+      "flaggedBy": "Automated scan found: Images are missing text alternatives."
+    },
+    {
+      "id": "sr-02",
+      "area": "Page structure",
+      "instruction": "Pull up the screen reader’s list of headings and of landmarks on the home, category and product pages.",
+      "passCriteria": "The heading list alone conveys what is on the page, and landmarks let you jump straight to the main content.",
+      "wcag": [
+        "1.3.1 Info and Relationships (A)",
+        "2.4.1 Bypass Blocks (A)"
+      ]
+    }
+  ],
+  "developerHandoff": [
+    {
+      "key": "A11Y-001",
+      "title": "[CRITICAL] Form fields have no label — input[value]",
+      "priority": "P0",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.3.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Form fields have no label\n\n**Component**: `input[value]`\n**WCAG**: 1.3.1 Info and Relationships (A), 3.3.2 Labels or Instructions (A), 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: The customer cannot tell what to type. In checkout this stops the order. A placeholder is not a label: it disappears the moment typing starts and is often not announced.\n\n**Fix**: Associate a <label for=\"...\"> with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.\n\n**Occurrences**: 2 on 1 page(s)\n- https://demo-webshop.example/cart.html\n\n**Example markup**:\n```html\n<input type=\"number\" value=\"1\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-002",
+      "title": "[CRITICAL] Images are missing text alternatives — img",
+      "priority": "P0",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.1.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Images are missing text alternatives\n\n**Component**: `img`\n**WCAG**: 1.1.1 Non-text Content (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.\n\n**Fix**: Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/product.html\n\n**Example markup**:\n```html\n<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"200\" height=\"200\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-003",
+      "title": "[CRITICAL] Form fields have no label — input",
+      "priority": "P0",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.3.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Form fields have no label\n\n**Component**: `input`\n**WCAG**: 1.3.1 Info and Relationships (A), 3.3.2 Labels or Instructions (A), 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: The customer cannot tell what to type. In checkout this stops the order. A placeholder is not a label: it disappears the moment typing starts and is often not announced.\n\n**Fix**: Associate a <label for=\"...\"> with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/product.html\n\n**Example markup**:\n```html\n<input type=\"number\" name=\"quantity\" value=\"1\" min=\"1\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-004",
+      "title": "[CRITICAL] Buttons have no accessible name — [id] > button",
+      "priority": "P0",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-4.1.2",
+        "effort-small"
+      ],
+      "body": "**Problem**: Buttons have no accessible name\n\n**Component**: `[id] > button`\n**WCAG**: 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: A screen reader announces the control as \"button\" with no indication of what it does. If this is an add-to-cart, quantity or checkout button, the customer cannot complete a purchase.\n\n**Fix**: Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (\"Open menu\"), not their icon (\"hamburger\").\n\n**Occurrences**: 5 on 1 page(s)\n- https://demo-webshop.example/collection.html\n\n**Example markup**:\n```html\n<button class=\"qty\"></button>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-005",
+      "title": "[CRITICAL] Buttons have no accessible name — button",
+      "priority": "P0",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-4.1.2",
+        "effort-small"
+      ],
+      "body": "**Problem**: Buttons have no accessible name\n\n**Component**: `button`\n**WCAG**: 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: A screen reader announces the control as \"button\" with no indication of what it does. If this is an add-to-cart, quantity or checkout button, the customer cannot complete a purchase.\n\n**Fix**: Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (\"Open menu\"), not their icon (\"hamburger\").\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<button class=\"tiny\"></button>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-006",
+      "title": "[HIGH] Iframe has no title — iframe",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-2.4.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Iframe has no title\n\n**Component**: `iframe`\n**WCAG**: 2.4.1 Bypass Blocks (A), 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: A screen reader announces an unnamed frame. Payment and map embeds are the usual case, so this lands in checkout.\n\n**Fix**: Add a title attribute describing the frame’s purpose, e.g. title=\"Card payment\".\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/product.html\n\n**Example markup**:\n```html\n<iframe src=\"about:blank\" width=\"200\" height=\"100\"></iframe>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-007",
+      "title": "[HIGH] Images are missing text alternatives — .product-card__link[href] > img",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.1.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Images are missing text alternatives\n\n**Component**: `.product-card__link[href] > img`\n**WCAG**: 1.1.1 Non-text Content (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.\n\n**Fix**: Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.\n\n**Occurrences**: 5 on 1 page(s)\n- https://demo-webshop.example/collection.html\n\n**Example markup**:\n```html\n<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-008",
+      "title": "[HIGH] Links have no accessible name — [id] > .product-card__link[href]",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-2.4.4",
+        "effort-small"
+      ],
+      "body": "**Problem**: Links have no accessible name\n\n**Component**: `[id] > .product-card__link[href]`\n**WCAG**: 2.4.4 Link Purpose (In Context) (A), 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: A screen reader announces the link as \"link\" with no destination. Icon-only links such as cart, search and account are the usual cause, which puts them in the critical path of a purchase.\n\n**Fix**: Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.\n\n**Occurrences**: 5 on 1 page(s)\n- https://demo-webshop.example/collection.html\n\n**Example markup**:\n```html\n<a class=\"product-card__link\" href=\"/product.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\"></a>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-009",
+      "title": "[HIGH] Images are missing text alternatives — div > img[width][height]",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.1.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Images are missing text alternatives\n\n**Component**: `div > img[width][height]`\n**WCAG**: 1.1.1 Non-text Content (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.\n\n**Fix**: Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.\n\n**Occurrences**: 3 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"120\" height=\"120\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-010",
+      "title": "[HIGH] Page prevents zooming — meta[name]",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.4.4",
+        "effort-small"
+      ],
+      "body": "**Problem**: Page prevents zooming\n\n**Component**: `meta[name]`\n**WCAG**: 1.4.4 Resize Text (AA)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Customers with low vision cannot pinch-zoom on a phone. This is one attribute that affects every page and every user.\n\n**Fix**: Remove user-scalable=no and any maximum-scale below 5 from the viewport meta tag.\n\n**Occurrences**: 2 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-011",
+      "title": "[HIGH] Page does not declare its language — html",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-3.1.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Page does not declare its language\n\n**Component**: `html`\n**WCAG**: 3.1.1 Language of Page (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: A screen reader reads Swedish text with an English voice, or the reverse. The result is close to unintelligible. One attribute affects the entire page.\n\n**Fix**: Add lang=\"sv\" (or the correct language) to the <html> element.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<html>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-012",
+      "title": "[HIGH] Images are missing text alternatives — img[width]",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-1.1.1",
+        "effort-small"
+      ],
+      "body": "**Problem**: Images are missing text alternatives\n\n**Component**: `img[width]`\n**WCAG**: 1.1.1 Non-text Content (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.\n\n**Fix**: Add a meaningful alt attribute describing the image. Use alt=\"\" only for images that are purely decorative and repeat adjacent text.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"60\" height=\"20\">\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-013",
+      "title": "[HIGH] Links have no accessible name — a[href]",
+      "priority": "P1",
+      "estimate": "≤ 2h",
+      "labels": [
+        "accessibility",
+        "wcag-2.4.4",
+        "effort-small"
+      ],
+      "body": "**Problem**: Links have no accessible name\n\n**Component**: `a[href]`\n**WCAG**: 2.4.4 Link Purpose (In Context) (A), 4.1.2 Name, Role, Value (A)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: A screen reader announces the link as \"link\" with no destination. Icon-only links such as cart, search and account are the usual cause, which puts them in the critical path of a purchase.\n\n**Fix**: Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<a href=\"/index.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"60\" height=\"20\"></a>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-014",
+      "title": "[HIGH] Text does not have enough contrast against its background — div > p",
+      "priority": "P1",
+      "estimate": "0.5–2 days",
+      "labels": [
+        "accessibility",
+        "wcag-1.4.3",
+        "effort-medium"
+      ],
+      "body": "**Problem**: Text does not have enough contrast against its background\n\n**Component**: `div > p`\n**WCAG**: 1.4.3 Contrast (Minimum) (AA)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Customers with low vision, and anyone on a phone in daylight, cannot read the text. Prices, discounts and error messages are the common victims because they are often set in a light accent colour.\n\n**Fix**: Raise contrast to at least 4.5:1 for body text and 3:1 for text at 24px or 19px bold. Fix it in design tokens rather than per component.\n\n**Occurrences**: 3 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<p class=\"low-contrast\">Handduk Lin</p>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-015",
+      "title": "[HIGH] Page scrolls horizontally at 320px wide — div",
+      "priority": "P1",
+      "estimate": "0.5–2 days",
+      "labels": [
+        "accessibility",
+        "wcag-1.4.10",
+        "effort-medium"
+      ],
+      "body": "**Problem**: Page scrolls horizontally at 320px wide\n\n**Component**: `div`\n**WCAG**: 1.4.10 Reflow (AA)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: At 320 CSS pixels — a phone, or a desktop zoomed to 400% — content is cut off or requires scrolling in two directions to read one line.\n\n**Fix**: Find the element wider than the viewport (usually a fixed-width table, image or container) and let it shrink or scroll inside its own box.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/\n\n**Example markup**:\n```html\n<div> <img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"120\" height=\"120\"> <p class=\"low-contrast\">Duk Vinter</p> <a href=\"/product.html\">Läs mer</a> </div>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-016",
+      "title": "[HIGH] Page scrolls horizontally at 320px wide — li.product-card",
+      "priority": "P1",
+      "estimate": "0.5–2 days",
+      "labels": [
+        "accessibility",
+        "wcag-1.4.10",
+        "effort-medium"
+      ],
+      "body": "**Problem**: Page scrolls horizontally at 320px wide\n\n**Component**: `li.product-card`\n**WCAG**: 1.4.10 Reflow (AA)\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: At 320 CSS pixels — a phone, or a desktop zoomed to 400% — content is cut off or requires scrolling in two directions to read one line.\n\n**Fix**: Find the element wider than the viewport (usually a fixed-width table, image or container) and let it shrink or scroll inside its own box.\n\n**Occurrences**: 1 on 1 page(s)\n- https://demo-webshop.example/collection.html\n\n**Example markup**:\n```html\n<li class=\"product-card\" id=\"product-1004\"> <a class=\"product-card__link\" href=\"/product.html\"><img src=\"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==\" width=\"100\" height=\"100\"></a> <button class=\"qty\"></button> </li>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    },
+    {
+      "key": "A11Y-017",
+      "title": "[MEDIUM] All touch targets must be 24px large, or leave sufficient space — [id] > button",
+      "priority": "P2",
+      "estimate": "0.5–2 days",
+      "labels": [
+        "accessibility",
+        "wcag-2.5.8",
+        "effort-medium"
+      ],
+      "body": "**Problem**: All touch targets must be 24px large, or leave sufficient space\n\n**Component**: `[id] > button`\n**WCAG**: 2.5.8\n**Verification**: AUTOMATICALLY VERIFIED\n\n**Who it affects**: Detected by automated testing. Assess the effect on customers during manual review.\n\n**Fix**: https://dequeuniversity.com/rules/axe/4.13/target-size?application=axeAPI\n\n**Occurrences**: 5 on 1 page(s)\n- https://demo-webshop.example/collection.html\n\n**Example markup**:\n```html\n<button class=\"qty\"></button>\n```\n\n**Done when**: the defect is gone from this component on every affected page, verified with a keyboard and a screen reader — not only by re-running the scanner."
+    }
+  ]
+}

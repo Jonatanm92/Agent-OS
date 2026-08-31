@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- DEFECTS: add-to-cart is a div (keyboard-inaccessible, critical flow);
+     unlabelled quantity input; duplicate ids; iframe with no title. -->
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Handduk Lin — Nordvik</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+    .add-to-cart { cursor: pointer; background: #1a7a4a; color: #fff; padding: 12px 20px; display: inline-block; }
+    .swatch { cursor: pointer; width: 20px; height: 20px; display: inline-block; border: 1px solid #999; }
+    input:focus, button:focus { outline: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Handduk Lin</h1>
+    <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" width="200" height="200">
+
+    <p>Färg</p>
+    <span class="swatch" id="opt" style="background:#c33"></span>
+    <span class="swatch" id="opt" style="background:#33c"></span>
+
+    <p>Antal</p>
+    <input type="number" name="quantity" value="1" min="1">
+
+    <div class="add-to-cart" onclick="void 0">Lägg i varukorg</div>
+
+    <iframe src="about:blank" width="200" height="100"></iframe>
+
+    <p><a href="/cart.html">Varukorg</a></p>
+  </main>
+</body>
+</html>

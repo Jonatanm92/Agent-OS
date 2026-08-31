@@ -1,0 +1,14 @@
+<!doctype html>
+<!-- Carries strings designed to break a report generator that does not escape.
+     Used by tests/report.test.ts to prove nothing executable survives. -->
+<html lang="sv">
+<head><meta charset="utf-8"><title>&lt;/title&gt;&lt;script&gt;alert(1)&lt;/script&gt;</title></head>
+<body>
+  <main>
+    <h1>Injektionstest</h1>
+    <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" class="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;">
+    <a href="/index.html" aria-label="&lt;/a&gt;&lt;script&gt;alert(2)&lt;/script&gt;"><span>&nbsp;</span></a>
+    <button id="&lt;/button&gt;&lt;img src=x onerror=alert(3)&gt;"></button>
+  </main>
+</body>
+</html>

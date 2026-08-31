@@ -1,0 +1,1472 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility Risk Scan — demo-webshop.example</title>
+<style>
+  :root {
+    --ink: #14161a; --muted: #5b6069; --line: #e2e5ea; --bg: #ffffff; --panel: #f6f7f9;
+    --critical: #b3261e; --high: #b3541e; --medium: #8a6d13; --low: #4a5568;
+    --accent: #1a4fa0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.4rem; margin: 0 0 12px; letter-spacing: -0.01em; }
+  h3 { font-size: 1.1rem; margin: 0; }
+  h4 { font-size: 0.95rem; margin: 0 0 6px; }
+  p { margin: 0 0 12px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85em;
+         background: var(--panel); padding: 1px 5px; border-radius: 4px; word-break: break-word; }
+  a { color: var(--accent); }
+  .muted { color: var(--muted); }
+  .lede { color: var(--muted); font-size: 1.05rem; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .masthead { border-bottom: 3px solid var(--ink); padding-bottom: 20px; margin-bottom: 28px; }
+  .masthead__kicker { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem;
+                      font-weight: 700; color: var(--muted); margin: 0 0 10px; }
+  .masthead__meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 0.9rem; color: var(--muted); }
+
+  .disclaimer { border: 2px solid var(--ink); border-radius: 8px; padding: 16px 18px; margin: 0 0 28px;
+                background: var(--panel); font-size: 0.92rem; }
+  .disclaimer strong { display: block; margin-bottom: 6px; }
+
+  .section { margin: 0 0 40px; }
+  .section > h2 { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .stat__value { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+  .stat__label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+  .stat--critical .stat__value { color: var(--critical); }
+  .stat--high .stat__value { color: var(--high); }
+
+  .badge { display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+           letter-spacing: 0.05em; padding: 3px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .badge--critical { color: var(--critical); }
+  .badge--high { color: var(--high); }
+  .badge--medium { color: var(--medium); }
+  .badge--low { color: var(--low); }
+  .badge--effort { color: var(--muted); }
+  .badge--auto { color: #1c6b3f; }
+  .badge--manual { color: #6b3fa0; }
+
+  .table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .table th, .table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .table thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .table th[scope="row"] { font-weight: 600; }
+
+  .issue { border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 0 0 18px; break-inside: avoid; }
+  .issue__head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+  .issue__number { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink);
+                   color: #fff; display: flex; align-items: center; justify-content: center;
+                   font-weight: 700; font-size: 0.85rem; }
+  .issue__badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .issue__facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 0 0 16px;
+                  padding: 14px; background: var(--panel); border-radius: 8px; font-size: 0.88rem; }
+  .issue__facts dt { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .issue__facts dd { margin: 2px 0 0; }
+  .issue__block { margin: 0 0 14px; }
+  .issue__block h4 { color: var(--muted); text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.08em; }
+  .urls { margin: 0; padding-left: 18px; font-size: 0.88rem; word-break: break-all; }
+  .urls li { margin-bottom: 3px; }
+
+  details { border-top: 1px solid var(--line); padding-top: 10px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .evidence { margin: 12px 0 0; padding: 12px; background: var(--panel); border-radius: 8px; font-size: 0.85rem; }
+  .evidence__meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; word-break: break-all; }
+  .evidence__detail { margin: 6px 0; }
+  .tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--ink);
+         color: #fff; padding: 2px 7px; border-radius: 4px; }
+  .snippet { margin: 8px 0 0; padding: 10px; background: #fff; border: 1px solid var(--line);
+             border-radius: 6px; overflow-x: auto; font-size: 0.78rem; }
+  .snippet code { background: none; padding: 0; white-space: pre-wrap; word-break: break-word; }
+  .shot { display: block; max-width: 100%; margin-top: 10px; border: 1px solid var(--line);
+          border-radius: 6px; background: #fff; }
+
+  .manual { border-left: 3px solid #6b3fa0; padding: 4px 0 4px 16px; margin: 0 0 20px; break-inside: avoid; }
+  .manual h4 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 1rem; }
+  .manual__flag { background: #fdf3e7; border-left: 3px solid var(--high); padding: 8px 10px;
+                  font-size: 0.85rem; margin: 8px 0; }
+  .manual__blank { font-family: ui-monospace, monospace; letter-spacing: 0.04em; }
+
+  .win { border: 1px solid var(--line); border-left: 4px solid #1c6b3f; border-radius: 6px;
+         padding: 12px 14px; margin-bottom: 10px; }
+  .handoff { font-size: 0.85rem; }
+  .handoff pre { background: var(--panel); padding: 14px; border-radius: 8px; overflow-x: auto;
+                 white-space: pre-wrap; word-break: break-word; }
+
+  @media (min-width: 700px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+
+  @media print {
+    .wrap { max-width: none; padding: 0; }
+    .issue, .manual, .win { break-inside: avoid; }
+    details { display: block; }
+    details > summary { display: none; }
+    a { color: inherit; text-decoration: none; }
+    .snippet { font-size: 0.7rem; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <header class="masthead">
+    <p class="masthead__kicker">E-commerce Accessibility Risk Scan</p>
+    <h1>demo-webshop.example</h1>
+    <div class="masthead__meta">
+      <span>Scanned 2026-08-31</span>
+      <span>8 pages examined</span>
+      <span>17 unique issues</span>
+      <span>Duration 41s</span>
+    </div>
+  </header>
+
+  <div class="disclaimer">
+    <strong>What this report is</strong>
+    This is a technical accessibility risk scan (pre-audit). It is not legal advice, not a certification, and not a guarantee of compliance with WCAG, the Swedish accessibility legislation (LPTT) or the European Accessibility Act. Automated testing detects only a portion of accessibility barriers; the manual checks in this report are required to form a complete picture.
+  </div>
+
+  <section class="section" id="summary">
+    <h2>Executive summary</h2>
+
+    <div class="stats">
+      <div class="stat stat--critical"><div class="stat__value">5</div><div class="stat__label">Critical</div></div>
+      <div class="stat stat--high"><div class="stat__value">11</div><div class="stat__label">High</div></div>
+      <div class="stat"><div class="stat__value">1</div><div class="stat__label">Medium</div></div>
+      <div class="stat"><div class="stat__value">0</div><div class="stat__label">Low</div></div>
+    </div>
+
+    <h3>Five highest-priority fixes</h3>
+    <ol><li><a href="#label-1d9edld">Form fields have no label</a> <code>input[value]</code> <span class="badge badge--critical">Critical</span> <span class="muted">effort: small</span></li><li><a href="#image-alt-1tf6e98">Images are missing text alternatives</a> <code>img</code> <span class="badge badge--critical">Critical</span> <span class="muted">effort: small</span></li><li><a href="#label-1rhobva">Form fields have no label</a> <code>input</code> <span class="badge badge--critical">Critical</span> <span class="muted">effort: small</span></li><li><a href="#button-name-1uwm3s7">Buttons have no accessible name</a> <code>[id] &gt; button</code> <span class="badge badge--critical">Critical</span> <span class="muted">effort: small</span></li><li><a href="#button-name-1dvhcjc">Buttons have no accessible name</a> <code>button</code> <span class="badge badge--critical">Critical</span> <span class="muted">effort: small</span></li></ol>
+
+    <h3>Strongest positive observations</h3>
+    <ul><li>Every page examined has a page title.</li><li>A skip link to the main content was present, saving keyboard users the header on every page.</li></ul>
+  </section>
+
+  <section class="section" id="scope">
+    <h2>Scope and limitations</h2>
+    <p class="lede">
+      This scan combined automated testing in a real browser with a generated script of
+      checks that require human judgement. The automated part is complete; the manual part
+      has not been performed.
+    </p>
+
+    <h3>Pages examined</h3>
+    <table class="table">
+      <thead><tr><th scope="col">URL</th><th scope="col">Type</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></td>
+              <td>home</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a></td>
+              <td>product</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a></td>
+              <td>collection</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;cart.html">https:&#47;&#47;demo-webshop.example&#47;cart.html</a></td>
+              <td>cart</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;checkout.html">https:&#47;&#47;demo-webshop.example&#47;checkout.html</a></td>
+              <td>checkout-entry</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;search.html">https:&#47;&#47;demo-webshop.example&#47;search.html</a></td>
+              <td>search</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;contact.html">https:&#47;&#47;demo-webshop.example&#47;contact.html</a></td>
+              <td>contact</td>
+              <td>200</td>
+            </tr><tr>
+              <td><a href="https:&#47;&#47;demo-webshop.example&#47;account.html">https:&#47;&#47;demo-webshop.example&#47;account.html</a></td>
+              <td>account</td>
+              <td>200</td>
+            </tr>
+      </tbody>
+    </table>
+
+    <h3>What was not tested</h3>
+    <ul>
+      <li>Anything behind a login. The scanner never authenticates and never bypasses authentication.</li>
+      <li>The checkout itself. Nothing was added to a cart and no order was placed, so only the checkout entry page could be reached.</li>
+      <li>Pages beyond the 8-page, depth-2 budget of this scan tier.</li>
+      <li>Every item in the manual verification script below.</li>
+      <li>https:&#47;&#47;demo-webshop.example&#47;logout.html — Skipped: could change state on the site.</li><li>https:&#47;&#47;demo-webshop.example&#47;nyhetsbrev.html — Skipped: disallowed by robots.txt.</li>
+    </ul>
+
+    <h3>Coverage honesty</h3>
+    <p>
+      Automated rules detect a minority of WCAG success criteria — commonly cited figures put
+      it around a third. A page with zero automated failures can still be unusable with a
+      keyboard or a screen reader. The manual script exists precisely because the automated
+      pass cannot answer those questions, and no item in it has been marked as passing.
+    </p>
+  </section>
+
+  <section class="section" id="journey">
+    <h2>Customer journey</h2>
+    <p class="lede">Browse → Product → Add to cart → Cart → Checkout entry.</p>
+    
+    <table class="table">
+      <caption class="visually-hidden">Accessibility findings by customer journey stage</caption>
+      <thead>
+        <tr><th scope="col">Stage</th><th scope="col">Issues</th><th scope="col">Worst</th><th scope="col">Assessment</th></tr>
+      </thead>
+      <tbody>
+      <tr>
+        <th scope="row">Browse — home page</th>
+        <td>8</td>
+        <td><span class="badge badge--critical">Critical</span></td>
+        <td>Contains a defect that may block a customer from completing this step.</td>
+      </tr>
+      <tr>
+        <th scope="row">Browse — category listing</th>
+        <td>5</td>
+        <td><span class="badge badge--critical">Critical</span></td>
+        <td>Contains a defect that may block a customer from completing this step.</td>
+      </tr>
+      <tr>
+        <th scope="row">Product page</th>
+        <td>3</td>
+        <td><span class="badge badge--critical">Critical</span></td>
+        <td>Contains a defect that may block a customer from completing this step.</td>
+      </tr>
+      <tr>
+        <th scope="row">Cart</th>
+        <td>1</td>
+        <td><span class="badge badge--critical">Critical</span></td>
+        <td>Contains a defect that may block a customer from completing this step.</td>
+      </tr>
+      <tr>
+        <th scope="row">Checkout entry</th>
+        <td>0</td>
+        <td><span class="muted">—</span></td>
+        <td>No automated failures detected at this stage. Manual checks still required.</td>
+      </tr></tbody>
+    </table>
+  </section>
+
+  <section class="section" id="quick-wins">
+    <h2>Quick wins</h2>
+    <p class="lede">High impact for comparatively little work — a sensible first sprint.</p>
+    
+        <div class="win">
+          <strong><a href="#label-1d9edld">Form fields have no label</a></strong>
+          <code>input[value]</code>
+          <span class="badge badge--critical">Critical</span>
+          <p class="muted" style="margin:6px 0 0;">Associate a &lt;label for=&quot;...&quot;&gt; with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.</p>
+        </div>
+        <div class="win">
+          <strong><a href="#image-alt-1tf6e98">Images are missing text alternatives</a></strong>
+          <code>img</code>
+          <span class="badge badge--critical">Critical</span>
+          <p class="muted" style="margin:6px 0 0;">Add a meaningful alt attribute describing the image. Use alt=&quot;&quot; only for images that are purely decorative and repeat adjacent text.</p>
+        </div>
+        <div class="win">
+          <strong><a href="#label-1rhobva">Form fields have no label</a></strong>
+          <code>input</code>
+          <span class="badge badge--critical">Critical</span>
+          <p class="muted" style="margin:6px 0 0;">Associate a &lt;label for=&quot;...&quot;&gt; with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.</p>
+        </div>
+        <div class="win">
+          <strong><a href="#button-name-1uwm3s7">Buttons have no accessible name</a></strong>
+          <code>[id] &gt; button</code>
+          <span class="badge badge--critical">Critical</span>
+          <p class="muted" style="margin:6px 0 0;">Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (&quot;Open menu&quot;), not their icon (&quot;hamburger&quot;).</p>
+        </div>
+        <div class="win">
+          <strong><a href="#button-name-1dvhcjc">Buttons have no accessible name</a></strong>
+          <code>button</code>
+          <span class="badge badge--critical">Critical</span>
+          <p class="muted" style="margin:6px 0 0;">Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (&quot;Open menu&quot;), not their icon (&quot;hamburger&quot;).</p>
+        </div>
+        <div class="win">
+          <strong><a href="#frame-title-1getb6k">Iframe has no title</a></strong>
+          <code>iframe</code>
+          <span class="badge badge--high">High</span>
+          <p class="muted" style="margin:6px 0 0;">Add a title attribute describing the frame’s purpose, e.g. title=&quot;Card payment&quot;.</p>
+        </div>
+        <div class="win">
+          <strong><a href="#image-alt-63ilt6">Images are missing text alternatives</a></strong>
+          <code>.product-card__link[href] &gt; img</code>
+          <span class="badge badge--high">High</span>
+          <p class="muted" style="margin:6px 0 0;">Add a meaningful alt attribute describing the image. Use alt=&quot;&quot; only for images that are purely decorative and repeat adjacent text.</p>
+        </div>
+        <div class="win">
+          <strong><a href="#link-name-tmmjxs">Links have no accessible name</a></strong>
+          <code>[id] &gt; .product-card__link[href]</code>
+          <span class="badge badge--high">High</span>
+          <p class="muted" style="margin:6px 0 0;">Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.</p>
+        </div>
+  </section>
+
+  <section class="section" id="findings">
+    <h2>Priority findings</h2>
+    
+    <article class="issue" id="label-1d9edld">
+      <header class="issue__head">
+        <div class="issue__number">1</div>
+        <div>
+          <h3 class="issue__title">Form fields have no label</h3>
+          <div class="issue__badges">
+            <span class="badge badge--critical">Critical</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>input[value]</code></dd></div>
+        <div><dt>Occurrences</dt><dd>2 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.3.1 Info and Relationships (A)<br>3.3.2 Labels or Instructions (A)<br>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>label</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>The customer cannot tell what to type. In checkout this stops the order. A placeholder is not a label: it disappears the moment typing starts and is often not announced.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Associate a &lt;label for=&quot;...&quot;&gt; with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;cart.html">https:&#47;&#47;demo-webshop.example&#47;cart.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (2 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">cart</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;cart.html">https:&#47;&#47;demo-webshop.example&#47;cart.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>input[value=&quot;1&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an implicit (wrapped) &lt;label&gt; Element does not have an explicit &lt;label&gt; aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do no… [truncated]</p>
+          <pre class="snippet"><code>&lt;input type=&quot;number&quot; value=&quot;1&quot;&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAALkAAAAWCAIAAAAThaowAAAA0ElEQVR4nOzaIQ7CMBSA4VcyUTlccUjkJBJugIQbIKe2M9TBDZDDTU5yBHBY3OQkrsyRlWW8A&#47;xf0jSp&#47;vNa0SSEIIBC0q+yLAWY5L03RVH0mwCT+oGSCKBDK9CiFWjRCrRmPyfdvTpmqV3lt06Ar6iVtsl3eZ1uMmcFGIhaSbPjpbnkaydAJGrFutXSMlIwhrcttGgFWrQCLVqB1vBt21Y7Z4xZHK6vx3k7N8auT8+3ABLPFbev270AY7iDoEUr0KIVaNEKtEwIgf+2+Mt7&#47;wEAAP&#47;&#47;p9CN6QAAAAZJREFUAwB&#47;iiiqAsKhrgAAAABJRU5ErkJggg==">
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">cart</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;cart.html">https:&#47;&#47;demo-webshop.example&#47;cart.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>input[value=&quot;2&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an implicit (wrapped) &lt;label&gt; Element does not have an explicit &lt;label&gt; aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do no… [truncated]</p>
+          <pre class="snippet"><code>&lt;input type=&quot;number&quot; value=&quot;2&quot;&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="image-alt-1tf6e98">
+      <header class="issue__head">
+        <div class="issue__number">2</div>
+        <div>
+          <h3 class="issue__title">Images are missing text alternatives</h3>
+          <div class="issue__badges">
+            <span class="badge badge--critical">Critical</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>img</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.1.1 Non-text Content (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>image-alt</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add a meaningful alt attribute describing the image. Use alt=&quot;&quot; only for images that are purely decorative and repeat adjacent text.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">product</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>img</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;200&quot; height=&quot;200&quot;&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADJCAIAAADpZupsAAAB+UlEQVR4nOzSMQEAMAjAMA78W2Ym1i&#47;RkL27gd92ICAWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkxCIhFgmxSIhFQiwSYpEQi4RYJMQiIRYJsUiIRUIsEmKREIuEWCTEIiEWCbFIiEVCLBJikRCLhFgkHgAAAP&#47;&#47;O4DYPAAAAAZJREFUAwAauwYiw&#47;crBgAAAABJRU5ErkJggg==">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="label-1rhobva">
+      <header class="issue__head">
+        <div class="issue__number">3</div>
+        <div>
+          <h3 class="issue__title">Form fields have no label</h3>
+          <div class="issue__badges">
+            <span class="badge badge--critical">Critical</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>input</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.3.1 Info and Relationships (A)<br>3.3.2 Labels or Instructions (A)<br>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>label</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>The customer cannot tell what to type. In checkout this stops the order. A placeholder is not a label: it disappears the moment typing starts and is often not announced.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Associate a &lt;label for=&quot;...&quot;&gt; with each field, or use aria-labelledby. Keep the label visible — placeholder-only fields fail for everyone under stress.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">product</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>input</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an implicit (wrapped) &lt;label&gt; Element does not have an explicit &lt;label&gt; aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do no… [truncated]</p>
+          <pre class="snippet"><code>&lt;input type=&quot;number&quot; name=&quot;quantity&quot; value=&quot;1&quot; min=&quot;1&quot;&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAALkAAAAWCAIAAAAThaowAAAA0ElEQVR4nOzaIQ7CMBSA4VcyUTlccUjkJBJugIQbIKe2M9TBDZDDTU5yBHBY3OQkrsyRlWW8A&#47;xf0jSp&#47;vNa0SSEIIBC0q+yLAWY5L03RVH0mwCT+oGSCKBDK9CiFWjRCrRmPyfdvTpmqV3lt06Ar6iVtsl3eZ1uMmcFGIhaSbPjpbnkaydAJGrFutXSMlIwhrcttGgFWrQCLVqB1vBt21Y7Z4xZHK6vx3k7N8auT8+3ABLPFbev270AY7iDoEUr0KIVaNEKtEwIgf+2+Mt7&#47;wEAAP&#47;&#47;p9CN6QAAAAZJREFUAwB&#47;iiiqAsKhrgAAAABJRU5ErkJggg==">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="button-name-1uwm3s7">
+      <header class="issue__head">
+        <div class="issue__number">4</div>
+        <div>
+          <h3 class="issue__title">Buttons have no accessible name</h3>
+          <div class="issue__badges">
+            <span class="badge badge--critical">Critical</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>[id] &gt; button</code></dd></div>
+        <div><dt>Occurrences</dt><dd>5 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>button-name</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>A screen reader announces the control as &quot;button&quot; with no indication of what it does. If this is an add-to-cart, quantity or checkout button, the customer cannot complete a purchase.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (&quot;Open menu&quot;), not their icon (&quot;hamburger&quot;).</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (3 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1001 &gt; button</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]</p>
+          <pre class="snippet"><code>&lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAATCAIAAAAS8MqlAAAAaElEQVR4nOzTMREAIQxE0cDQMKjACzYwBzbwEhWZlLmtryFQ8+u8gWaTmc05RYSZaVettZTSew9jjJxza418rbVUNeIdv0E4Bkmev&#47;0CSXTVY485GLZAh4FE7Adb8Bscg4TLmYLReR8AAAD&#47;&#47;9MJlgoAAAAGSURBVAMAGtY1HcH1O3gAAAAASUVORK5CYII=">
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1002 &gt; button</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]</p>
+          <pre class="snippet"><code>&lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1003 &gt; button</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]</p>
+          <pre class="snippet"><code>&lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="button-name-1dvhcjc">
+      <header class="issue__head">
+        <div class="issue__number">5</div>
+        <div>
+          <h3 class="issue__title">Buttons have no accessible name</h3>
+          <div class="issue__badges">
+            <span class="badge badge--critical">Critical</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>button</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>button-name</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>A screen reader announces the control as &quot;button&quot; with no indication of what it does. If this is an add-to-cart, quantity or checkout button, the customer cannot complete a purchase.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add visible text, aria-label, or visually hidden text. For icon buttons, name them by their action (&quot;Open menu&quot;), not their icon (&quot;hamburger&quot;).</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>button</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have inner text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references eleme… [truncated]</p>
+          <pre class="snippet"><code>&lt;button class=&quot;tiny&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAIklEQVR4nOzLMQ0AAADCMA78S50GNHCS0L8G1LBKDw87IQAAAP&#47;&#47;DDo7IgAAAAZJREFUAwDwtAMLTqyhTgAAAABJRU5ErkJggg==">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="frame-title-1getb6k">
+      <header class="issue__head">
+        <div class="issue__number">6</div>
+        <div>
+          <h3 class="issue__title">Iframe has no title</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>iframe</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>2.4.1 Bypass Blocks (A)<br>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>frame-title</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>A screen reader announces an unnamed frame. Payment and map embeds are the usual case, so this lands in checkout.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add a title attribute describing the frame’s purpose, e.g. title=&quot;Card payment&quot;.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">product</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;product.html">https:&#47;&#47;demo-webshop.example&#47;product.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>iframe</code></div>
+          <p class="evidence__detail">Fix any of the following: Element has no title attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element&#39;s default… [truncated]</p>
+          <pre class="snippet"><code>&lt;iframe src=&quot;about:blank&quot; width=&quot;200&quot; height=&quot;100&quot;&gt;&lt;&#47;iframe&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAAM0AAABpCAIAAAAWUzDGAAABSElEQVR4nOzVSQ3EMAAEQT+CxryCKiANIXtKS2DdryppGLQ0x33fAzY7nruua8A2c85jwE7z7dfZeZ4D&#47;m2tNT6&#47;CbvpjILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKOiMgs4o6IyCzijojILOKHw7m3OutQbs8epsvg3Y5gEAAP&#47;&#47;91Px3AAAAAZJREFUAwAymRAwcpn6xgAAAABJRU5ErkJggg==">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="image-alt-63ilt6">
+      <header class="issue__head">
+        <div class="issue__number">7</div>
+        <div>
+          <h3 class="issue__title">Images are missing text alternatives</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>.product-card__link[href] &gt; img</code></dd></div>
+        <div><dt>Occurrences</dt><dd>5 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.1.1 Non-text Content (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>image-alt</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add a meaningful alt attribute describing the image. Use alt=&quot;&quot; only for images that are purely decorative and repeat adjacent text.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (3 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1001 &gt; .product-card__link[href$=&quot;product.html&quot;] &gt; img</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABlCAIAAAA03NGmAAAA2UlEQVR4nOzQMQEAMAjAsB34t8ws0D+RkNndx808zmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZgaxAViArkBXICmQFsgJZwQcAAP&#47;&#47;WAG4jQAAAAZJREFUAwALrgSSyOiraQAAAABJRU5ErkJggg==">
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1002 &gt; .product-card__link[href$=&quot;product.html&quot;] &gt; img</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1003 &gt; .product-card__link[href$=&quot;product.html&quot;] &gt; img</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="link-name-tmmjxs">
+      <header class="issue__head">
+        <div class="issue__number">8</div>
+        <div>
+          <h3 class="issue__title">Links have no accessible name</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>[id] &gt; .product-card__link[href]</code></dd></div>
+        <div><dt>Occurrences</dt><dd>5 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>2.4.4 Link Purpose (In Context) (A)<br>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>link-name</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>A screen reader announces the link as &quot;link&quot; with no destination. Icon-only links such as cart, search and account are the usual cause, which puts them in the critical path of a purchase.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (3 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1001 &gt; .product-card__link[href$=&quot;product.html&quot;]</code></div>
+          <p class="evidence__detail">Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]</p>
+          <pre class="snippet"><code>&lt;a class=&quot;product-card__link&quot; href=&quot;&#47;product.html&quot;&gt;&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;&lt;&#47;a&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAAS8AAABpCAIAAADkyjJKAAABvElEQVR4nOzZMapaURhG0ZvwQEF0DoKlvSAiWDkKx2PpIByLg7ByFBZWNwkP0qYJ3F2sVX3FaTf8cL7GcRyAgK8BaFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESp+DsBEns&#47;n+XxerVan0+n3&#47;jGO4wBM4XA4PB6P773b7dQIk5nP55&#47;P53vPZjOXKkxmu93+3ZvNRo0wmev1ejwel8vlfr+&#47;3W4uVajwwwEVaoQKNUKFGqFCjVChRqj4U+P9fn+&#47;36&#47;X65+v1+v1YrG4XC4D8L&#47;9AgAA&#47;&#47;86bK0sAAAABklEQVQDAGutKeP2oPl2AAAAAElFTkSuQmCC">
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1002 &gt; .product-card__link[href$=&quot;product.html&quot;]</code></div>
+          <p class="evidence__detail">Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]</p>
+          <pre class="snippet"><code>&lt;a class=&quot;product-card__link&quot; href=&quot;&#47;product.html&quot;&gt;&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;&lt;&#47;a&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1003 &gt; .product-card__link[href$=&quot;product.html&quot;]</code></div>
+          <p class="evidence__detail">Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]</p>
+          <pre class="snippet"><code>&lt;a class=&quot;product-card__link&quot; href=&quot;&#47;product.html&quot;&gt;&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;&lt;&#47;a&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="image-alt-5g79o2">
+      <header class="issue__head">
+        <div class="issue__number">9</div>
+        <div>
+          <h3 class="issue__title">Images are missing text alternatives</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>div &gt; img[width][height]</code></dd></div>
+        <div><dt>Occurrences</dt><dd>3 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.1.1 Non-text Content (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>image-alt</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add a meaningful alt attribute describing the image. Use alt=&quot;&quot; only for images that are purely decorative and repeat adjacent text.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (3 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div:nth-child(1) &gt; img[width=&quot;120&quot;][height=&quot;120&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;120&quot; height=&quot;120&quot;&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div:nth-child(2) &gt; img[width=&quot;120&quot;][height=&quot;120&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;120&quot; height=&quot;120&quot;&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div:nth-child(3) &gt; img[width=&quot;120&quot;][height=&quot;120&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;120&quot; height=&quot;120&quot;&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="meta-viewport-1f63ve2">
+      <header class="issue__head">
+        <div class="issue__number">10</div>
+        <div>
+          <h3 class="issue__title">Page prevents zooming</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>meta[name]</code></dd></div>
+        <div><dt>Occurrences</dt><dd>2 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.4.4 Resize Text (AA)</dd></div>
+        <div><dt>Rule</dt><dd><code>meta-viewport</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Customers with low vision cannot pinch-zoom on a phone. This is one attribute that affects every page and every user.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Remove user-scalable=no and any maximum-scale below 5 from the viewport meta tag.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (2 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>meta[name=&quot;viewport&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: user-scalable=no on &lt;meta&gt; tag disables zooming on mobile devices</p>
+          <pre class="snippet"><code>&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, user-scalable=no&quot;&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>meta[name=&quot;viewport&quot;]</code></div>
+          <p class="evidence__detail">Viewport meta tag sets user-scalable=no.</p>
+          <pre class="snippet"><code>&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1, user-scalable=no&quot;&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="html-has-lang-h8wz4e">
+      <header class="issue__head">
+        <div class="issue__number">11</div>
+        <div>
+          <h3 class="issue__title">Page does not declare its language</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>html</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>3.1.1 Language of Page (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>html-has-lang</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>A screen reader reads Swedish text with an English voice, or the reverse. The result is close to unintelligible. One attribute affects the entire page.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add lang=&quot;sv&quot; (or the correct language) to the &lt;html&gt; element.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>html</code></div>
+          <p class="evidence__detail">Fix any of the following: The &lt;html&gt; element does not have a lang attribute</p>
+          <pre class="snippet"><code>&lt;html&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="image-alt-1srla2u">
+      <header class="issue__head">
+        <div class="issue__number">12</div>
+        <div>
+          <h3 class="issue__title">Images are missing text alternatives</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>img[width]</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.1.1 Non-text Content (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>image-alt</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Screen reader users hear nothing, or hear a filename, where an image should be described. On product images this means the customer cannot tell what is being sold.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Add a meaningful alt attribute describing the image. Use alt=&quot;&quot; only for images that are purely decorative and repeat adjacent text.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>img[width=&quot;60&quot;]</code></div>
+          <p class="evidence__detail">Fix any of the following: Element does not have an alt attribute aria-label attribute does not exist or is empty aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty Element h… [truncated]</p>
+          <pre class="snippet"><code>&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;60&quot; height=&quot;20&quot;&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="link-name-ccr2d6">
+      <header class="issue__head">
+        <div class="issue__number">13</div>
+        <div>
+          <h3 class="issue__title">Links have no accessible name</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: small</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>a[href]</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>2.4.4 Link Purpose (In Context) (A)<br>4.1.2 Name, Role, Value (A)</dd></div>
+        <div><dt>Rule</dt><dd><code>link-name</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>A screen reader announces the link as &quot;link&quot; with no destination. Icon-only links such as cart, search and account are the usual cause, which puts them in the critical path of a purchase.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Give the link visible text, or an aria-label, or visually hidden text inside the anchor. An icon alone is not a name.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>a[href=&quot;&#47;index.html&quot;]</code></div>
+          <p class="evidence__detail">Fix all of the following: Element is in tab order and does not have accessible text Fix any of the following: Element does not have text that is visible to screen readers aria-label attribute does not exist or is empty aria-labelledby attri… [truncated]</p>
+          <pre class="snippet"><code>&lt;a href=&quot;&#47;index.html&quot;&gt;&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;60&quot; height=&quot;20&quot;&gt;&lt;&#47;a&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAAYCAIAAAApowkFAAAANUlEQVR4nOzOQQkAMAwAsT3q33Ln4qCQKMjs7rtm3kHSFemKdEW6Il2RrkhXpCvSFemKdOUDAAD&#47;&#47;+yoSqoAAAAGSURBVAMAE7ADXpZuQj8AAAAASUVORK5CYII=">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="color-contrast-63bbbn">
+      <header class="issue__head">
+        <div class="issue__number">14</div>
+        <div>
+          <h3 class="issue__title">Text does not have enough contrast against its background</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: medium</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>div &gt; p</code></dd></div>
+        <div><dt>Occurrences</dt><dd>3 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.4.3 Contrast (Minimum) (AA)</dd></div>
+        <div><dt>Rule</dt><dd><code>color-contrast</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Customers with low vision, and anyone on a phone in daylight, cannot read the text. Prices, discounts and error messages are the common victims because they are often set in a light accent colour.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Raise contrast to at least 4.5:1 for body text and 3:1 for text at 24px or 19px bold. Fix it in design tokens rather than per component.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (3 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div:nth-child(1) &gt; p</code></div>
+          <p class="evidence__detail">Fix any of the following: Element has insufficient color contrast of 1.96 (foreground color: #b9b9b9, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1</p>
+          <pre class="snippet"><code>&lt;p class=&quot;low-contrast&quot;&gt;Handduk Lin&lt;&#47;p&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAAZYAAAAUCAIAAAAhlYymAAAE3UlEQVR4nOzcXU&#47;iWBgH8LOHUqgNVpAhyOtOSEXUNaw6mfjVJ+7uXMxk1tFR0gWRIQRBpjbdSnlJLdD2uAUB0XWzNWM2snl+V8J57UX&#47;OY85St3c3CAAAJhPFAIAgLkFEQYAmGMQYQCAOYYRsjrVT&#47;vvPpw1jdkGq&#47;V19G3LQs&#47;N0moH+&#47;uHNe3xqa3W2Yf99yeXfaczHVQ7&#47;75JS7&#47;48uu794Lcf+p+AAAvF5zCbJhmOQ4zlAsBAOYLRBhCLmZl880KAgDMH6cR1m9dVOuy2mp3eyamvKw&#47;zK+lgszo3GK0vh4cNTwpnmvWGuq1SaiF5djaZiromRxrLO1bMV+W2gPs9QeTyQi5P7nRuigWK3J3gBf84eTr4F2zXeMdfaog&#47;u1ukr2dzC4zP36WfNm9n0Oeh5u0dLmUExrGcia7GV90I4dGi5Qxv7c9XES&#47;PPlU0ELpOBJrctt+WpoL85l01Pl8AID&#47;jNMII3pXM9z+OJ+gkabKsnyey6Hd3dWl8YtNTLVaw7HV3XXOpYmn+bKQZ&#47;ey0VHG6ZeFw4KEuAif8lP6lXgmdHsE+cczW9qFcFy8ovyxNM9hTW7k89qAYBY9kaVdFk4KMgr&#47;9CazwnxfTUiupYoUTm2+zTKGUskXiwLFvF0LQIgB8NKMI4yg6&#47;rRb&#47;W&#47;NS9MfmBW1nemtVY0nlTyBzlZ7L5emr7XtD+1vhpihn0T6dfy54qo9MJx1mV1pLps+n7c3b7Nu2g4eHZwVO+NhxntWk1F&#47;szOdnx0zoqGluypRRM9idm5OM2VVE8sm10LetD3YyPpdPx2v&#47;zqlSLIUjcVgAwD4KUZRxhG9DK&#47;HvfhaQPRxLOSdNfR6HyrVBqyaheSkzqP0nU7acavNWYCi&#47;S4weVhGIp0NGPYs9dWusQbC&#47;km77&#47;bFwp46+LtB0tX2j3ERgPeybnJw4WWaFFBzhmt81xV1jl+eyu59DwpQ&#47;sC7GQmyuvzIGX2WQEAL8W0kKQYzh+cOWZYVNON0fiagaVf5o8LKvUqHEv5WJbxIDvgyjIhxO4wyh6MKQrfr97s1tFY00TYzdyFI8IU4558JKZpEUzTM2OHM6EnINdXMiJ0LB5eeq6IebgFPHqaybMCAF4MZ78LGzRFdeANb22uj0POQHZqOBqKXMM46PdnehPSt8h4ZTssXJgQcyYfyDj7bmGM761kZ96DBTCX2Ij0yiXhGGe3n6eMBADMCYfnHTtIsJvCk979tqT0nI10ebkgiwbtdm9ycdTS1fZ0sIsJcl6kNTuDSbOhKa3BtJkelqT9rm5OB3e1wcM13GxkYycTMuq541PZwY1YAMD&#47;hbMIoxeDPtyV6pJmWYYmf83nRYcJZqfQYjgRwmr5pPitpff11kVBqLTvzlVuLpn0kz8LQumy0+9rSlUQ6tdopjkS9Pakcnk4WFNqhUK1&#47;djxz8VGN3Y2lo2GcHgq6&#47;94zZ70W01lVkszEABgbjkrJF1sZH1TP6uUPv5SsGNv4VUqk5BKInKGWdl4Q6h8ufhZtNPHu5zgY2pZvJs7vrWNisVK4fcGGc6dSIelcnPS7A7wWxlSrIwGU75Iio&#47;Uisrjm4xu7RDhsCh8QVs76dBjFytM9fwP9XzmCzqc3dt48gUOAMAL8QP8vzAAwPyCPzACAMwxiDAAwByDCAMAzLG&#47;AAAA&#47;&#47;&#47;Pj55bAAAABklEQVQDAOYmQV4cB01vAAAAAElFTkSuQmCC">
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div:nth-child(2) &gt; p</code></div>
+          <p class="evidence__detail">Fix any of the following: Element has insufficient color contrast of 1.96 (foreground color: #b9b9b9, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1</p>
+          <pre class="snippet"><code>&lt;p class=&quot;low-contrast&quot;&gt;Örngott Bomull&lt;&#47;p&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div:nth-child(3) &gt; p</code></div>
+          <p class="evidence__detail">Fix any of the following: Element has insufficient color contrast of 1.96 (foreground color: #b9b9b9, background color: #ffffff, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1</p>
+          <pre class="snippet"><code>&lt;p class=&quot;low-contrast&quot;&gt;Duk Vinter&lt;&#47;p&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="check-reflow-overflow-1ba2j11">
+      <header class="issue__head">
+        <div class="issue__number">15</div>
+        <div>
+          <h3 class="issue__title">Page scrolls horizontally at 320px wide</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: medium</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>div</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.4.10 Reflow (AA)</dd></div>
+        <div><dt>Rule</dt><dd><code>check:reflow-overflow</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>At 320 CSS pixels — a phone, or a desktop zoomed to 400% — content is cut off or requires scrolling in two directions to read one line.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Find the element wider than the viewport (usually a fixed-width table, image or container) and let it shrink or scroll inside its own box.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">home</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;">https:&#47;&#47;demo-webshop.example&#47;</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>div</code></div>
+          <p class="evidence__detail">Page is 408px wide in a 320px viewport. Widest element extends to 408px.</p>
+          <pre class="snippet"><code>&lt;div&gt; &lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;120&quot; height=&quot;120&quot;&gt; &lt;p class=&quot;low-contrast&quot;&gt;Duk Vinter&lt;&#47;p&gt; &lt;a href=&quot;&#47;product.html&quot;&gt;Läs mer&lt;&#47;a&gt; &lt;&#47;div&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAABQAAAADjCAIAAABVbi4rAAAQAElEQVR4nOzdTVAb+YH38VarJbWQZQlMtG3MiyiKQX6Jo3g8Y1zPYckp7E05bC05PeQUzY3n9DC1Fw5bNTw3cgo5hT0tqdqq8JxCDqkhtZUyM&#47;EQrWMbEZZCYMz0aABJyELvre2WePO7jXE29v&#47;7SaoG1HQjDvOb&#47;6&#47;&#47;&#47;&#47;5LqdVqEgAAAAAA7ztFAgAAAABAABRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACAECjAAAAAAQAgUYAAAAACAECjAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACAECjAAAAAAQAgUYAAAAACAECjAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACAECjAAAAAAQAgUYAAAAACAECjAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACAECjAAAAAAQAgUYAAAAACAECjAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACAECjAAAAAAQAgUYAAAAACAECjAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACAECjAAAAAAQAgUYAAAAACAECjAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADwMtUd1e&#47;nF+udl7&#47;qCN759ZSXrt280qrQwIAAMC7hQIMAC9jd&#47;nag0Gjxa045bbOYMXvkSUAAAC8c2y1Wk0CAAAAAOB9d4IZYGst4JfL1fbrN0ItR0sAq+m&#47;fHk7UW3&#47;+GbIb5dOVTW3dvvWstx781qX5xmXrqbjt27rnss3v3&#47;e9UpXkno+vt599iVvspp&#47;ELu1mG0N37wacL3W+wHwvqnmdzZX1zZ3Mtm9kqz6fC2Bju72gOd&#47;Zg10NZdcf5j3drS3ug8CqLz7cEM3fF0dLc8LwcYa7uzRC4rqaw509vScP&#47;tX&#47;yvyD7+6tVhqv&#47;7xB+Z&#47;LF4jwAG8XY2Rz3bl4HtZcTqdbn+gu6f7VfOuvHX31sKW&#47;xljpyd&#47;7v6thQ1H8OPrH&#47;gfv3J55&#47;4Xtzel4PXrAf32K4dDcefBWkYOtF&#47;w82wKgJdiCfQJyE6Pzye7FdovIIDyzl8WYomM7Gtr62n3KkYhlXywHNMftl&#47;9sC&#47;g&#47;uvHQCWnr62nA61tRwW4ktlcXa+0a20trhe8H1lynuu91OGVpXJ+Z1vX9fU&#47;Z&#47;LSjavn3WQZgANKc&#47;Bid4vDKBeLhWwqqeuJWHK7M3ytt9V1elHh8LUFmjbWk5vZbn&#47;L8c5azGxu7cneXs3rsGfP+ryq61WeN6kWMxvrq4pb0&#47;wO8gzAy1CAX5&#47;dff7KR+clAAIobi3fT2SUtvBHFw&#47;a7vmONu0vCwuJ+3Gf9+qFd6k9Km5fc2t9sNl6vq3Dt&#47;CHxdTmTun8BbcEAA2yy9&#47;S2ro&#47;6drR3dO5GltYXr9z13Mj3HF6694cXi3gXU9sbWbKLcd2FLT6b0H2dgU8dru94+pHHRIAnLq3VYCL6Qer68lUOpMtVGRF9TRrvaGe&#47;fmKcvovX9zecPX0+nbWNlJ7FUNpOtceutJzdG+xmnu4eHdZz5Rktbm1q6vNePzi5fSDxcWVZLYkNzVrXd2tR4frq5NXpN4b1w9WJ1fT8T98qXvDN7&#47;&#47;9Gqcaj65FLuzUT53MXyl49XXAT6+BDr&#47;9Z9u3csF+jqkzbVkxvxrnT6t92LfhbOswgHeedVcclXfc37nuz2PzfW6Wrp72&#47;SFjfUH2YC1fq+x6s&#47;b1+1KrulmDCha+PvfefjVC5PhyRzLxu8kjy32K+8+XDIPm2dKstN7rqv3UqcVkdby4XvWCsWN259vWD&#47;X1PHdtt17&#47;5UxYzAx&#47;7uE+Yrs67t5&#47;eXPZ9hlRTFnVuSj2ZVqfmvlfnwztVcyJEVt1nr6evffbiO03X3hjsrG6oNktqL6Al29vW2eor6yvK6nshXFq&#47;Ve3v&#47;rXi+HAfxNc&#47;g7+3qSXy5tbzzMtX1w1l5&#47;hiHffv3Gwdrlam71y1urSt&#47;Nax1P3Q8s767dWVhKuTvD4ScnkO1eTfOtL29tpoqth8GQ33m4VVJ8Pa3qE89HNEZeRnufVtpYM3PTMMeH5six10rmcjr+xZfre+bpi&#47;&#47;xu0XzH8q5yzc&#47;tG7slXcfLC2uJs2RqGHlaHffpa7GcyL7A9HOXm92TTczTz44A4AQ3lYBNvLZXNnR3NHb6ZRyqWQymYjFpOtHj3oYldTqmtz+wfVLPntu8&#47;7dZfPe4s1wYy4l&#47;&#47;W9P97TJV9bb0+zkt&#47;ejN&#47;JFgypef&#47;K1dyDOwuL20pze1+vT84lN+7ezZlJ6JFeUzX39b0&#47;3UtK2nc&#47;uvimKwCNPX1F13qu3Ai7y1srdxcX7yjux56QBvAuqpZ29ExFadb8Tw6MHL5Ai7qxuZ3MVf372x6Uvl1ebe68dP2K116WnI70wxckw0tyzBzr3bm9tK2ca+&#47;rqR9eX44tFK9dD7U4W3uvBCt3Ernm3otdXockK54md&#47;Fy4e69DSPQF2rzyFZfVl+2x0Fxd1tPrGxXnOcCfmfjteLW0lcLGyWv1nnxnKeS2VzbuLeQlz4KX9gvsWZoL9&#47;JeQMd3X2BrL62sRjLpzz5Xam1o1czrB9fvOf0PPU4H4B3nt3TqvmWM9lstiSdfY2SWN5ZjcWWs97e6+HuZySD3RPQfCtLOw938oHz9ctauy2kKoqvzeq&#47;UvWpM4zs5qqi9YT&#47;V6srr8fvLt254&#47;74etdZh7fr0sXS3cWk3H7xg4DLDEG311kvuQu3Exmlua2n2xpNbmwsLcSK168dpJSZaesrRltv+FKro1xRnBIAYZywABvS3vrtz9efer3p4Av3+UsfHq4SvtDRtXX3i9jjj3o4m3sufRCwIs&#47;d2ded&#47;HJlc6ugdXjs1V19PVnxBg8y6oLWGv&#47;i9nph&#47;7RyZm0tJTVf&#47;PBaYyXOhYDfvPRmRXotld0H92NLKVd7OBxqPY0ZCU9bX19H4&#47;32frC9dSepZ3taaMDAu80o5ormbKjb9XRSym5rT5hioWSGz37dVM71XtkPNfNGXtp66TnJ8HSOtdz9YuEwx4rbq2vb0rnLH+3PSFzQWu7fWthc0Tt8HZ6zPr9bkYtuX2vrQcS4&#47;V6XLFfU5nOtL9re78ncdp7rC1&#47;ZX8JtBu&#47;KZqGp0yrZjeANeBe+WFxZSwUuHS5P9HSHr3XVf0OrWrz152+3vJf371tesF64l9Rz3X4aMPC+sSsetyJlSqVyVXrFAmzkt+KxmLXE7vrVjufkkl0NtDWv3EvpO&#47;n6gxjVwpbVf8+1tTxvVkI2q25f&#47;aacuyvUs3VrcXM7237Wb3f7fF6HvKV4W84d7I1QzW0ur2fMmd0b+5MrZswqf4xtrG51fP+8++By3dayHOtyrE0BhHLCAny0mcoBI7cZX9KPfqK8+3BlZSOZshaeHPyufN4c3+0PjmR3y9mD2212l9utGLu5svWThcxW1lDbA96DUZTDa860rG82vqnmtzIFyXOh5XCGw+UzZzA2t6RXV04nYqvJvK&#47;32tWuUxqrOb0thxskKqrXJW0d&#47;1sBCEAxo+qJseFzkkFu5FjHsRzzHsuxcm5rp2COzFoOZySs+WbnRjKZLnV4Tr5I7yi3jXI+vZ1M6uZ8iHHNmpupFjLJnOHUjoLXrrYEPPLSzlau3OpvnO4NtB4srFbcbqcsu1r9zqMXzPFxPm9IfgnAe+Y1P&#47;fcyOv3v0qmpLarH71wp0C7u6WtWdlO6Vt5rcMt5ZKbGcMZuNDy3JRTvb7D1LRSSDInpY&#47;uQR5nLd&#47;JGs7WjqPNAl0+rcW5mfw2Wzzvrv9BsifQzId5AEI68RLoo81UGqrKjkM+WLBSzX99d+FeSvmO1t7j9XjMO2tmPV5OGoZR3Q8q2Xr87PHYMY&#47;Wz61UJNnhPpa2suJ2HHxrVCpVQ3Y6j53beJDt1Rl720nJcLZ3aKc2U&#47;HkW5Drf031maEM4J0huzwuWcrmi0&#47;fzzLyubIZhGYYHf2w44koel4y7OeY8pwcMw+b086K63hEKuZxo&#47;Ia8y&#47;PdCy3A+fbLvjMOd7VlaT24QWnGbyGGbzH3m&#47;jGeF8qWQ0Rr9maB8FryzVHx9+IsWN&#47;RQH8F6pVqxbd7LH+Yo7LFeyyW1Dbu5rP&#47;eyB8zcLRdand8mN5OFtrbytllZVa2t+bmzsbLjsS2hrUStVp&#47;zs+WKOZos6bHf64+&#47;rpTLh5nmdDJPAYjp7TwDXNrZTJVU7eqVS&#47;sVuSyZnfPVzrVbg65i8dhPG0axauy&#47;rv8MxgAAEABJREFUU3NIZpcNo3KsXT4+5pJl+bHfZA4ln&#47;gFsq&#47;zcltheenOghy+djoLoAG8l+xOr88jpTJ6On&#47;e&#47;VjzLGeTOwVJbWt1n2AA1cixymM5VjlcK9Mow5VSvlKVDjaNMUols6C668PP13zg47nsTo9HkVL5XLEsOc3gtTq91Xb3f2W1XKr3cOU1537qf8FLcxjAO8OcTU1mDcnts56sNf&#47;1Nm&#47;15Y&#47;&#47;C14tP3GCM3CxT91YXFq4I197yR6jLuuBX13XkxlP8WHWaOps851OKXU4zVBzNvdd6vA8fh&#47;Saf0Vh2+feQpASCcY2rzSZU0O5XB70WJG3yq82pl21dfqkUqZTOHgrl41n8ocnmx3t&#47;pUKbezWzo4XM5tpUuHh53WYupiNl85PDmbKz35OxyetssfXgyU12ML95NFCQCeze690HlOqXy7vJLMH5toKO6sLm8WZG9Hu+8kt9DqOWbkzAp9cM1iNnmUYw63z6MY2eOHM&#47;pOSXJ6PdaNQLleLx+fa7VaavU1p1+rpZyVjnaHeTmz6XtVqbCjZw5GstWcNRujeJpfv+G&#47;Wg4DeCeU0xv3l7cryrn2xo54iltVpPqUcEO1lM3mn0wfR0tPOBx0pxYX7qztll90+XoDNjIPVlb0Pckb0Lwn67&#47;2RiweFVtni+ZTKtms5G19TMtZF6UXEN7bmQF2nm31yov6un7BqzkL26vx+5uFVy3b9rNaZ2Dtz8t&#47;WlSsT0YqJpfvrmSMw5Mdvq6uZn3x3p0l6WJPiz27Gb9r7X2vHB42k3Rzc3m5WelpdeT0leVV8+Sn9&#47;azey5c&#47;lCqfnXvzh+lqx8+9xkVo5je2ZKPpbHi9vlVCYAg7B4t1Kt&#47;sbgZ+yLX1tbW7FWMQir5YGO7IPuCF9tP+ByFlWPn9MXlu0tSd8Atl7MPlvXCUY65Az3tGwsJ87DcHXDJ5Z21Jb3U1Hapoz40lN1et7y582Dja8nrkBWP1+9WzJek1NbGZrLils0JDt9zhniVfCa1ZdTT1Mjrq8spQ25uO2cNau3erh4t+efN+3c9veavMY+urGTl5t7u1hMsuX7VHAbwN2h&#47;5GMUczvbW6md7WxJkr2d4Sttjedl7d7ABc&#47;68vLyA3dvwJXfWl026&#47;HTIzy7q+WD8FVjIWbOA0vXrnY9dx7Y+kDgpo31VEaSvF0n7r+Kx+M0kvoD3d3qks2Q9HncWm+Pfnsp9oes1tZ2rsXtMOdL9GTW1Xn1ynk+7wgQ3NspwHZP26Ur+fjK0h9+d88crjV9p+dip760+Ypnu89f&#47;shQ7i4vfrlp3stTz3X2tqeWN4+u3XH1mrS4uHJvfsOwrt3Zp+nLOweHHS29Vy8aiyv1kxVvW09v29ri1rPf5IWrHxp3&#47;rh456vnduBKKvHnVOLYC04tfPPya3&#47;kEoB3lhk54RuulfhfNjYTi40gsj6A8vLhh+Se8KKNHFuK7edY53c217OO&#47;aeIHf4Prl33LNUPNz4HuPda43OA6+e29&#47;XlllZX7y1UDKmp8+MbIb+&#47;+2JfaWl12doR&#47;7mfA2xYn9QU+&#47;boBWdz59Wr7Y0NWu1W8DrU+&#47;G1ewuNzwFuu3z9pH&#47;iq+cwgL81ByMfWVE9Xk9rZ29zQNOObcxs93devZy&#47;v7z05X8s1kd4PZ3Gs0d4rtbQtbBkduDb9Q78nBuGDp8W8K4nsrKvcTvuRFytvVd6jeUHi7F14+BzgM92XbvhXI6v6BtL+np98fO5QLvm514cAFutVpMAAP+Dyun47dubzr6b4Q43y&#47;MAAADemrczAwwAeIFq7uv1hxW1xXrC1ihnH65sZJ1aOED7BQAAeKsowADw1ydL+dTycqKxj4ys+rSLfX0BNqUHAAB4u1gCDQAAAAAQAjPAAAAAAAAhUIABAAAAAEKgAAMAAAAAhEABBgAAAAAIgQIMAAAAABACBRgAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIQgS6&#47;NiE&#47;sqmpmdN541tHqdCRtCz6a1aszQ2mblp3RaxIAvJvS87mwmhqYrBSecfAwDKvxqV2&#47;LR2dMyQAeFcdDOHSzxi5HYZhOrbXr6bC4+WCBADvpFOfAbaFhp2f6UrIbysMOT&#47;rt5tfSADwHrJp&#47;c6xMak&#47;aNNU19hntVBQAoD3khp0RMds&#47;rBN1cwvJKlfViUAeCedegGWw5GmcOPLSNOoBADvK5u&#47;Xx3tr3+puUbCEgC8r1TNGR111r+0D486JAB4Z51gCfQL1NKxwng02x9KqbaUqmUGhvbmEocLaWr6fGEkkgmqKZuaDvVnRyZL+jMW0NT0maymZkZnS9Oj2f5gyh&#47;cHRovJQqGPrcXHcxoasofyo7PVY+dYiRmcpFw2m+zrhyO7M0drLsuJAqD&#47;tTAaGF8KBP0p2z+3ck4axQBnAa9NDn6aLC&#47;njz+dHjg0eT8US4VEqXJ6G5YS9lsKS20OzRamH&#47;W8yD7GTVRmpt8NBhOq&#47;7MwLCZYIZ5+vjwbshvBenwZDl97BQzZhtJaF452J899kuNuZGMGsxOTuasS5lHo6W0BABvrFCZncgNDdSHcGa2hHdHpo7nkhGbzg0dhGF&#47;5NHEzLMeGymUx&#47;tTWqQwP7s3PJDxmwO2wUdT89VCutIY76lqeiBajB8&#47;s1CdG7cO2eqjysHRYmL&#47;6P5YMTq5Fx1Im3mohnPz5B2AV3PKM8CFRDWWtkVG3KN+KT5Xnp4uRnRpbqYp7JcK8eLQYD7R7xyZVEJBs6gasUTNDCvtmRcqGpPDe+FBZ3Tcoc8Wxz&#47;NJeKKNF8LDbsmhozZyeKnw3uh+TMRzWY9hjeVG&#47;hJRfp7x+gvHcF0ZXKiODhYm51rGjhYff37iUJhSJ2OObRCTQ2ebucHIKhCuhaL10IRdXjUlo6XZ6bKn0Rq6pxnOCRL6fLYUG4irYyMuceCsl+qxePVF4zN5sf2ov1KdMQdiZcmJopDCWMgXU33O0YnnfGZ4sTInj90ZmLALlmP4e1FBovzfnt03N3vt8Lwk8FcYe7MSLiRbLXiWmV03D46eWYqLKUL5q8GgDdWqCVihhp2jEXtaroyO12e&#47;Eku7fdORcxcqiWmc4M&#47;rgR&#47;6poYUYKaVNAr8ULNLKrPXCP9zWxhKGGPRF2TQ9Wp8dJPhmpzISOmKtHxJmm+OD65NxyU50Yd1rmF6kw0+6N&#47;rd34J+cvx5VCzIzHvUFzVDnl2h86Fo2psXJktGl+2l5IS0HyDsCrOd0CbNMinunIwXdDanQo1x8pT8eNcL85QKwkJNkctB0M1KSBF15LizTNTDqtNDPjNf7o02njsznvaL91biQsxQdK03NGZMgu6eXxsUrhh675maaQlZeuyIBtYKA4Pu3qj+7&#47;da6wY2JC7ScZAZweNeSanHEdfOeKDheH+vemZo2hkKymq7GENGC236jSGAIODL7wWiHH1LSnnlGOUCH7g5+V0z&#47;3zjTOHZQLsdzsdDU9YPcXKjNjxd+ryr&#47;NnRkKWjf4hiKKfyA3MV4emj4YEUq2wXHP6KDVljUJAE6D3xGdckT3v3ENDVfMad6xqXIiYg+aBXjeSPc5xsfNiYfGDzhfFHiqPDrtiZo3CqXagFYL&#47;6g82980P+UKmnk3pGh6dmi6FB9xhFXzfl9hdLp24&#47;+emR13WBcecg6EHg2MFKZijtHw&#47;gxHMOKeHKmPFck7AK&#47;stKdD05WZ8UcDjdXItlTzD0pLGSNurYK2+UNyUDLGo7nRqVI8&#47;bKtoV22gYh9P0hVORi0uYJKf2j&#47;3aqaXVNriYRRkGp6rDy3ZhsYdoUO7jSqIedQSIrNHs23hAacYdovgFNWnZ+y1gQ2ViPbzu&#47;9ak1KxA1rgZ7fHg5KvzXndccLc4mXP3ZxLKNsWsjmc8kDhxvMqHJIk&#47;SEkTavq1dm5qWuiGsweLC5oF+JDMhmDMYOQ&#47;Xv7JF+1rkAOF01fa7+FFv9sQ6bO&#47;vJb2vfJKq6NdKyBftl&#47;1I5OpybnCnrL9sb2hdWBvbX4tn8mk1zSeFBc1DXOGjTzHBLGwkr0Iz4TGVJtQ8PH4wGzV80YBZjY3beOPgltv7DsSIAvLLTHSdVZ0YeDY1XtQHn+C+bfvO55ze&#47;dPS5pELBGpmpIffMXNOwvzrxk9zF5kz&#47;UG5qrvL8nLT5j20fbQWjX&#47;IfW0yjWusPrS8K6Vpaqv3&#47;H+&#47;a6pW7kcv&#47;5wspna6mD67uD7ITNYDTZcSn9iLRsh5URifcv&#47;6N5&#47;Nfu&#47;6py1ooWC&#47;AjrGZMz+PSLOf5n&#47;QnQkOPBqfftG48HhGqWa6qTa&#47;eiy1rLwz&#47;2dmqVWD136Raz6MO1vmBz8zinrtIO5sLutcCQBOUXo+H4nkZwr26Kj7337t+fzzps9+aHPVc8nqpUOeuV87Q4nSJz96dF7LREb2Zp+&#47;34rqtx9llGpT63F39IJ&#47;P+6sbWXMGpypfnIxczjAc3fnf&#47;uNlD7cXMZl0&#47;ioEQCv71SXQOuVqdlaKOqZGnc0siw9Vz522OYPuyZmXROFamyuPDVZiEaq6aNH107GpvptfvMW4Gfu0f7HQtBM2CCjQABvScGYm6qk+12Tk037y0&#47;02uSx49YnhUya&#47;zcS8+WZqeL4cG5+6szM0BtFrqra&#47;X6pa8A9GX38A0hUOWyNAuuDQvU5D94BwAkZiZlyTFWmJj2Nhy+kQiUhHV&#47;KJ4cinpmIR0pXZmeKUxPFyFxtbs7zZo+eWfPDLp88MqkOPr682R+0E3IA3sQpb4Jlzl2oR3lXjc1UlopS8MkfsocH7WNqZXa2EtNfthb6ZbSwc6CvPBeTgiPOpxsvn9IO4C2x4k46LKI1fb40v&#47;b0T8nBftdIUJqf2YvN19JD0hsNCDV7pN82G69IIc+AxrwHgL8Wfz3xDvKukKhMz0vFpx+79SuDw7KmV2bGq&#47;F0rf+NpmfNUq2EJsqxtDw2pDw1vnvT0SMAkZ20ABdriVhl7li&#47;NGdcwyH7YNgWnSrOROwRzZweyUd&#47;drgGxtokcHiy1m&#47;tYWBtAT0zUV5S7aNvvjhZc4yNKQM&#47;3gsnStFh50DQVkiUZ2aqhaGmqeFT&#47;5RjACJKm3E3ZxyNwFQ5FJbNG3nSWHFizjE+ICVmC9Foxey&#47;XfXjhdje0EjFP+iMhGW&#47;WotNFWa+sUUG3nhPZlUZGlOnB&#47;P&#47;0J&#47;931HnoHlxa76lEvO7piddbAED4I3VpIIRmysfm8yQ1KAS6leCY6WJqcrAiL0QL49F87&#47;NHO47VZ0dyY0n7JEhR1gzu3F5YsKQQq7wG9+k8&#47;er49FK5JNs&#47;6xz2CzDmqTHytOztcEJz0iYO4AATu7EFbH2q09yvzr+wvect+Y8QxNN+mh+NJz5cVHyfc8x9kvn9Mj+Kmh&#47;UA5K5dmJ&#47;MRSTfo7uX&#47;Q9esJNRJ684eQbcGhM&#47;NafgfC+5IAAAGpSURBVGS0NDWy9&#47;+KkqtLHow4ogOyygwwgDdXlP7zF&#47;l&#47;+MWxV1z2n8fORKNNU3p+bHjX&#47;Y219dRPx9yhyfxs&#47;biqKf1aZWa6EB2rfSPZvjegjP9GjdZ3Zn5DalidmbeNjRSmx&#47;P&#47;mrEegfv7iGN4SGEbGACn45vqpz&#47;KHX+h66ee2KR7alIaHX&#47;U&#47;KkVOz+Mun8eLIzEG8dtWlhW5yuTo6WlNcnXJw8Ou+dGXOFTWKZsH5w4MxfKj06UR39SKppB+z17ZPjYLoAAcCK2Wo1lJAAAAACA999rzwDbbCnpXRaP+&#47;r6+IwQAC&#47;3j&#47;&#47;46N&#47;&#47;vSy9s&#47;7lX9z&#47;&#47;M9sFgPg5X71q9LQUE56Z4XD9j&#47;96awEAK+AGWAAAAAAgBDYJgoAAAAAIAQKMAAAAABACBRgAAAAAIAQKMAAAAAAACFQgAEAAAAAQqAAAwAAAACEQAEGAAAAAAiBAgwAAAAAEAIFGAAAAAAgBAowAAAAAEAIFGAAAAAAgBAowAAAAAAAIVCAAQAAAABCoAADAAAAAIRAAQYAAAAACIECDAAAAAAQAgUYAAAAACCE&#47;wYAAP&#47;&#47;xPWdEwAAAAZJREFUAwB1FhcFh8GUGwAAAABJRU5ErkJggg==">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="check-reflow-overflow-hl3l1f">
+      <header class="issue__head">
+        <div class="issue__number">16</div>
+        <div>
+          <h3 class="issue__title">Page scrolls horizontally at 320px wide</h3>
+          <div class="issue__badges">
+            <span class="badge badge--high">High</span>
+            <span class="badge badge--effort">Effort: medium</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>li.product-card</code></dd></div>
+        <div><dt>Occurrences</dt><dd>1 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>1.4.10 Reflow (AA)</dd></div>
+        <div><dt>Rule</dt><dd><code>check:reflow-overflow</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>At 320 CSS pixels — a phone, or a desktop zoomed to 400% — content is cut off or requires scrolling in two directions to read one line.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>Find the element wider than the viewport (usually a fixed-width table, image or container) and let it shrink or scroll inside its own box.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (1 example)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>li.product-card</code></div>
+          <p class="evidence__detail">Page is 452px wide in a 320px viewport. Widest element extends to 452px.</p>
+          <pre class="snippet"><code>&lt;li class=&quot;product-card&quot; id=&quot;product-1004&quot;&gt; &lt;a class=&quot;product-card__link&quot; href=&quot;&#47;product.html&quot;&gt;&lt;img src=&quot;data:image&#47;gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;&lt;&#47;a&gt; &lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt; &lt;&#47;li&gt;</code></pre>
+          <img class="shot" alt="Screenshot of the affected element" src="data:image&#47;png;base64,iVBORw0KGgoAAAANSUhEUgAAAS8AAAB8CAIAAAC30aFiAAACP0lEQVR4nOzcMUorURhA4VECKkH3ELC0F0QEQXAVrsfSPeg20mYRqbKKEFLljQiveE3yJJBTfF91i&#47;uXh7nMMHey2+0GIGAyAA1qhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNUKFGqFCjVChRqhQI1SoESrUCBVqhAo1QoUaoUKNUKFGqFAjVKgRKtQIFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNULF+QCcyHK5fH19vbm5eX5+Htdnu91uAE7h8fFxsVj8rO&#47;v79UIJ3N5ebndbn&#47;WFxcXTqpwMnd3d3&#47;Xt7e3aoSTeX9&#47;f3p6ur6+fnh4+Pj4cFKFCl84oEKNUKFGqFAjVKgRKtQIFd81fn19rdfr1Wq1d&#47;dsNptOp29vbwNwbGefn59XV1cvLy8HDszn881mI0g4uvPxqXh4iqNx8zgyAMc2OeSA+o9fjAB7eYsDFWqECjVChRqhQo1QoUaoUCNUqBEq1AgVaoQKNULFZDabDf&#47;pFyPAXufT6XQ+nx8+MG4eRwbg2L7vU&#47;W3MRS43RgqvMWBij8AAAD&#47;&#47;5ksORAAAAAGSURBVAMA9W1UGf1p5RgAAAAASUVORK5CYII=">
+        </div>
+      </details>
+    </article>
+    <article class="issue" id="target-size-lmyes0">
+      <header class="issue__head">
+        <div class="issue__number">17</div>
+        <div>
+          <h3 class="issue__title">All touch targets must be 24px large, or leave sufficient space</h3>
+          <div class="issue__badges">
+            <span class="badge badge--medium">Medium</span>
+            <span class="badge badge--effort">Effort: medium</span>
+            <span class="badge badge--auto">Automatically verified</span>
+          </div>
+        </div>
+      </header>
+
+      <dl class="issue__facts">
+        <div><dt>Component</dt><dd><code>[id] &gt; button</code></dd></div>
+        <div><dt>Occurrences</dt><dd>5 on 1 page</dd></div>
+        <div><dt>WCAG</dt><dd>2.5.8</dd></div>
+        <div><dt>Rule</dt><dd><code>target-size</code></dd></div>
+      </dl>
+
+      <div class="issue__block">
+        <h4>Who this affects, and why it matters</h4>
+        <p>Detected by automated testing. Assess the effect on customers during manual review.</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to fix it</h4>
+        <p>https:&#47;&#47;dequeuniversity.com&#47;rules&#47;axe&#47;4.13&#47;target-size?application=axeAPI</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>Where it occurs</h4>
+        <ul class="urls"><li><a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a></li></ul>
+      </div>
+
+      <details class="issue__evidence">
+        <summary>Evidence (3 examples)</summary>
+        
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1001 &gt; button</code></div>
+          <p class="evidence__detail">Fix any of the following: Target has insufficient size (18px by 18px, should be at least 24px by 24px) Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 18px instead of at least 24px.</p>
+          <pre class="snippet"><code>&lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1002 &gt; button</code></div>
+          <p class="evidence__detail">Fix any of the following: Target has insufficient size (18px by 18px, should be at least 24px by 24px) Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 18px instead of at least 24px.</p>
+          <pre class="snippet"><code>&lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          
+        </div>
+        <div class="evidence">
+          <div class="evidence__meta">
+            <span class="tag">collection</span>
+            <a href="https:&#47;&#47;demo-webshop.example&#47;collection.html">https:&#47;&#47;demo-webshop.example&#47;collection.html</a>
+          </div>
+          <div class="evidence__selector"><strong>Selector</strong> <code>#product-1003 &gt; button</code></div>
+          <p class="evidence__detail">Fix any of the following: Target has insufficient size (18px by 18px, should be at least 24px by 24px) Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 18px instead of at least 24px.</p>
+          <pre class="snippet"><code>&lt;button class=&quot;qty&quot;&gt;&lt;&#47;button&gt;</code></pre>
+          
+        </div>
+      </details>
+    </article>
+  </section>
+
+  
+    <section class="section" id="manual">
+      <h2>Manual verification script</h2>
+      <p class="lede">
+        These checks cannot be decided by software. None of them has been performed —
+        every one is unverified until a person completes it and records the result below.
+      </p>
+      
+      <article class="manual">
+        <h4>Keyboard-only navigation <span class="badge badge--manual">Manual check required</span></h4>
+        <p class="manual__flag">Automated scan found: Buttons have no accessible name; Links have no accessible name.</p>
+        <p><strong>Do this:</strong> Put the mouse away. Using Tab, Shift+Tab, Enter, Space and the arrow keys only, complete: open the menu, open a category, open a product, add it to the cart, open the cart, change the quantity, and reach the checkout entry.</p>
+        <p><strong>It passes when:</strong> Every step is completable. Focus never disappears, never gets stuck, and never leaves the page unexpectedly.</p>
+        <p class="muted">2.1.1 Keyboard (A) · 2.1.2 No Keyboard Trap (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Visible focus <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Tab through the header, the product grid, the product page and the cart. Watch where focus lands at each stop.</p>
+        <p><strong>It passes when:</strong> The focused element is always clearly identifiable, with an indicator visible against its own background, including over images and coloured buttons.</p>
+        <p class="muted">2.4.7 Focus Visible (AA) · 2.4.11 Focus Not Obscured (AA, WCAG 2.2)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Focus order <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Tab through each page and note whether the order matches the visual reading order.</p>
+        <p><strong>It passes when:</strong> Focus moves in a logical sequence. It does not jump between columns or backwards up the page.</p>
+        <p class="muted">2.4.3 Focus Order (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Menus <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Open the main navigation with the keyboard. Move through its items. Close it with Escape. Repeat on a phone-sized viewport.</p>
+        <p><strong>It passes when:</strong> The menu opens and closes from the keyboard, arrow keys or Tab move between items, Escape closes it, and focus returns to the trigger.</p>
+        <p class="muted">2.1.1 Keyboard (A) · 4.1.2 Name, Role, Value (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Modal dialogs <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Trigger every dialog you can find — size guide, quick view, newsletter popup, cart drawer. For each, Tab repeatedly and then press Escape.</p>
+        <p><strong>It passes when:</strong> Focus moves into the dialog when it opens, stays inside while it is open, Escape closes it, and focus returns to the element that opened it.</p>
+        <p class="muted">2.1.2 No Keyboard Trap (A) · 2.4.3 Focus Order (A) · 4.1.2 Name, Role, Value (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Cookie consent <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Load the site in a fresh private window. Before touching the mouse, press Tab and try to reach and operate the consent banner.</p>
+        <p><strong>It passes when:</strong> The banner is reachable by keyboard, all options including &quot;reject&quot; are operable, and it does not trap focus or hide the page behind it.</p>
+        <p class="muted">2.1.1 Keyboard (A) · 2.4.3 Focus Order (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Product variants <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> On a product with size or colour options, select each variant using only the keyboard, and listen with a screen reader if available.</p>
+        <p><strong>It passes when:</strong> Every option is reachable and selectable, the current selection is announced, and an unavailable combination is communicated in text and not by colour alone.</p>
+        <p class="muted">1.4.1 Use of Color (A) · 4.1.2 Name, Role, Value (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Quantity selectors <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Change the quantity using the keyboard, both on the product page and in the cart.</p>
+        <p><strong>It passes when:</strong> Plus and minus controls are real buttons with names, the field itself is labelled and editable, and the updated total is announced.</p>
+        <p class="muted">4.1.2 Name, Role, Value (A) · 4.1.3 Status Messages (AA)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Add to cart feedback <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Add a product to the cart with a screen reader running. Wait without moving focus and listen for what is announced.</p>
+        <p><strong>It passes when:</strong> The result is announced without the user having to hunt for it — a live region, or focus deliberately moved to the confirmation.</p>
+        <p class="muted">4.1.3 Status Messages (AA)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Cart editing <span class="badge badge--manual">Manual check required</span></h4>
+        <p class="manual__flag">Automated scan found: Buttons have no accessible name; Links have no accessible name.</p>
+        <p><strong>Do this:</strong> Change a quantity and remove a line, using the keyboard only.</p>
+        <p><strong>It passes when:</strong> Remove controls name the product they remove (&quot;Remove Blue Shirt&quot;, not &quot;Remove&quot;), and the updated total is announced.</p>
+        <p class="muted">2.4.4 Link Purpose (A) · 4.1.3 Status Messages (AA)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Search <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Use the search field by keyboard. Type a query that returns suggestions, then one that returns nothing.</p>
+        <p><strong>It passes when:</strong> The field is labelled, suggestions are reachable by arrow keys, the number of results is announced, and the empty state is conveyed in text.</p>
+        <p class="muted">4.1.3 Status Messages (AA) · 3.3.2 Labels or Instructions (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Form validation errors <span class="badge badge--manual">Manual check required</span></h4>
+        <p class="manual__flag">Automated scan found: Form fields have no label.</p>
+        <p><strong>Do this:</strong> Submit the contact form and the checkout form empty, then with one invalid field. Observe with a screen reader.</p>
+        <p><strong>It passes when:</strong> Errors are announced, focus moves to or names the first failing field, each message says what to do, and errors are not signalled by red colour alone.</p>
+        <p class="muted">3.3.1 Error Identification (A) · 3.3.3 Error Suggestion (AA) · 1.4.1 Use of Color (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Mobile navigation <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> On a real phone with the screen reader on (VoiceOver or TalkBack), open the menu, browse to a product and add it to the cart.</p>
+        <p><strong>It passes when:</strong> Every step is completable by swipe navigation. The menu toggle is named and its expanded state is announced.</p>
+        <p class="muted">2.1.1 Keyboard (A) · 4.1.2 Name, Role, Value (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Zoom and reflow <span class="badge badge--manual">Manual check required</span></h4>
+        <p class="manual__flag">Automated scan found: Page prevents zooming; Page scrolls horizontally at 320px wide.</p>
+        <p><strong>Do this:</strong> On a 1280px desktop window, zoom the browser to 400%. Read a product page and the cart.</p>
+        <p><strong>It passes when:</strong> Content reflows into one column, nothing is clipped, and no horizontal scrolling is needed to read a line of text.</p>
+        <p class="muted">1.4.10 Reflow (AA) · 1.4.4 Resize Text (AA)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Screen-reader labels are meaningful <span class="badge badge--manual">Manual check required</span></h4>
+        <p class="manual__flag">Automated scan found: Images are missing text alternatives.</p>
+        <p><strong>Do this:</strong> With a screen reader, listen to the product images, the icon buttons in the header, and the product cards in a category listing.</p>
+        <p><strong>It passes when:</strong> Alt text describes what the image shows rather than repeating the filename or the product title; icon buttons are named by their action.</p>
+        <p class="muted">1.1.1 Non-text Content (A) · 2.4.6 Headings and Labels (AA)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+      <article class="manual">
+        <h4>Page structure <span class="badge badge--manual">Manual check required</span></h4>
+        
+        <p><strong>Do this:</strong> Pull up the screen reader’s list of headings and of landmarks on the home, category and product pages.</p>
+        <p><strong>It passes when:</strong> The heading list alone conveys what is on the page, and landmarks let you jump straight to the main content.</p>
+        <p class="muted">1.3.1 Info and Relationships (A) · 2.4.1 Bypass Blocks (A)</p>
+        <p class="manual__result">Result: <span class="manual__blank">☐ Pass&nbsp;&nbsp;☐ Fail&nbsp;&nbsp;☐ Not applicable</span></p>
+      </article>
+    </section>
+
+  <section class="section handoff" id="handoff">
+    <h2>Developer handoff</h2>
+    <p class="lede">One task per defect, ready to paste into Jira, Linear or GitHub.</p>
+    <table class="table">
+            <thead><tr><th scope="col">Key</th><th scope="col">Priority</th><th scope="col">Estimate</th><th scope="col">Task</th></tr></thead>
+            <tbody><tr><td><code>A11Y-001</code></td><td>P0</td><td>≤ 2h</td><td>[CRITICAL] Form fields have no label — input[value]</td></tr><tr><td><code>A11Y-002</code></td><td>P0</td><td>≤ 2h</td><td>[CRITICAL] Images are missing text alternatives — img</td></tr><tr><td><code>A11Y-003</code></td><td>P0</td><td>≤ 2h</td><td>[CRITICAL] Form fields have no label — input</td></tr><tr><td><code>A11Y-004</code></td><td>P0</td><td>≤ 2h</td><td>[CRITICAL] Buttons have no accessible name — [id] &gt; button</td></tr><tr><td><code>A11Y-005</code></td><td>P0</td><td>≤ 2h</td><td>[CRITICAL] Buttons have no accessible name — button</td></tr><tr><td><code>A11Y-006</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Iframe has no title — iframe</td></tr><tr><td><code>A11Y-007</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Images are missing text alternatives — .product-card__link[href] &gt; img</td></tr><tr><td><code>A11Y-008</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Links have no accessible name — [id] &gt; .product-card__link[href]</td></tr><tr><td><code>A11Y-009</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Images are missing text alternatives — div &gt; img[width][height]</td></tr><tr><td><code>A11Y-010</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Page prevents zooming — meta[name]</td></tr><tr><td><code>A11Y-011</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Page does not declare its language — html</td></tr><tr><td><code>A11Y-012</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Images are missing text alternatives — img[width]</td></tr><tr><td><code>A11Y-013</code></td><td>P1</td><td>≤ 2h</td><td>[HIGH] Links have no accessible name — a[href]</td></tr><tr><td><code>A11Y-014</code></td><td>P1</td><td>0.5–2 days</td><td>[HIGH] Text does not have enough contrast against its background — div &gt; p</td></tr><tr><td><code>A11Y-015</code></td><td>P1</td><td>0.5–2 days</td><td>[HIGH] Page scrolls horizontally at 320px wide — div</td></tr><tr><td><code>A11Y-016</code></td><td>P1</td><td>0.5–2 days</td><td>[HIGH] Page scrolls horizontally at 320px wide — li.product-card</td></tr><tr><td><code>A11Y-017</code></td><td>P2</td><td>0.5–2 days</td><td>[MEDIUM] All touch targets must be 24px large, or leave sufficient space — [id] &gt; button</td></tr></tbody>
+          </table>
+  </section>
+
+  <footer class="section">
+    <h2>About this scan</h2>
+    <p class="muted">
+      Generated by an automated accessibility risk scanner using axe-core plus additional
+      structural checks, run in Chromium against 8 pages
+      of demo-webshop.example, respecting robots.txt.
+      
+      No order was placed and no form was submitted during the scan.
+    </p>
+    <p class="muted">This is a technical accessibility risk scan (pre-audit). It is not legal advice, not a certification, and not a guarantee of compliance with WCAG, the Swedish accessibility legislation (LPTT) or the European Accessibility Act. Automated testing detects only a portion of accessibility barriers; the manual checks in this report are required to form a complete picture.</p>
+  </footer>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!doctype html>
+<!-- Deliberately malformed: unclosed tags, stray markup, duplicated ids.
+     Asserts the scanner does not crash on markup the browser has to guess at. -->
+<html lang="sv">
+<head><meta charset="utf-8"><title>Trasig sida
+<body>
+  <div id="dup"><p>Ostängd paragraf
+  <div id="dup"><span>Text
+  <ul><div>Inte ett listelement</div></ul>
+  <a href="/index.html">Hem
+  <table><td>Cell utan rad</td></table>
+  <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
