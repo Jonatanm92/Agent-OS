@@ -163,21 +163,26 @@ export function ChatTab({
             <div
               key={c.id}
               className={`history-item ${c.id === activeId ? 'active' : ''}`}
-              onClick={() => openConversation(c.id)}
             >
-              <span className="history-title">{c.title || 'Untitled'}</span>
-              <span className="history-agent">{shortAgent(c.agent_id)}</span>
+              <button
+                className="history-open"
+                aria-current={c.id === activeId ? 'true' : undefined}
+                onClick={() => openConversation(c.id)}
+              >
+                <span className="history-title">{c.title || 'Untitled'}</span>
+                <span className="history-agent">{shortAgent(c.agent_id)}</span>
+              </button>
               <button
                 className="del"
                 title="Delete"
-                onClick={async (e) => {
-                  e.stopPropagation();
+                aria-label={`Delete conversation ${c.title || 'Untitled'}`}
+                onClick={async () => {
                   await api.deleteConversation(c.id);
                   if (c.id === activeId) newChat();
                   loadConversations();
                 }}
               >
-                ×
+                <span aria-hidden="true">×</span>
               </button>
             </div>
           ))}
@@ -187,13 +192,13 @@ export function ChatTab({
 
       <div className="chat-main">
         {!status?.ok && (
-          <div className="banner warn">
+          <div className="banner warn" role="status">
             Free Claude Code is offline ({status?.error || 'not reachable'}). Start it with{' '}
             <code>fcc-server</code> and check the base URL in Settings.
           </div>
         )}
         {activeAgent?.available === false && (
-          <div className="banner warn">
+          <div className="banner warn" role="status">
             {agentLabel} isn't installed yet. Install it with{' '}
             <code>curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</code>, then{' '}
             <code>hermes setup --portal</code>.
@@ -202,7 +207,7 @@ export function ChatTab({
 
         {(lastModel || status?.routedModel) && (
           <div className="model-chip" title="The model FCC actually routes to">
-            ⚙ running on <code>{lastModel || status?.routedModel}</code>
+            <span aria-hidden="true">⚙</span> running on <code>{lastModel || status?.routedModel}</code>
           </div>
         )}
 
@@ -215,7 +220,7 @@ export function ChatTab({
           </div>
         )}
 
-        <div className="messages" ref={scrollRef}>
+        <div className="messages" ref={scrollRef} role="log" aria-label="Conversation" aria-live="polite">
           {messages.length === 0 && !busy && (
             <div className="empty">
               <div className="agent-badge">{agentLabel}</div>
@@ -245,16 +250,20 @@ export function ChatTab({
                   <button
                     className={m.rating === 1 ? 'on' : ''}
                     title="Good answer"
+                    aria-label="Good answer"
+                    aria-pressed={m.rating === 1}
                     onClick={() => rate(m.id, 1)}
                   >
-                    👍
+                    <span aria-hidden="true">👍</span>
                   </button>
                   <button
                     className={m.rating === -1 ? 'on' : ''}
                     title="Bad answer"
+                    aria-label="Bad answer"
+                    aria-pressed={m.rating === -1}
                     onClick={() => rate(m.id, -1)}
                   >
-                    👎
+                    <span aria-hidden="true">👎</span>
                   </button>
                   {m.content.includes('```') && (
                     <button
@@ -262,7 +271,7 @@ export function ChatTab({
                       title="Save the code blocks in this reply into your active Workspace project"
                       onClick={() => saveFiles(m)}
                     >
-                      💾 Save files
+                      <span aria-hidden="true">💾</span> Save files
                     </button>
                   )}
                   {fileMsg[m.id] && <span className="muted tiny">{fileMsg[m.id]}</span>}
@@ -280,7 +289,7 @@ export function ChatTab({
           )}
         </div>
 
-        {error && <div className="banner error">{error}</div>}
+        {error && <div className="banner error" role="alert">{error}</div>}
 
         <div className="composer">
           <label className="memory-toggle" title="Inject Obsidian vault as context">
@@ -302,6 +311,7 @@ export function ChatTab({
           <textarea
             value={input}
             placeholder={`Message ${agentLabel}…  (Enter to send, Shift+Enter for newline)`}
+            aria-label={`Message ${agentLabel}`}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {

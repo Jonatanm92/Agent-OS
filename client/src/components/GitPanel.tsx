@@ -34,7 +34,7 @@ export function GitPanel({ projectId }: { projectId: string }) {
   return (
     <div className="git-panel">
       <div className="git-head">
-        <span className="git-icon">⎇</span>
+        <span className="git-icon" aria-hidden="true">⎇</span>
         <span className="git-branch">{st.initialized ? st.branch || 'no branch' : 'not a repo'}</span>
         {st.initialized && <span className="muted tiny">{st.files.length} changed</span>}
       </div>
@@ -53,7 +53,7 @@ export function GitPanel({ projectId }: { projectId: string }) {
             </div>
           )}
           <div className="git-actions">
-            <input value={msg} placeholder="commit message" onChange={(e) => setMsg(e.target.value)}
+            <input value={msg} placeholder="commit message" aria-label="Commit message" onChange={(e) => setMsg(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && doCommit()} />
             <button className="ghost-btn small-btn" onClick={doCommit}>Commit</button>
             <button className="ghost-btn small-btn" onClick={doDiff}>Diff</button>

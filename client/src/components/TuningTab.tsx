@@ -27,6 +27,7 @@ export function TuningTab() {
           <button
             key={name}
             className={`tuning-card ${selected === name ? 'active' : ''}`}
+            aria-pressed={selected === name}
             onClick={() => setSelected(selected === name ? null : name)}
           >
             <div className="tuning-name">{name}</div>
@@ -43,7 +44,7 @@ export function TuningTab() {
               <div key={i} className="tuning-string">
                 <span className="tuning-str-num">{i + 1}</span>
                 <span className="tuning-str-note">{n}</span>
-                <div className="tuning-str-bar" style={{ width: `${100 - i * 12}%` }} />
+                <div className="tuning-str-bar" style={{ width: `${100 - i * 12}%` }} aria-hidden="true" />
               </div>
             ))}
           </div>

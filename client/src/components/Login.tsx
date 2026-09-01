@@ -25,18 +25,21 @@ export function Login({ onSuccess }: { onSuccess: () => void }) {
     <div className="login-screen">
       <form className="login-card" onSubmit={submit}>
         <div className="brand login-brand">
-          <span className="brand-mark">◆</span>
+          <span className="brand-mark" aria-hidden="true">◆</span>
           <span className="brand-name">Agent OS</span>
         </div>
         <p className="muted small">This dashboard is password-protected.</p>
+        <label htmlFor="login-password" className="sr-only">Password</label>
         <input
+          id="login-password"
           type="password"
           autoFocus
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {error && <p className="login-error">{error}</p>}
+        {error && <p className="login-error" role="alert">{error}</p>}
         <button className="primary-btn full" type="submit" disabled={busy}>
           {busy ? 'Checking…' : 'Unlock'}
         </button>
