@@ -54,6 +54,8 @@ export interface Finding {
   wcag: string[];
   impact: string;
   remediation: string;
+  /** How a developer confirms the defect themselves. */
+  verify: string;
   instance: Instance;
 }
 
@@ -67,6 +69,7 @@ export interface Issue {
   wcag: string[];
   impact: string;
   remediation: string;
+  verify: string;
   severity: Severity;
   effort: Effort;
   /** Impact weight divided by effort weight. Higher sorts first. */

@@ -1,0 +1,10 @@
+{
+  "name": "ars-preview",
+  "private": true,
+  "type": "module",
+  "description": "Local-only renderer for the ars-* Liquid sections. Not part of the theme; never uploaded to Shopify.",
+  "dependencies": {
+    "liquidjs": "^10.21.1",
+    "playwright": "^1.62.1"
+  }
+}

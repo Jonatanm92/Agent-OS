@@ -100,6 +100,7 @@ export function groupFindings(findings: Finding[]): Omit<Issue, 'severity' | 'ef
     wcag: bucket.finding.wcag,
     impact: bucket.finding.impact,
     remediation: bucket.finding.remediation,
+    verify: bucket.finding.verify,
     component: componentLabel(bucket.component),
     affectedUrls: [...bucket.urls].sort(),
     affectedRoles: [...bucket.roles],

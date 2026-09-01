@@ -15,6 +15,7 @@ function finding(overrides: Partial<Finding> & { ruleId: string; url: string; se
     wcag: overrides.wcag ?? ['1.1.1 Non-text Content (A)'],
     impact: overrides.impact ?? 'impact',
     remediation: overrides.remediation ?? 'fix it',
+    verify: 'reproduce it',
     instance: {
       url: overrides.url,
       role: overrides.role ?? 'other',

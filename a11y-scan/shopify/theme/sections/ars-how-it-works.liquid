@@ -1,0 +1,77 @@
+{% comment %}
+  ars-how-it-works.liquid — the order lifecycle, stated to the customer.
+
+  This mirrors the operator's real workflow (docs/02-admin-steps.md). It exists
+  because the single most common objection to a fixed-price scan is "what
+  actually happens after I pay", and because saying "a person checks it before
+  you see it" is the argument for the price.
+
+  No turnaround time is stated. The delivery estimate is one setting the owner
+  fills in once they have decided it, and until then the copy says the estimate
+  is shown before ordering.
+{% endcomment %}
+
+{{ 'ars.css' | asset_url | stylesheet_tag }}
+
+<section class="ars ars__section" aria-labelledby="ars-how-heading-{{ section.id }}">
+  <div class="ars__wrap">
+    <p class="ars__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="ars__h2" id="ars-how-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+
+    <ol class="ars__steps">
+      {%- for block in section.blocks -%}
+        <li class="ars__step" {{ block.shopify_attributes }}>
+          <span class="ars__step-num" aria-hidden="true">{{ forloop.index }}</span>
+          <div>
+            <h3 class="ars__h3">{{ block.settings.title | escape }}</h3>
+            {%- if block.settings.text != blank -%}
+              <p class="ars__muted">{{ block.settings.text | escape }}</p>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+
+    <p class="ars__muted" style="margin-top:16px;">{{ section.settings.delivery_note | escape }}</p>
+
+    {%- if section.settings.cta_label != blank -%}
+      <a class="ars__btn ars__btn--primary" style="margin-top:20px;"
+         href="{{ section.settings.cta_url | default: '#ars-order' | escape }}">
+        {{ section.settings.cta_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "ARS How It Works",
+  "tag": "div",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Så går det till" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Vad som händer när ni har beställt." },
+    { "type": "textarea", "id": "delivery_note", "label": "Delivery note",
+      "default": "Aktuell leveranstid visas innan beställning. Vi lovar ingen tid vi inte kan hålla." },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Beställ en granskning" },
+    { "type": "url", "id": "cta_url", "label": "Button link", "info": "Leave blank to scroll to the order form." }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "textarea", "id": "text", "label": "Text" }
+      ] }
+  ],
+  "presets": [
+    { "name": "ARS How It Works",
+      "blocks": [
+        { "type": "step", "settings": { "title": "Ni beställer och betalar", "text": "Ni anger webbplats, kontaktuppgifter och bekräftar att ni är behöriga att beställa granskningen." } },
+        { "type": "step", "settings": { "title": "Vi kontrollerar uppgifterna", "text": "Vi verifierar att adressen är publikt åtkomlig och ligger inom det ni har beställt. Stämmer något inte hör vi av oss innan vi börjar." } },
+        { "type": "step", "settings": { "title": "Vi kör granskningen", "text": "Ett begränsat, icke-destruktivt tekniskt test av publika sidor i köpflödet. Inga formulär skickas, inga köp skapas, ingen inloggning används." } },
+        { "type": "step", "settings": { "title": "En människa går igenom resultatet", "text": "Falska träffar tas bort, allvarlighetsgrad bedöms i ert sammanhang, och de kontroller som kräver en människa utförs så långt priset räcker." } },
+        { "type": "step", "settings": { "title": "Ni får rapporten", "text": "En prioriterad åtgärdslista med underlag, plus en utvecklarlista att lägga direkt i ert ärendesystem." } }
+      ] }
+  ]
+}
+{% endschema %}

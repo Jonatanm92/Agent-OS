@@ -10,7 +10,7 @@ import { createRequire } from 'node:module';
 import type { Page } from 'playwright';
 import type { Engine, EngineContext } from './engines.js';
 import type { Finding } from '../types.js';
-import { DEFAULT_META, RULE_CATALOG } from '../analyze/rule-catalog.js';
+import { DEFAULT_META, GENERIC_VERIFY, RULE_CATALOG } from '../analyze/rule-catalog.js';
 import { truncate } from '../security/escape.js';
 
 const require = createRequire(import.meta.url);
@@ -109,6 +109,7 @@ export const axeEngine: Engine = {
           wcag,
           impact: meta?.impact ?? DEFAULT_META.impact,
           remediation: meta?.remediation ?? asString(entry?.helpUrl, DEFAULT_META.remediation),
+          verify: meta?.verify ?? GENERIC_VERIFY,
           instance: {
             url: context.url,
             role: context.role,

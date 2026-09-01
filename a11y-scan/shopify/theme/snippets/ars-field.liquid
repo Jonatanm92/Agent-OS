@@ -1,0 +1,80 @@
+{% comment %}
+  ars-field.liquid — one intake field, rendered as a native Shopify line item
+  property so the answer travels with the order.
+
+  Inputs are named `properties[<Label>]`. Shopify attaches those to the cart
+  line and copies them to the order, where the operator reads them in Admin. No
+  app, no external form, no second system to keep in sync with the order.
+
+  Parameters
+    name          required. Property name as it appears on the order.
+    label         required. Visible label.
+    type          text (default) | email | url | tel | textarea | select
+    required      boolean.
+    hint          optional help text, linked with aria-describedby.
+    placeholder   optional.
+    autocomplete  optional.
+    options       select only: newline-separated option list.
+    error         optional. Message shown when validation fails.
+    maxlength     optional.
+{% endcomment %}
+
+{%- assign field_id = 'ars-' | append: name | handle -%}
+{%- assign err_id = field_id | append: '-error' -%}
+{%- if hint != blank -%}
+  {%- assign describers = field_id | append: '-hint ' | append: err_id -%}
+{%- else -%}
+  {%- assign describers = err_id -%}
+{%- endif -%}
+
+{%- if error != blank -%}
+  {%- assign error_text = error -%}
+{%- else -%}
+  {%- assign error_text = 'Fyll i ' | append: label | downcase | append: '.' -%}
+{%- endif -%}
+
+<div class="ars__field">
+  <label class="ars__label" for="{{ field_id }}">
+    {{ label }}
+    {%- unless required -%}<span class="ars__optional"> (valfritt)</span>{%- endunless -%}
+  </label>
+
+  {%- if hint != blank -%}
+    <span class="ars__hint" id="{{ field_id }}-hint">{{ hint }}</span>
+  {%- endif -%}
+
+  {%- case type -%}
+    {%- when 'textarea' -%}
+      {%- if maxlength != blank -%}{%- assign ml = maxlength -%}{%- else -%}{%- assign ml = 900 -%}{%- endif -%}
+      <textarea class="ars__textarea" id="{{ field_id }}" name="properties[{{ name }}]"
+        rows="4" maxlength="{{ ml }}" aria-describedby="{{ describers }}"
+        {% if placeholder != blank %}placeholder="{{ placeholder | escape }}"{% endif %}
+        {% if required %}required aria-required="true"{% endif %}></textarea>
+
+    {%- when 'select' -%}
+      <select class="ars__select" id="{{ field_id }}" name="properties[{{ name }}]"
+        aria-describedby="{{ describers }}" {% if required %}required aria-required="true"{% endif %}>
+        <option value="">Välj…</option>
+        {%- assign opts = options | newline_to_br | split: '<br />' -%}
+        {%- for opt in opts -%}
+          {%- assign clean = opt | strip -%}
+          {%- if clean != blank -%}<option value="{{ clean | escape }}">{{ clean }}</option>{%- endif -%}
+        {%- endfor -%}
+      </select>
+
+    {%- else -%}
+      {%- if type != blank -%}{%- assign input_type = type -%}{%- else -%}{%- assign input_type = 'text' -%}{%- endif -%}
+      {%- if maxlength != blank -%}{%- assign ml = maxlength -%}{%- else -%}{%- assign ml = 160 -%}{%- endif -%}
+      <input class="ars__input" id="{{ field_id }}" name="properties[{{ name }}]"
+        type="{{ input_type }}" maxlength="{{ ml }}" aria-describedby="{{ describers }}"
+        {% if autocomplete != blank %}autocomplete="{{ autocomplete | escape }}"{% endif %}
+        {% if placeholder != blank %}placeholder="{{ placeholder | escape }}"{% endif %}
+        {% if required %}required aria-required="true"{% endif %}>
+  {%- endcase -%}
+
+  {%- comment -%}
+    role="alert" announces the message when it becomes visible. It is hidden
+    until then, so it is not in the accessibility tree on load.
+  {%- endcomment -%}
+  <span class="ars__error" id="{{ err_id }}" role="alert" data-ars-error-for="{{ field_id }}">{{ error_text }}</span>
+</div>

@@ -8,7 +8,7 @@
 import type { Page } from 'playwright';
 import type { Finding } from '../../types.js';
 import type { EngineContext } from '../engines.js';
-import { DEFAULT_META, RULE_CATALOG } from '../../analyze/rule-catalog.js';
+import { DEFAULT_META, GENERIC_VERIFY, RULE_CATALOG } from '../../analyze/rule-catalog.js';
 import { truncate } from '../../security/escape.js';
 
 /** What the in-page script returns. Deliberately primitive so it survives serialisation. */
@@ -244,6 +244,7 @@ export function hitsToFindings(hits: RawHit[], context: EngineContext): Finding[
       wcag: meta?.wcag ?? DEFAULT_META.wcag,
       impact: meta?.impact ?? DEFAULT_META.impact,
       remediation: meta?.remediation ?? DEFAULT_META.remediation,
+      verify: meta?.verify ?? GENERIC_VERIFY,
       instance: {
         url: context.url,
         role: context.role,

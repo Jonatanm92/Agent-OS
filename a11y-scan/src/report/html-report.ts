@@ -60,7 +60,11 @@ function issueSection(issue: Issue, index: number): string {
             ${link.safe ? `<a href="${link.href}">${link.text}</a>` : `<code>${link.text}</code>`}
           </div>
           <div class="evidence__selector"><strong>Selector</strong> <code>${escapeHtml(example.selector)}</code></div>
-          ${example.detail ? `<p class="evidence__detail">${escapeHtml(example.detail)}</p>` : ''}
+          ${
+            example.detail
+              ? `<p class="evidence__detail"><span class="evidence__tool">Tool output</span> ${escapeHtml(example.detail)}</p>`
+              : ''
+          }
           <pre class="snippet"><code>${escapeHtml(example.snippet)}</code></pre>
           ${
             example.screenshot && example.screenshot.startsWith('data:image/png;base64,')
@@ -100,6 +104,14 @@ function issueSection(issue: Issue, index: number): string {
       <div class="issue__block">
         <h4>How to fix it</h4>
         <p>${escapeHtml(issue.remediation)}</p>
+      </div>
+
+      <div class="issue__block">
+        <h4>How to reproduce it</h4>
+        <p>${escapeHtml(issue.verify)}</p>
+        <p class="muted">Selector: <code>${escapeHtml(issue.examples[0]?.selector ?? issue.component)}</code>${
+          issue.examples[0] ? ` on ${safeLink(issue.examples[0].url).text}` : ''
+        }</p>
       </div>
 
       <div class="issue__block">
@@ -259,7 +271,10 @@ export function renderHtmlReport(result: ScanResult): string {
   summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
   .evidence { margin: 12px 0 0; padding: 12px; background: var(--panel); border-radius: 8px; font-size: 0.85rem; }
   .evidence__meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; word-break: break-all; }
-  .evidence__detail { margin: 6px 0; }
+  .evidence__detail { margin: 6px 0; color: var(--muted); font-size: 0.82rem; }
+  .evidence__tool { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em;
+                    text-transform: uppercase; font-weight: 700; padding: 1px 6px; margin-right: 6px;
+                    border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
   .tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--ink);
          color: #fff; padding: 2px 7px; border-radius: 4px; }
   .snippet { margin: 8px 0 0; padding: 10px; background: #fff; border: 1px solid var(--line);

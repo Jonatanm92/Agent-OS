@@ -1,0 +1,200 @@
+{
+  "sections": {
+    "hero": {
+      "type": "ars-hero",
+      "settings": {
+        "eyebrow": "Accessibility Risk Scan",
+        "heading": "Find the accessibility risks in your webshop before they become expensive.",
+        "subheading": "A focused technical accessibility scan for Swedish e-commerce. Get a prioritized list of concrete problems and fixes without starting with a large agency audit.",
+        "price_ex_vat": "2 490 kr exkl. moms",
+        "show_inc_vat": true,
+        "price_inc_vat": "3 112,50 kr inkl. moms där svensk moms om 25 % tillkommer",
+        "cta_label": "Beställ en granskning",
+        "cta_url": null,
+        "notice_title": "Technical accessibility risk scan.",
+        "notice_text": "Not legal advice, certification or guarantee of compliance. Automated testing finds part of the picture; the report says which findings a person still has to verify."
+      }
+    },
+    "what_you_get": {
+      "type": "ars-what-you-get",
+      "settings": {
+        "eyebrow": "Vad ni får",
+        "heading": "En prioriterad åtgärdslista, inte en rapport ni måste tolka.",
+        "included_title": "Ingår",
+        "included": "Granskning av köpflödet: startsida, kategori, produkt, varukorg och ingången till kassan\nProblemen grupperade per komponent, inte per sida — ett fel på 40 sidor är en åtgärd\nPrioritering efter var i köpflödet felet sitter, inte efter verktygets standardvärden\nUppskattad arbetsinsats per åtgärd\nFörslag på hur varje problem åtgärdas\nSteg för att återskapa problemet, så en utvecklare kan verifiera det\nEn åtgärdslista att klistra in i Jira, Linear eller GitHub\nEn checklista för de kontroller som kräver en människa",
+        "excluded_title": "Ingår inte",
+        "excluded": "Juridisk rådgivning\nCertifiering eller intyg om efterlevnad\nGaranti för att ni uppfyller LPTT, WCAG eller annan lagstiftning\nEn fullständig formell WCAG-revision\nGranskning bakom inloggning\nGranskning av själva kassan — vi lägger aldrig något i varukorgen\nTillgänglighetsöverlägg (accessibility overlay)\nÅtgärdande av felen — vi beskriver dem, ni eller er utvecklare åtgärdar",
+        "footnote": "Automatiserad testning hittar en del av tillgänglighetsproblemen, inte alla. Rapporten märker varje fynd som antingen automatiskt verifierat eller i behov av manuell kontroll, och påstår aldrig att en manuell kontroll är godkänd."
+      }
+    },
+    "how_it_works": {
+      "type": "ars-how-it-works",
+      "settings": {
+        "eyebrow": "Så går det till",
+        "heading": "Vad som händer när ni har beställt.",
+        "delivery_note": "Aktuell leveranstid visas innan beställning. Vi lovar ingen tid vi inte kan hålla.",
+        "cta_label": "Beställ en granskning",
+        "cta_url": null
+      },
+      "blocks": {
+        "b1": {
+          "type": "step",
+          "settings": {
+            "title": "Ni beställer och betalar",
+            "text": "Ni anger webbplats, kontaktuppgifter och bekräftar att ni är behöriga att beställa granskningen."
+          }
+        },
+        "b2": {
+          "type": "step",
+          "settings": {
+            "title": "Vi kontrollerar uppgifterna",
+            "text": "Vi verifierar att adressen är publikt åtkomlig och ligger inom det ni har beställt. Stämmer något inte hör vi av oss innan vi börjar."
+          }
+        },
+        "b3": {
+          "type": "step",
+          "settings": {
+            "title": "Vi kör granskningen",
+            "text": "Ett begränsat, icke-destruktivt tekniskt test av publika sidor i köpflödet. Inga formulär skickas, inga köp skapas, ingen inloggning används."
+          }
+        },
+        "b4": {
+          "type": "step",
+          "settings": {
+            "title": "En människa går igenom resultatet",
+            "text": "Falska träffar tas bort, allvarlighetsgrad bedöms i ert sammanhang, och de kontroller som kräver en människa utförs så långt priset räcker."
+          }
+        },
+        "b5": {
+          "type": "step",
+          "settings": {
+            "title": "Ni får rapporten",
+            "text": "En prioriterad åtgärdslista med underlag, plus en utvecklarlista att lägga direkt i ert ärendesystem."
+          }
+        }
+      },
+      "block_order": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5"
+      ]
+    },
+    "intake": {
+      "type": "ars-intake",
+      "settings": {
+        "eyebrow": "Beställ",
+        "heading": "Beställ er granskning",
+        "intro": "Vi behöver veta vilken webbplats som ska granskas och vem som beställer. Det tar ungefär två minuter.",
+        "legend_company": "Beställare",
+        "note_company": "Rapporten skickas till den här adressen.",
+        "legend_target": "Webbplats att granska",
+        "note_target": "Vi granskar publikt åtkomliga sidor i köpflödet: startsida, kategori, produkt, varukorg och ingången till kassan.",
+        "legend_ack": "Bekräftelser",
+        "note_ack": "Båda måste bekräftas innan beställning.",
+        "ack1_title": "Behörighet att genomföra granskningen",
+        "ack1_text": "Jag bekräftar att jag är behörig att beställa denna granskning för den angivna organisationen och godkänner att vi genomför en begränsad, icke-destruktiv teknisk tillgänglighetsgranskning av publikt åtkomliga delar av den angivna webbplatsen. Granskningen omfattar inte intrångsförsök, kringgående av autentisering, belastningstest, skapande av riktiga köp eller avsiktlig åtkomst till icke-publik information.",
+        "ack1_confirm": "Jag bekräftar detta.",
+        "ack1_property": "Behörighet att genomföra granskningen",
+        "ack1_value": "Bekräftad — behörig beställare, icke-destruktiv granskning av publika sidor",
+        "ack2_title": "Tjänstens omfattning",
+        "ack2_text": "Jag förstår att Accessibility Risk Scan är en teknisk förhandsgranskning som identifierar potentiella tillgänglighetsproblem och prioriterade åtgärder. Tjänsten är inte juridisk rådgivning, certifiering eller en garanti för fullständig efterlevnad av LPTT, WCAG eller annan lagstiftning.",
+        "ack2_confirm": "Jag förstår detta.",
+        "ack2_property": "Tjänstens omfattning",
+        "ack2_value": "Bekräftad — teknisk förhandsgranskning, ej juridisk rådgivning eller certifiering",
+        "ack_error": "Bekräftelsen måste kryssas i innan du kan beställa.",
+        "error_summary": "Några obligatoriska uppgifter saknas. Fälten som behöver fyllas i är markerade nedan.",
+        "price_ex_vat": "2 490 kr exkl. moms",
+        "show_inc_vat": true,
+        "price_inc_vat": "3 112,50 kr inkl. moms där svensk moms om 25 % tillkommer",
+        "submit_label": "Lägg till i varukorgen",
+        "reassurance": "Du kan granska alla uppgifter i varukorgen innan du betalar. Aktuell leveranstid visas innan beställning.",
+        "unavailable_heading": "Vi tar inte emot nya granskningar just nu",
+        "unavailable_text": "Vi är fullbokade den här veckan. Hör av er så säger vi när nästa plats öppnar."
+      }
+    },
+    "faq": {
+      "type": "ars-faq",
+      "settings": {
+        "eyebrow": "Frågor",
+        "heading": "Innan ni beställer"
+      },
+      "blocks": {
+        "b1": {
+          "type": "qa",
+          "settings": {
+            "question": "Är det här en juridisk bedömning?",
+            "answer": "<p>Nej. Det är en teknisk förhandsgranskning som pekar ut konkreta problem och prioriterade åtgärder. Den är inte juridisk rådgivning, inte en certifiering och ingen garanti för att ni uppfyller LPTT, WCAG eller annan lagstiftning. Om ni behöver ett formellt utlåtande är det ett annat uppdrag.</p>"
+          }
+        },
+        "b2": {
+          "type": "qa",
+          "settings": {
+            "question": "Hittar ni alla tillgänglighetsproblem?",
+            "answer": "<p>Nej, och vi påstår inte det. Automatiserad testning fångar en del av kriterierna i WCAG — resten kräver en människa med tangentbord och skärmläsare. Rapporten märker varje fynd som antingen automatiskt verifierat eller i behov av manuell kontroll, och innehåller en checklista för de senare. En sida utan automatiska fel kan fortfarande vara omöjlig att använda med tangentbord.</p>"
+          }
+        },
+        "b3": {
+          "type": "qa",
+          "settings": {
+            "question": "Gör ni något som kan påverka vår butik?",
+            "answer": "<p>Nej. Vi hämtar publika sidor med vanliga GET-anrop. Vi skickar inga formulär, klickar inga knappar, lägger inget i varukorgen, skapar inga beställningar och loggar aldrig in. Vi följer robots.txt och begränsar antalet sidor och anrop.</p>"
+          }
+        },
+        "b4": {
+          "type": "qa",
+          "settings": {
+            "question": "Granskar ni kassan?",
+            "answer": "<p>Bara ingången till kassan, som en tom sida. Vi lägger aldrig något i varukorgen, så själva betalflödet kan vi inte nå. Det är den del av köpresan som har minst automatiserad täckning, och rapporten säger det rakt ut.</p>"
+          }
+        },
+        "b5": {
+          "type": "qa",
+          "settings": {
+            "question": "Hur lång tid tar det?",
+            "answer": "<p>Varje rapport granskas av en människa innan den skickas, så tiden beror på kön. Aktuell leveranstid visas innan ni beställer och bekräftas i orderbekräftelsen.</p>"
+          }
+        },
+        "b6": {
+          "type": "qa",
+          "settings": {
+            "question": "Vad behöver ni av oss?",
+            "answer": "<p>Adressen till webbutiken och en kontaktperson. Inga inloggningsuppgifter, ingen åtkomst till er kod och inget möte. Har ni redan fått synpunkter på tillgängligheten får ni gärna beskriva dem i formuläret.</p>"
+          }
+        },
+        "b7": {
+          "type": "qa",
+          "settings": {
+            "question": "Vem kan beställa?",
+            "answer": "<p>Någon som är behörig att beställa granskningen för organisationen som äger webbplatsen. Det bekräftar ni i formuläret, och bekräftelsen sparas på ordern. Vi granskar inte en webbplats åt någon som inte äger den.</p>"
+          }
+        },
+        "b8": {
+          "type": "qa",
+          "settings": {
+            "question": "Åtgärdar ni felen?",
+            "answer": "<p>Inte i den här tjänsten. Ni får en beskrivning av varje problem, hur det återskapas, förslag på åtgärd och en uppskattad arbetsinsats — utformat för att er utvecklare ska kunna ta det direkt.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6",
+        "b7",
+        "b8"
+      ]
+    }
+  },
+  "order": [
+    "hero",
+    "what_you_get",
+    "how_it_works",
+    "intake",
+    "faq"
+  ]
+}

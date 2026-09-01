@@ -1,0 +1,217 @@
+/* =========================================================================
+   Accessibility Risk Scan — service page styles.
+
+   Scoped under `.ars` so nothing leaks into, or is broken by, the host theme.
+   No web fonts: the page must be fast on a phone and this is a B2B service
+   page, not a brand showcase.
+
+   This page is the shop window for an accessibility product, so it has to pass
+   the checks we sell. Every rule here is deliberate: 44px targets, AA contrast,
+   visible focus, 16px inputs (no iOS zoom-on-focus), and a layout that reflows
+   at 320px.
+   ========================================================================= */
+
+.ars {
+  --ars-ink: #16181d;
+  --ars-ink-soft: #2a2e37;
+  --ars-paper: #ffffff;
+  --ars-panel: #f4f6f8;
+  --ars-line: #d9dee4;
+  --ars-accent: #0b5d8f;        /* 6.2:1 on white */
+  --ars-accent-ink: #073f61;
+  --ars-ok: #1c6b3f;
+  --ars-warn: #8a5a00;
+  --ars-error: #b3261e;
+  --ars-muted: #545a63;         /* 7.0:1 on white */
+
+  --ars-gutter: 20px;
+  --ars-max: 760px;
+  --ars-radius: 10px;
+
+  --ars-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  font-family: var(--ars-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ars-ink);
+  background: var(--ars-paper);
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+.ars *, .ars *::before, .ars *::after { box-sizing: border-box; }
+.ars img, .ars svg { max-width: 100%; height: auto; display: block; }
+
+/* These three modifiers sit on the SAME element as `.ars` (the section root),
+   so they need a compound selector. `.ars .ars__section` is a descendant
+   selector and silently matches nothing — which cost this page its section
+   padding and its panel backgrounds until the render was actually looked at.
+   Both forms are listed so the classes also work on a nested element. */
+.ars.ars__section, .ars .ars__section { padding: 40px 0; }
+.ars.ars--panel, .ars .ars--panel { background: var(--ars-panel); }
+.ars.ars--ink, .ars .ars--ink { background: var(--ars-ink); color: #f5f7fa; }
+
+.ars .ars__wrap {
+  width: 100%;
+  max-width: var(--ars-max);
+  margin-inline: auto;
+  padding-inline: var(--ars-gutter);
+}
+
+.ars .ars__eyebrow {
+  font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+  font-weight: 700; margin: 0 0 10px; color: var(--ars-accent-ink);
+}
+.ars--ink .ars__eyebrow, .ars.ars--ink .ars__eyebrow { color: #7fc4ee; }
+
+.ars .ars__h1 { font-size: clamp(1.75rem, 1.3rem + 2.2vw, 2.5rem); line-height: 1.15;
+                letter-spacing: -0.02em; margin: 0 0 14px; text-wrap: balance; }
+.ars .ars__h2 { font-size: clamp(1.375rem, 1.2rem + 1vw, 1.75rem); line-height: 1.2;
+                letter-spacing: -0.01em; margin: 0 0 12px; }
+.ars .ars__h3 { font-size: 1.125rem; margin: 0 0 8px; }
+.ars .ars__lede { font-size: 1.0625rem; margin: 0 0 20px; color: var(--ars-ink-soft); }
+.ars--ink .ars__lede, .ars.ars--ink .ars__lede { color: #ccd4de; }
+.ars .ars__muted { color: var(--ars-muted); font-size: 0.9375rem; }
+.ars--ink .ars__muted, .ars.ars--ink .ars__muted { color: #b3bdc9; }
+.ars p { margin: 0 0 12px; }
+.ars p:last-child { margin-bottom: 0; }
+
+/* ---------- price ---------- */
+.ars .ars__price { margin: 0 0 20px; }
+.ars .ars__price-main { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.01em; }
+.ars .ars__price-vat { display: block; font-size: 0.9375rem; color: var(--ars-muted); margin-top: 4px; }
+.ars--ink .ars__price-vat, .ars.ars--ink .ars__price-vat { color: #b3bdc9; }
+
+/* ---------- buttons: 48px+ tap target ---------- */
+.ars .ars__btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 52px; padding: 14px 22px;
+  border: 2px solid transparent; border-radius: 8px;
+  font: inherit; font-size: 1.0625rem; font-weight: 600;
+  text-align: center; text-decoration: none; cursor: pointer;
+}
+.ars .ars__btn--primary { background: var(--ars-accent); color: #ffffff; }
+.ars .ars__btn--primary:hover { background: var(--ars-accent-ink); }
+.ars .ars__btn--ghost { background: transparent; border-color: currentColor; color: inherit; }
+
+.ars :focus-visible { outline: 3px solid var(--ars-accent); outline-offset: 2px; border-radius: 4px; }
+.ars--ink :focus-visible, .ars.ars--ink :focus-visible { outline-color: #7fc4ee; }
+
+.ars .ars__vh {
+  position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+/* ---------- lists / cards ---------- */
+.ars .ars__grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+.ars .ars__card {
+  border: 1px solid var(--ars-line); border-radius: var(--ars-radius);
+  padding: 18px; background: var(--ars-paper);
+}
+.ars .ars__list { margin: 0; padding: 0; list-style: none; }
+.ars .ars__list li {
+  position: relative; padding-left: 26px; margin-bottom: 10px; font-size: 0.9375rem; line-height: 1.5;
+}
+.ars .ars__list li:last-child { margin-bottom: 0; }
+.ars .ars__list li::before {
+  content: ""; position: absolute; left: 3px; top: 0.5em;
+  width: 9px; height: 9px; border-radius: 2px; background: var(--ars-accent);
+}
+.ars .ars__list--no li::before { background: var(--ars-muted); }
+
+/* ---------- notice ---------- */
+.ars .ars__notice {
+  border: 2px solid var(--ars-ink); border-radius: var(--ars-radius);
+  padding: 14px 16px; background: var(--ars-panel); font-size: 0.9375rem;
+}
+.ars .ars__notice strong { display: block; margin-bottom: 4px; }
+
+/* ---------- steps ---------- */
+.ars .ars__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; counter-reset: ars-step; }
+.ars .ars__step {
+  display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px;
+  border: 1px solid var(--ars-line); border-radius: var(--ars-radius); background: var(--ars-paper);
+}
+.ars .ars__step-num {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ars-ink); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.8125rem;
+}
+
+@media (min-width: 750px) {
+  .ars { --ars-gutter: 32px; --ars-max: 900px; }
+  .ars.ars__section, .ars .ars__section { padding: 60px 0; }
+  .ars .ars__grid--2 { grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+
+/* =========================================================================
+   Intake form
+   ========================================================================= */
+
+.ars .ars__fieldset {
+  border: 1px solid var(--ars-line); border-radius: var(--ars-radius);
+  padding: 16px; margin: 0 0 16px; background: var(--ars-paper);
+}
+/* Single-line only: a block child inside <legend> makes the browser draw the
+   fieldset border through the text. */
+.ars .ars__legend { font-size: 1.0625rem; font-weight: 700; line-height: 1.2; padding: 0 6px; margin-left: -6px; }
+.ars .ars__legend-note { font-size: 0.8125rem; line-height: 1.45; margin: 6px 0 0; color: var(--ars-muted); }
+
+.ars .ars__field { margin-top: 16px; }
+.ars .ars__legend-note + .ars__field { margin-top: 12px; }
+
+.ars .ars__label { display: block; font-size: 0.9375rem; font-weight: 600; margin-bottom: 5px; }
+.ars .ars__optional { font-weight: 400; font-size: 0.8125rem; color: var(--ars-muted); }
+.ars .ars__hint { display: block; font-size: 0.8125rem; line-height: 1.45; margin: 0 0 7px; color: var(--ars-muted); }
+
+.ars .ars__input, .ars .ars__textarea, .ars .ars__select {
+  display: block; width: 100%;
+  /* 16px exactly — anything smaller makes iOS Safari zoom on focus. */
+  font-family: inherit; font-size: 16px; line-height: 1.45;
+  color: var(--ars-ink); background: #fff;
+  border: 1.5px solid #8b939d; border-radius: 8px;
+  padding: 12px 13px; min-height: 48px;
+  -webkit-appearance: none; appearance: none;
+}
+.ars .ars__textarea { min-height: 96px; resize: vertical; }
+.ars .ars__select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2316181d' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center;
+  background-size: 12px 8px; padding-right: 38px;
+}
+.ars .ars__input::placeholder, .ars .ars__textarea::placeholder { color: #6b727b; }
+.ars .ars__input:focus, .ars .ars__textarea:focus, .ars .ars__select:focus { border-color: var(--ars-accent); }
+
+/* Errors are signalled by border, text and aria-invalid — never colour alone. */
+.ars [aria-invalid="true"] { border-color: var(--ars-error); border-width: 2px; background: #fff7f6; }
+.ars .ars__error {
+  display: none; font-size: 0.875rem; font-weight: 600; margin-top: 5px; color: var(--ars-error);
+}
+.ars .ars__error.is-shown { display: block; }
+
+/* ---------- acknowledgements ---------- */
+.ars .ars__ack {
+  border: 2px solid var(--ars-line); border-radius: var(--ars-radius);
+  padding: 14px; margin-bottom: 12px; background: var(--ars-panel);
+}
+.ars .ars__ack:has(input:checked) { border-color: var(--ars-ok); background: #f2f9f4; }
+.ars .ars__ack[data-invalid="true"] { border-color: var(--ars-error); background: #fff7f6; }
+.ars .ars__ack-title { font-size: 0.9375rem; font-weight: 700; margin: 0 0 6px; }
+.ars .ars__ack-body { font-size: 0.8125rem; line-height: 1.55; color: var(--ars-ink-soft); margin: 0 0 10px; }
+.ars .ars__ack-check {
+  display: flex; gap: 12px; align-items: flex-start;
+  min-height: 44px; cursor: pointer; font-size: 0.9375rem; font-weight: 600;
+}
+.ars .ars__ack-check input {
+  margin: 1px 0 0; width: 22px; height: 22px; flex: 0 0 auto; accent-color: var(--ars-accent);
+}
+
+/* ---------- submit ---------- */
+.ars .ars__submit { margin-top: 20px; }
+.ars .ars__summary-error {
+  display: none; margin: 0 0 12px; padding: 12px 14px;
+  border: 2px solid var(--ars-error); border-radius: 8px;
+  background: #fff7f6; color: #7d1a15; font-size: 0.9375rem; font-weight: 600;
+}
+.ars .ars__summary-error.is-shown { display: block; }

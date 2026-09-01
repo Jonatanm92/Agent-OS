@@ -42,6 +42,10 @@ export function buildHandoff(result: ScanResult): HandoffTask[] {
       '',
       `**Who it affects**: ${issue.impact}`,
       '',
+      `**Reproduce**: ${issue.verify}`,
+      `Selector: \`${issue.examples[0]?.selector ?? issue.component}\`` +
+        (issue.examples[0] ? ` on ${issue.examples[0].url}` : ''),
+      '',
       `**Fix**: ${issue.remediation}`,
       '',
       `**Occurrences**: ${issue.instanceCount} on ${issue.affectedUrls.length} page(s)`,

@@ -24,11 +24,19 @@ export interface RuleMeta {
    * `high` however few pages they appear on.
    */
   blocking?: boolean;
+  /**
+   * How a developer confirms the defect for themselves. The report pairs this
+   * with the URL and selector, so "reproduce it" becomes a concrete
+   * instruction rather than "see the finding above".
+   */
+  verify?: string;
 }
 
 export const RULE_CATALOG: Record<string, RuleMeta> = {
   // ---------- axe rules ----------
   'image-alt': {
+    verify:
+      'Inspect the element and check for an alt attribute, or listen to how the image is announced by a screen reader.',
     title: 'Images are missing text alternatives',
     wcag: ['1.1.1 Non-text Content (A)'],
     impact:
@@ -39,6 +47,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'link-name': {
+    verify:
+      'Tab to the link and listen with a screen reader. Or inspect it and look for text, an aria-label, or visually hidden text inside the anchor.',
     title: 'Links have no accessible name',
     wcag: ['2.4.4 Link Purpose (In Context) (A)', '4.1.2 Name, Role, Value (A)'],
     impact:
@@ -50,6 +60,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     blocking: true,
   },
   'button-name': {
+    verify:
+      'Tab to the control and listen with a screen reader. It should announce what it does, not just the word button.',
     title: 'Buttons have no accessible name',
     wcag: ['4.1.2 Name, Role, Value (A)'],
     impact:
@@ -61,6 +73,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     blocking: true,
   },
   label: {
+    verify:
+      'Click the visible label text. Focus should move into the field; if it does not, the label is not associated with the input.',
     title: 'Form fields have no label',
     wcag: ['1.3.1 Info and Relationships (A)', '3.3.2 Labels or Instructions (A)', '4.1.2 Name, Role, Value (A)'],
     impact:
@@ -80,6 +94,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'html-has-lang': {
+    verify:
+      'Inspect the html element and check for a lang attribute.',
     title: 'Page does not declare its language',
     wcag: ['3.1.1 Language of Page (A)'],
     impact:
@@ -98,6 +114,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'document-title': {
+    verify:
+      'Look at the browser tab, or inspect the head for a title element.',
     title: 'Page has no title',
     wcag: ['2.4.2 Page Titled (A)'],
     impact:
@@ -107,6 +125,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'color-contrast': {
+    verify:
+      'Use the DevTools colour picker on the text, or any contrast checker, and compare the ratio against 4.5:1.',
     title: 'Text does not have enough contrast against its background',
     wcag: ['1.4.3 Contrast (Minimum) (AA)'],
     impact:
@@ -117,6 +137,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'medium',
   },
   'duplicate-id-active': {
+    verify:
+      'In the console, count the elements carrying the id. More than one means it is duplicated.',
     title: 'Interactive elements share the same id',
     wcag: ['4.1.1 Parsing (A)'],
     impact:
@@ -126,6 +148,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'medium',
   },
   'duplicate-id-aria': {
+    verify:
+      'In the console, count the elements carrying the referenced id. More than one means the reference is ambiguous.',
     title: 'ARIA references point to a duplicated id',
     wcag: ['4.1.1 Parsing (A)'],
     impact: 'aria-labelledby and aria-describedby resolve to the wrong element, so the wrong text is announced.',
@@ -166,6 +190,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'aria-hidden-focus': {
+    verify:
+      'Tab through the page and watch for focus appearing to vanish onto something the screen reader does not announce.',
     title: 'Focusable element is hidden from assistive technology',
     wcag: ['4.1.2 Name, Role, Value (A)'],
     impact:
@@ -177,6 +203,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     blocking: true,
   },
   'frame-title': {
+    verify:
+      'Inspect the iframe and check for a title attribute.',
     title: 'Iframe has no title',
     wcag: ['2.4.1 Bypass Blocks (A)', '4.1.2 Name, Role, Value (A)'],
     impact:
@@ -186,6 +214,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'autocomplete-valid': {
+    verify:
+      'Inspect the input and compare its autocomplete value against the tokens in the HTML specification.',
     title: 'Input has an invalid autocomplete value',
     wcag: ['1.3.5 Identify Input Purpose (AA)'],
     impact:
@@ -195,6 +225,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'heading-order': {
+    verify:
+      'List the headings in document order with a heading-outline extension and read the levels in sequence.',
     title: 'Heading levels are skipped',
     wcag: ['1.3.1 Info and Relationships (A)'],
     impact:
@@ -204,6 +236,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'landmark-one-main': {
+    verify:
+      'In the console, count the main landmarks on the page. There should be exactly one.',
     title: 'Page has no main landmark',
     wcag: ['1.3.1 Info and Relationships (A)', '2.4.1 Bypass Blocks (A)'],
     impact:
@@ -237,6 +271,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'meta-viewport': {
+    verify:
+      'Open the page on a phone and try to pinch-zoom, or inspect the content of the viewport meta tag.',
     title: 'Page prevents zooming',
     wcag: ['1.4.4 Resize Text (AA)'],
     impact:
@@ -249,6 +285,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
 
   // ---------- custom checks ----------
   'check:touch-target-size': {
+    verify:
+      'Open DevTools device mode at 360px wide, select the control, and read its box dimensions in the layout panel.',
     title: 'Tap targets are smaller than the minimum size',
     wcag: ['2.5.8 Target Size (Minimum) (AA, WCAG 2.2)'],
     impact:
@@ -259,6 +297,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'check:no-focus-indicator': {
+    verify:
+      'Click into the address bar, then press Tab repeatedly and watch whether the control changes appearance when focused.',
     title: 'Focused element shows no visible focus indicator',
     wcag: ['2.4.7 Focus Visible (AA)'],
     impact:
@@ -270,6 +310,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     blocking: true,
   },
   'check:reflow-overflow': {
+    verify:
+      'Set the browser window to 320px wide, or zoom to 400% at 1280px, and check whether the page scrolls sideways.',
     title: 'Page scrolls horizontally at 320px wide',
     wcag: ['1.4.10 Reflow (AA)'],
     impact:
@@ -280,6 +322,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'medium',
   },
   'check:generic-link-text': {
+    verify:
+      'Open the screen reader list of links and check whether the entries can be told apart from one another.',
     title: 'Link text does not describe its destination',
     wcag: ['2.4.4 Link Purpose (In Context) (A)'],
     impact:
@@ -290,6 +334,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'check:missing-autocomplete': {
+    verify:
+      'Inspect the field for an autocomplete attribute, then try the browser autofill on the form.',
     title: 'Checkout-relevant field has no autocomplete attribute',
     wcag: ['1.3.5 Identify Input Purpose (AA)'],
     impact:
@@ -300,6 +346,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'check:positive-tabindex': {
+    verify:
+      'Tab through the page from the top and note whether focus order matches the visual reading order.',
     title: 'Positive tabindex overrides the natural focus order',
     wcag: ['2.4.3 Focus Order (A)'],
     impact:
@@ -309,6 +357,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'medium',
   },
   'check:nonsemantic-clickable': {
+    verify:
+      'Try to reach the element with Tab, then activate it with Enter and with Space. If any of the three fails, it is not keyboard operable.',
     title: 'Clickable element is not reachable by keyboard',
     wcag: ['2.1.1 Keyboard (A)', '4.1.2 Name, Role, Value (A)'],
     impact:
@@ -320,6 +370,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     blocking: true,
   },
   'check:no-skip-link': {
+    verify:
+      'Load the page, press Tab once, and see whether the first stop offers to skip to the main content.',
     title: 'No skip link to the main content',
     wcag: ['2.4.1 Bypass Blocks (A)'],
     impact:
@@ -330,6 +382,8 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
   'check:no-h1': {
+    verify:
+      'In the console, count the h1 elements on the page. There should be exactly one.',
     title: 'Page has no level-one heading',
     wcag: ['1.3.1 Info and Relationships (A)', '2.4.6 Headings and Labels (AA)'],
     impact: 'Screen reader users have no reliable anchor for what the page is about.',
@@ -338,6 +392,9 @@ export const RULE_CATALOG: Record<string, RuleMeta> = {
     baseEffort: 'small',
   },
 };
+
+export const GENERIC_VERIFY =
+  'Open the affected page, inspect the element at the selector shown, and compare it against the WCAG criterion listed.';
 
 export const DEFAULT_META: Omit<RuleMeta, 'title'> = {
   wcag: [],

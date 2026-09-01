@@ -40,6 +40,7 @@ function hostileFinding(payload: string, index: number): Finding {
     wcag: [`1.1.1 ${payload}`],
     impact: `Impact ${payload}`,
     remediation: `Remediation ${payload}`,
+    verify: 'reproduce it',
     instance: {
       url: `https://shop.se/p${index}`,
       role: 'product',

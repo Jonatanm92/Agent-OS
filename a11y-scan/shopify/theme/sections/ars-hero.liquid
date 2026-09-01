@@ -1,0 +1,57 @@
+{% comment %}
+  ars-hero.liquid — headline, price and the scope statement.
+
+  The disclaimer is in the hero, not the footer. A buyer must be able to see
+  what this is NOT before they have scrolled anywhere.
+{% endcomment %}
+
+{{ 'ars.css' | asset_url | stylesheet_tag }}
+
+<section class="ars ars__section" aria-labelledby="ars-hero-heading-{{ section.id }}">
+  <div class="ars__wrap">
+    <p class="ars__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h1 class="ars__h1" id="ars-hero-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h1>
+    <p class="ars__lede">{{ section.settings.subheading | escape }}</p>
+
+    <p class="ars__price">
+      <span class="ars__price-main">{{ section.settings.price_ex_vat | escape }}</span>
+      {%- if section.settings.show_inc_vat -%}
+        <span class="ars__price-vat">{{ section.settings.price_inc_vat | escape }}</span>
+      {%- endif -%}
+    </p>
+
+    <a class="ars__btn ars__btn--primary" href="{{ section.settings.cta_url | default: '#ars-order' | escape }}">
+      {{ section.settings.cta_label | escape }}
+    </a>
+
+    <p class="ars__notice" style="margin-top:20px;">
+      <strong>{{ section.settings.notice_title | escape }}</strong>
+      {{ section.settings.notice_text | escape }}
+    </p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "ARS Hero",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Accessibility Risk Scan" },
+    { "type": "text", "id": "heading", "label": "Headline",
+      "default": "Find the accessibility risks in your webshop before they become expensive." },
+    { "type": "textarea", "id": "subheading", "label": "Supporting copy",
+      "default": "A focused technical accessibility scan for Swedish e-commerce. Get a prioritized list of concrete problems and fixes without starting with a large agency audit." },
+    { "type": "text", "id": "price_ex_vat", "label": "Price — excluding VAT", "default": "2 490 kr exkl. moms" },
+    { "type": "checkbox", "id": "show_inc_vat", "label": "Show the including-VAT line", "default": true,
+      "info": "Turn OFF until the store's VAT configuration and the seller's VAT-registration status are confirmed. See shopify/docs/01-tax-configuration.md." },
+    { "type": "text", "id": "price_inc_vat", "label": "Price — including VAT",
+      "default": "3 112,50 kr inkl. moms där svensk moms om 25 % tillkommer" },
+    { "type": "text", "id": "cta_label", "label": "Button label", "default": "Beställ en granskning" },
+    { "type": "url", "id": "cta_url", "label": "Button link", "info": "Leave blank to scroll to the order form." },
+    { "type": "text", "id": "notice_title", "label": "Notice title", "default": "Technical accessibility risk scan." },
+    { "type": "textarea", "id": "notice_text", "label": "Notice text",
+      "default": "Not legal advice, certification or guarantee of compliance. Automated testing finds part of the picture; the report says which findings a person still has to verify." }
+  ],
+  "presets": [{ "name": "ARS Hero" }]
+}
+{% endschema %}

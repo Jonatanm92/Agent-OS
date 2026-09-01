@@ -27,6 +27,7 @@ function hostileFinding(payload: string): Finding {
     wcag: [`1.1.1 ${payload}`],
     impact: `Impact ${payload}`,
     remediation: `Fix ${payload}`,
+    verify: 'reproduce it',
     instance: {
       url: 'https://shop.se/p',
       role: 'product',
@@ -153,6 +154,7 @@ describe('HTML report content', () => {
       wcag: ['4.1.2 Name, Role, Value (A)'],
       impact: 'Screen reader users cannot tell what the button does.',
       remediation: 'Add an accessible name.',
+      verify: 'reproduce it',
       instance: { url: 'https://shop.se/p', role: 'product', selector: '.add', snippet: '<button></button>' },
     },
   ]);
@@ -224,6 +226,7 @@ describe('empty and degraded inputs', () => {
           wcag: [],
           impact: 'i',
           remediation: 'r',
+          verify: 'reproduce it',
           instance: { url: 'https://shop.se/', role: 'home', selector: '(selector unavailable)', snippet: '' },
         },
       ])
@@ -278,6 +281,7 @@ describe('developer handoff', () => {
         wcag: ['3.3.2 Labels or Instructions (A)'],
         impact: 'i',
         remediation: 'r',
+        verify: 'reproduce it',
         instance: { url: 'https://shop.se/checkout', role: 'checkout-entry', selector: '#email', snippet: '<input>' },
       },
     ])

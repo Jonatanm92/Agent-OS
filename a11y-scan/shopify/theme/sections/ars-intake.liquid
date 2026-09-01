@@ -1,0 +1,384 @@
+{% comment %}
+  ars-intake.liquid — the buy box for the Accessibility Risk Scan.
+
+  This is the only section that must be technically exact: everything the
+  operator needs to deliver the service is captured here, and two
+  acknowledgements must be genuinely mandatory before a purchase is possible.
+
+  HOW IT WORKS (all native Shopify, no app):
+  - Liquid's product `form` tag posts to /cart/add. Inputs named
+    `properties[X]` become line item properties on the cart line and are copied
+    to the order, where the operator reads them in Admin.
+  - Validation is the browser's own constraint validation, so it still works
+    with JavaScript disabled. The JS only improves how errors are presented.
+  - `{{ form | payment_button }}` is deliberately NOT rendered. Accelerated
+    checkout (Shop Pay / Apple Pay / Google Pay) submits straight to checkout
+    and would let a buyer skip every field and both acknowledgements.
+
+  KNOWN PLATFORM CONSTRAINT:
+  If the host theme hijacks add-to-cart with AJAX, line item properties can be
+  lost silently. The theme's cart type must be set to "Page" — see
+  docs/02-admin-steps.md, and the add-to-cart test in the launch checklist
+  exists to catch it.
+{% endcomment %}
+
+{{ 'ars.css' | asset_url | stylesheet_tag }}
+
+{%- assign variant = product.selected_or_first_available_variant -%}
+
+<section id="ars-order" class="ars ars__section" aria-labelledby="ars-intake-heading">
+  <div class="ars__wrap">
+
+    <p class="ars__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="ars__h2" id="ars-intake-heading">{{ section.settings.heading | escape }}</h2>
+    <p class="ars__lede">{{ section.settings.intro | escape }}</p>
+
+    {%- if product.available -%}
+      {%- form 'product', product, id: 'ars-intake-form', class: 'ars__form' -%}
+
+        {%- comment -%} One scan per line: each scan is tied to one target URL. {%- endcomment -%}
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="return_to" value="/cart">
+
+        {%- comment -%}
+          Underscore-prefixed properties stay on the order but are hidden from
+          customer-facing cart and email displays. Diagnostics only.
+        {%- endcomment -%}
+        <input type="hidden" name="properties[_intake_version]" value="ars-1.0">
+
+        {%- if product.variants.size > 1 -%}
+          <div class="ars__field">
+            <label class="ars__label" for="ars-variant">Variant</label>
+            <select class="ars__select" id="ars-variant" name="id">
+              {%- for v in product.variants -%}
+                <option value="{{ v.id }}" {% if v == variant %}selected{% endif %} {% unless v.available %}disabled{% endunless %}>
+                  {{ v.title }} — {{ v.price | money }}
+                </option>
+              {%- endfor -%}
+            </select>
+          </div>
+        {%- else -%}
+          <input type="hidden" name="id" value="{{ variant.id }}">
+        {%- endif -%}
+
+        <p class="ars__summary-error" id="ars-form-error" role="alert" tabindex="-1" data-ars-form-error>
+          {{ section.settings.error_summary | escape }}
+        </p>
+
+        <!-- ---------- 1. Who is ordering ---------- -->
+        <fieldset class="ars__fieldset">
+          <legend class="ars__legend">{{ section.settings.legend_company | escape }}</legend>
+          <p class="ars__legend-note">{{ section.settings.note_company | escape }}</p>
+
+          {% render 'ars-field',
+              name: 'Company name', label: 'Företagsnamn', type: 'text', required: true,
+              autocomplete: 'organization',
+              error: 'Ange företagets namn.' %}
+
+          {% render 'ars-field',
+              name: 'Contact name', label: 'Kontaktperson', type: 'text', required: true,
+              autocomplete: 'name',
+              error: 'Ange en kontaktperson.' %}
+
+          {% render 'ars-field',
+              name: 'Business email', label: 'E-post i tjänsten', type: 'email', required: true,
+              autocomplete: 'email',
+              hint: 'Rapporten skickas hit. Använd en företagsadress.',
+              error: 'Ange en giltig e-postadress.' %}
+
+          {% render 'ars-field',
+              name: 'Organisation number', label: 'Organisationsnummer', type: 'text',
+              placeholder: 'NNNNNN-NNNN',
+              hint: 'Valfritt. Anges om ni behöver det på fakturan.' %}
+        </fieldset>
+
+        <!-- ---------- 2. What to scan ---------- -->
+        <fieldset class="ars__fieldset">
+          <legend class="ars__legend">{{ section.settings.legend_target | escape }}</legend>
+          <p class="ars__legend-note">{{ section.settings.note_target | escape }}</p>
+
+          {% render 'ars-field',
+              name: 'Website URL', label: 'Webbutikens adress', type: 'url', required: true,
+              placeholder: 'https://',
+              autocomplete: 'url',
+              hint: 'Måste börja med https:// — vi granskar endast publikt åtkomliga sidor, aldrig något bakom inloggning.',
+              error: 'Ange en fullständig adress som börjar med https://' %}
+
+          {% render 'ars-field',
+              name: 'Platform', label: 'E-handelsplattform', type: 'select',
+              options: 'Shopify
+WooCommerce
+Magento
+Wikinggruppen
+Jetshop / Norce
+Egenutvecklad
+Vet ej',
+              hint: 'Valfritt. Hjälper oss tolka resultatet, men vi granskar sidan som den är.' %}
+
+          {% render 'ars-field',
+              name: 'Known concerns', label: 'Kända tillgänglighetsproblem', type: 'textarea',
+              placeholder: 'Har någon redan påpekat något? Finns det sidor ni misstänker?',
+              hint: 'Valfritt.' %}
+        </fieldset>
+
+        <!-- ---------- 3. Acknowledgements — both mandatory ---------- -->
+        <fieldset class="ars__fieldset">
+          <legend class="ars__legend">{{ section.settings.legend_ack | escape }}</legend>
+          <p class="ars__legend-note">{{ section.settings.note_ack | escape }}</p>
+
+          {%- comment -%}
+            Both are `required` checkboxes, so the browser itself blocks
+            add-to-cart until they are ticked — with or without JavaScript. The
+            checked value is what lands on the order as the record of consent.
+
+            lang="sv" is set explicitly: the surrounding page copy may be in
+            English, and a screen reader must not read Swedish legal text with
+            an English voice (WCAG 3.1.2 Language of Parts). We sell
+            accessibility; the page has to demonstrate it.
+          {%- endcomment -%}
+
+          <div class="ars__ack" data-ars-ack>
+            <p class="ars__ack-title" lang="sv" id="ars-ack1-title">{{ section.settings.ack1_title | escape }}</p>
+            <p class="ars__ack-body" lang="sv" id="ars-ack1-body">{{ section.settings.ack1_text | escape }}</p>
+            <label class="ars__ack-check" for="ars-ack1">
+              <input type="checkbox" id="ars-ack1"
+                     name="properties[{{ section.settings.ack1_property | escape }}]"
+                     value="{{ section.settings.ack1_value | escape }}"
+                     required aria-required="true"
+                     aria-describedby="ars-ack1-body ars-ack1-error">
+              <span lang="sv">{{ section.settings.ack1_confirm | escape }}</span>
+            </label>
+            <span class="ars__error" id="ars-ack1-error" role="alert" data-ars-error-for="ars-ack1">
+              {{ section.settings.ack_error | escape }}
+            </span>
+          </div>
+
+          <div class="ars__ack" data-ars-ack>
+            <p class="ars__ack-title" lang="sv" id="ars-ack2-title">{{ section.settings.ack2_title | escape }}</p>
+            <p class="ars__ack-body" lang="sv" id="ars-ack2-body">{{ section.settings.ack2_text | escape }}</p>
+            <label class="ars__ack-check" for="ars-ack2">
+              <input type="checkbox" id="ars-ack2"
+                     name="properties[{{ section.settings.ack2_property | escape }}]"
+                     value="{{ section.settings.ack2_value | escape }}"
+                     required aria-required="true"
+                     aria-describedby="ars-ack2-body ars-ack2-error">
+              <span lang="sv">{{ section.settings.ack2_confirm | escape }}</span>
+            </label>
+            <span class="ars__error" id="ars-ack2-error" role="alert" data-ars-error-for="ars-ack2">
+              {{ section.settings.ack_error | escape }}
+            </span>
+          </div>
+        </fieldset>
+
+        <div class="ars__submit">
+          <div class="ars__price">
+            <span class="ars__price-main">{{ section.settings.price_ex_vat | escape }}</span>
+            {%- if section.settings.show_inc_vat -%}
+              <span class="ars__price-vat">{{ section.settings.price_inc_vat | escape }}</span>
+            {%- endif -%}
+          </div>
+          <button type="submit" name="add" class="ars__btn ars__btn--primary">
+            {{ section.settings.submit_label | escape }}
+          </button>
+          <p class="ars__muted" style="margin-top:12px;">{{ section.settings.reassurance | escape }}</p>
+        </div>
+
+      {%- endform -%}
+    {%- else -%}
+      <div class="ars__card">
+        <h3 class="ars__h3">{{ section.settings.unavailable_heading | escape }}</h3>
+        <p class="ars__muted">{{ section.settings.unavailable_text | escape }}</p>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<script src="{{ 'ars-intake.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "ARS Intake",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "The two acknowledgement checkboxes are required by design. Do not remove the `required` attribute or make either optional — they are the record that the buyer was authorised to order the scan and understood what it is not."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Beställ"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Beställ er granskning"
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "Intro",
+      "default": "Vi behöver veta vilken webbplats som ska granskas och vem som beställer. Det tar ungefär två minuter."
+    },
+    {
+      "type": "text",
+      "id": "legend_company",
+      "label": "Legend — company",
+      "default": "Beställare"
+    },
+    {
+      "type": "text",
+      "id": "note_company",
+      "label": "Note — company",
+      "default": "Rapporten skickas till den här adressen."
+    },
+    {
+      "type": "text",
+      "id": "legend_target",
+      "label": "Legend — target",
+      "default": "Webbplats att granska"
+    },
+    {
+      "type": "text",
+      "id": "note_target",
+      "label": "Note — target",
+      "default": "Vi granskar publikt åtkomliga sidor i köpflödet: startsida, kategori, produkt, varukorg och ingången till kassan."
+    },
+    {
+      "type": "text",
+      "id": "legend_ack",
+      "label": "Legend — acknowledgements",
+      "default": "Bekräftelser"
+    },
+    {
+      "type": "text",
+      "id": "note_ack",
+      "label": "Note — acknowledgements",
+      "default": "Båda måste bekräftas innan beställning."
+    },
+    {
+      "type": "text",
+      "id": "ack1_title",
+      "label": "Acknowledgement 1 — title",
+      "default": "Behörighet att genomföra granskningen"
+    },
+    {
+      "type": "textarea",
+      "id": "ack1_text",
+      "label": "Acknowledgement 1 — text",
+      "default": "Jag bekräftar att jag är behörig att beställa denna granskning för den angivna organisationen och godkänner att vi genomför en begränsad, icke-destruktiv teknisk tillgänglighetsgranskning av publikt åtkomliga delar av den angivna webbplatsen. Granskningen omfattar inte intrångsförsök, kringgående av autentisering, belastningstest, skapande av riktiga köp eller avsiktlig åtkomst till icke-publik information."
+    },
+    {
+      "type": "text",
+      "id": "ack1_confirm",
+      "label": "Acknowledgement 1 — checkbox label",
+      "default": "Jag bekräftar detta."
+    },
+    {
+      "type": "text",
+      "id": "ack1_property",
+      "label": "Acknowledgement 1 — order property name",
+      "default": "Behörighet att genomföra granskningen",
+      "info": "This is the label the operator sees on the order. Changing it changes the order data."
+    },
+    {
+      "type": "text",
+      "id": "ack1_value",
+      "label": "Acknowledgement 1 — recorded value",
+      "default": "Bekräftad — behörig beställare, icke-destruktiv granskning av publika sidor"
+    },
+    {
+      "type": "text",
+      "id": "ack2_title",
+      "label": "Acknowledgement 2 — title",
+      "default": "Tjänstens omfattning"
+    },
+    {
+      "type": "textarea",
+      "id": "ack2_text",
+      "label": "Acknowledgement 2 — text",
+      "default": "Jag förstår att Accessibility Risk Scan är en teknisk förhandsgranskning som identifierar potentiella tillgänglighetsproblem och prioriterade åtgärder. Tjänsten är inte juridisk rådgivning, certifiering eller en garanti för fullständig efterlevnad av LPTT, WCAG eller annan lagstiftning."
+    },
+    {
+      "type": "text",
+      "id": "ack2_confirm",
+      "label": "Acknowledgement 2 — checkbox label",
+      "default": "Jag förstår detta."
+    },
+    {
+      "type": "text",
+      "id": "ack2_property",
+      "label": "Acknowledgement 2 — order property name",
+      "default": "Tjänstens omfattning"
+    },
+    {
+      "type": "text",
+      "id": "ack2_value",
+      "label": "Acknowledgement 2 — recorded value",
+      "default": "Bekräftad — teknisk förhandsgranskning, ej juridisk rådgivning eller certifiering"
+    },
+    {
+      "type": "text",
+      "id": "ack_error",
+      "label": "Acknowledgement error",
+      "default": "Bekräftelsen måste kryssas i innan du kan beställa."
+    },
+    {
+      "type": "textarea",
+      "id": "error_summary",
+      "label": "Error summary",
+      "default": "Några obligatoriska uppgifter saknas. Fälten som behöver fyllas i är markerade nedan."
+    },
+    {
+      "type": "text",
+      "id": "price_ex_vat",
+      "label": "Price — excluding VAT",
+      "default": "2 490 kr exkl. moms"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_inc_vat",
+      "label": "Show the including-VAT line",
+      "default": true,
+      "info": "Turn this OFF until the store's VAT configuration and the seller's VAT-registration status have been confirmed. See shopify/docs/01-tax-configuration.md."
+    },
+    {
+      "type": "text",
+      "id": "price_inc_vat",
+      "label": "Price — including VAT",
+      "default": "3 112,50 kr inkl. moms där svensk moms om 25 % tillkommer"
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "Submit button",
+      "default": "Lägg till i varukorgen"
+    },
+    {
+      "type": "textarea",
+      "id": "reassurance",
+      "label": "Text under button",
+      "default": "Du kan granska alla uppgifter i varukorgen innan du betalar. Aktuell leveranstid visas innan beställning."
+    },
+    {
+      "type": "text",
+      "id": "unavailable_heading",
+      "label": "Unavailable heading",
+      "default": "Vi tar inte emot nya granskningar just nu"
+    },
+    {
+      "type": "textarea",
+      "id": "unavailable_text",
+      "label": "Unavailable text",
+      "default": "Vi är fullbokade den här veckan. Hör av er så säger vi när nästa plats öppnar."
+    }
+  ],
+  "presets": [
+    {
+      "name": "ARS Intake"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,63 @@
+{% comment %}
+  ars-what-you-get.liquid — deliverables, and what the service explicitly is not.
+
+  Both lists matter commercially. The "is not" column is what stops a buyer
+  expecting a certificate, and it is what keeps the sale honest.
+{% endcomment %}
+
+{{ 'ars.css' | asset_url | stylesheet_tag }}
+
+<section class="ars ars__section ars--panel" aria-labelledby="ars-get-heading-{{ section.id }}">
+  <div class="ars__wrap">
+    <p class="ars__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="ars__h2" id="ars-get-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+
+    <div class="ars__grid ars__grid--2">
+      <div class="ars__card">
+        <h3 class="ars__h3">{{ section.settings.included_title | escape }}</h3>
+        <ul class="ars__list">
+          {%- assign items = section.settings.included | newline_to_br | split: '<br />' -%}
+          {%- for item in items -%}
+            {%- assign clean = item | strip -%}
+            {%- if clean != blank -%}<li>{{ clean | escape }}</li>{%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+
+      <div class="ars__card">
+        <h3 class="ars__h3">{{ section.settings.excluded_title | escape }}</h3>
+        <ul class="ars__list ars__list--no">
+          {%- assign items = section.settings.excluded | newline_to_br | split: '<br />' -%}
+          {%- for item in items -%}
+            {%- assign clean = item | strip -%}
+            {%- if clean != blank -%}<li>{{ clean | escape }}</li>{%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+
+    {%- if section.settings.footnote != blank -%}
+      <p class="ars__muted" style="margin-top:16px;">{{ section.settings.footnote | escape }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "ARS What You Get",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Vad ni får" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "En prioriterad åtgärdslista, inte en rapport ni måste tolka." },
+    { "type": "text", "id": "included_title", "label": "Included title", "default": "Ingår" },
+    { "type": "textarea", "id": "included", "label": "Included (one per line)",
+      "default": "Granskning av köpflödet: startsida, kategori, produkt, varukorg och ingången till kassan\nProblemen grupperade per komponent, inte per sida — ett fel på 40 sidor är en åtgärd\nPrioritering efter var i köpflödet felet sitter, inte efter verktygets standardvärden\nUppskattad arbetsinsats per åtgärd\nFörslag på hur varje problem åtgärdas\nSteg för att återskapa problemet, så en utvecklare kan verifiera det\nEn åtgärdslista att klistra in i Jira, Linear eller GitHub\nEn checklista för de kontroller som kräver en människa" },
+    { "type": "text", "id": "excluded_title", "label": "Not included title", "default": "Ingår inte" },
+    { "type": "textarea", "id": "excluded", "label": "Not included (one per line)",
+      "default": "Juridisk rådgivning\nCertifiering eller intyg om efterlevnad\nGaranti för att ni uppfyller LPTT, WCAG eller annan lagstiftning\nEn fullständig formell WCAG-revision\nGranskning bakom inloggning\nGranskning av själva kassan — vi lägger aldrig något i varukorgen\nTillgänglighetsöverlägg (accessibility overlay)\nÅtgärdande av felen — vi beskriver dem, ni eller er utvecklare åtgärdar" },
+    { "type": "textarea", "id": "footnote", "label": "Footnote",
+      "default": "Automatiserad testning hittar en del av tillgänglighetsproblemen, inte alla. Rapporten märker varje fynd som antingen automatiskt verifierat eller i behov av manuell kontroll, och påstår aldrig att en manuell kontroll är godkänd." }
+  ],
+  "presets": [{ "name": "ARS What You Get" }]
+}
+{% endschema %}

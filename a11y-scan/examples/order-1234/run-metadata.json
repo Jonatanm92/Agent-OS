@@ -1,0 +1,48 @@
+{
+  "order": {
+    "reference": "1234",
+    "company": "Kundens Butik AB",
+    "personalDataStored": "None. Contact name, email and organisation number stay in Shopify and are not written to this folder."
+  },
+  "scan": {
+    "target": "https://kundens-butik.example",
+    "domain": "kundens-butik.example",
+    "startedAt": "2026-09-01T08:00:00.000Z",
+    "durationMs": 38000,
+    "toolVersion": "0.2.0",
+    "limits": {
+      "maxPages": 8,
+      "maxDepth": 2
+    },
+    "robotsRespected": true
+  },
+  "results": {
+    "pagesAttempted": 8,
+    "pagesExamined": 8,
+    "rolesExamined": [
+      "home",
+      "product",
+      "collection",
+      "cart",
+      "checkout-entry",
+      "search",
+      "contact",
+      "account"
+    ],
+    "uniqueIssues": 17,
+    "totalOccurrences": 39,
+    "bySeverity": {
+      "critical": 5,
+      "high": 11,
+      "medium": 1,
+      "low": 0
+    },
+    "manualChecksPending": 16,
+    "evidenceScreenshots": 12
+  },
+  "delivery": {
+    "humanReviewCompleted": false,
+    "reviewedBy": null,
+    "deliveredAt": null
+  }
+}

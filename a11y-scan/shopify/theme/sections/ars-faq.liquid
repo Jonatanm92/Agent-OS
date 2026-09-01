@@ -1,0 +1,75 @@
+{% comment %}
+  ars-faq.liquid — native <details>/<summary>: keyboard operable, screen-reader
+  announced, and works with JavaScript disabled.
+{% endcomment %}
+
+{{ 'ars.css' | asset_url | stylesheet_tag }}
+
+<section class="ars ars__section ars--panel" id="ars-faq" aria-labelledby="ars-faq-heading-{{ section.id }}">
+  <div class="ars__wrap">
+    <p class="ars__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    <h2 class="ars__h2" id="ars-faq-heading-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+
+    <div class="ars__faq">
+      {%- for block in section.blocks -%}
+        <details class="ars__faq-item" {{ block.shopify_attributes }}>
+          <summary class="ars__faq-q">{{ block.settings.question | escape }}</summary>
+          <div class="ars__faq-a">{{ block.settings.answer }}</div>
+        </details>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+<style>
+  .ars .ars__faq { border-top: 1px solid var(--ars-line); }
+  .ars .ars__faq-item { border-bottom: 1px solid var(--ars-line); }
+  .ars .ars__faq-q {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between;
+    align-items: center; gap: 14px; padding: 16px 2px; min-height: 56px;
+    font-weight: 600; font-size: 1rem; line-height: 1.4;
+  }
+  .ars .ars__faq-q::-webkit-details-marker { display: none; }
+  .ars .ars__faq-q::after {
+    content: ""; flex: 0 0 auto; width: 12px; height: 12px;
+    border-right: 2px solid var(--ars-accent); border-bottom: 2px solid var(--ars-accent);
+    transform: rotate(45deg) translate(-2px, -2px);
+  }
+  .ars .ars__faq-item[open] .ars__faq-q::after { transform: rotate(-135deg) translate(-4px, -4px); }
+  .ars .ars__faq-a { padding: 0 2px 18px; font-size: 0.9375rem; color: var(--ars-ink-soft); }
+  .ars .ars__faq-a p { margin: 0 0 10px; }
+  .ars .ars__faq-a p:last-child { margin-bottom: 0; }
+</style>
+
+{% schema %}
+{
+  "name": "ARS FAQ",
+  "tag": "div",
+  "max_blocks": 14,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Frågor" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Innan ni beställer" }
+  ],
+  "blocks": [
+    { "type": "qa", "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Answer",
+          "info": "Do not state a turnaround time here that you have not committed to honouring." }
+      ] }
+  ],
+  "presets": [
+    { "name": "ARS FAQ",
+      "blocks": [
+        { "type": "qa", "settings": { "question": "Är det här en juridisk bedömning?", "answer": "<p>Nej. Det är en teknisk förhandsgranskning som pekar ut konkreta problem och prioriterade åtgärder. Den är inte juridisk rådgivning, inte en certifiering och ingen garanti för att ni uppfyller LPTT, WCAG eller annan lagstiftning. Om ni behöver ett formellt utlåtande är det ett annat uppdrag.</p>" } },
+        { "type": "qa", "settings": { "question": "Hittar ni alla tillgänglighetsproblem?", "answer": "<p>Nej, och vi påstår inte det. Automatiserad testning fångar en del av kriterierna i WCAG — resten kräver en människa med tangentbord och skärmläsare. Rapporten märker varje fynd som antingen automatiskt verifierat eller i behov av manuell kontroll, och innehåller en checklista för de senare. En sida utan automatiska fel kan fortfarande vara omöjlig att använda med tangentbord.</p>" } },
+        { "type": "qa", "settings": { "question": "Gör ni något som kan påverka vår butik?", "answer": "<p>Nej. Vi hämtar publika sidor med vanliga GET-anrop. Vi skickar inga formulär, klickar inga knappar, lägger inget i varukorgen, skapar inga beställningar och loggar aldrig in. Vi följer robots.txt och begränsar antalet sidor och anrop.</p>" } },
+        { "type": "qa", "settings": { "question": "Granskar ni kassan?", "answer": "<p>Bara ingången till kassan, som en tom sida. Vi lägger aldrig något i varukorgen, så själva betalflödet kan vi inte nå. Det är den del av köpresan som har minst automatiserad täckning, och rapporten säger det rakt ut.</p>" } },
+        { "type": "qa", "settings": { "question": "Hur lång tid tar det?", "answer": "<p>Varje rapport granskas av en människa innan den skickas, så tiden beror på kön. Aktuell leveranstid visas innan ni beställer och bekräftas i orderbekräftelsen.</p>" } },
+        { "type": "qa", "settings": { "question": "Vad behöver ni av oss?", "answer": "<p>Adressen till webbutiken och en kontaktperson. Inga inloggningsuppgifter, ingen åtkomst till er kod och inget möte. Har ni redan fått synpunkter på tillgängligheten får ni gärna beskriva dem i formuläret.</p>" } },
+        { "type": "qa", "settings": { "question": "Vem kan beställa?", "answer": "<p>Någon som är behörig att beställa granskningen för organisationen som äger webbplatsen. Det bekräftar ni i formuläret, och bekräftelsen sparas på ordern. Vi granskar inte en webbplats åt någon som inte äger den.</p>" } },
+        { "type": "qa", "settings": { "question": "Åtgärdar ni felen?", "answer": "<p>Inte i den här tjänsten. Ni får en beskrivning av varje problem, hur det återskapas, förslag på åtgärd och en uppskattad arbetsinsats — utformat för att er utvecklare ska kunna ta det direkt.</p>" } }
+      ] }
+  ]
+}
+{% endschema %}

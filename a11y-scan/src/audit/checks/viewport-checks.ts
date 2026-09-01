@@ -6,7 +6,7 @@ import type { Page } from 'playwright';
 import type { Finding } from '../../types.js';
 import type { EngineContext } from '../engines.js';
 import { REFLOW_WIDTH, MOBILE_VIEWPORT } from '../../config.js';
-import { RULE_CATALOG, DEFAULT_META } from '../../analyze/rule-catalog.js';
+import { RULE_CATALOG, DEFAULT_META, GENERIC_VERIFY } from '../../analyze/rule-catalog.js';
 import { truncate } from '../../security/escape.js';
 
 function toFinding(
@@ -25,6 +25,7 @@ function toFinding(
     wcag: meta?.wcag ?? DEFAULT_META.wcag,
     impact: meta?.impact ?? DEFAULT_META.impact,
     remediation: meta?.remediation ?? DEFAULT_META.remediation,
+    verify: meta?.verify ?? GENERIC_VERIFY,
     instance: {
       url: context.url,
       role: context.role,
