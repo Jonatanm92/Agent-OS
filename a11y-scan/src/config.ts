@@ -22,6 +22,15 @@ export interface Limits {
   maxScreenshotsPerPage: number;
   /** A capture larger than this is discarded rather than embedded. */
   maxScreenshotBytes: number;
+  /**
+   * Element count above which the analysis engines are skipped.
+   *
+   * The response-size cap only binds when the server declares a content-length;
+   * a chunked response bypasses it entirely. This backstop measures the thing
+   * that actually costs us — axe walking a pathological DOM — and cannot be
+   * defeated by omitting a header.
+   */
+  maxDomNodes: number;
 }
 
 export const SCAN_LIMITS: Limits = {
@@ -35,6 +44,7 @@ export const SCAN_LIMITS: Limits = {
   maxSnippetChars: 400,
   maxScreenshotsPerPage: 4,
   maxScreenshotBytes: 120 * 1024,
+  maxDomNodes: 25_000,
 };
 
 export const PRESCAN_LIMITS: Limits = {

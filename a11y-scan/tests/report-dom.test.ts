@@ -8,6 +8,9 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium, type Browser } from 'playwright';
+import { startFixtureServer, type FixtureServer } from '../fixtures/serve.js';
+import { runScan } from '../src/scan.js';
+import { SCAN_LIMITS } from '../src/config.js';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -187,4 +190,71 @@ describe('the generated report is inert when opened (T5)', () => {
     expect(await page.evaluate(() => document.querySelectorAll('script').length)).toBe(0);
     await context.close();
   });
+});
+
+
+/**
+ * The end-to-end version: hostile markup is not injected into a fixture object,
+ * it is served by a page the scanner really visits. This exercises axe's snippet
+ * capture, the custom checks, grouping and rendering in one pass — the whole
+ * path an attacker actually controls.
+ */
+describe('hostile content survives a real scan without becoming executable', () => {
+  let server: FixtureServer;
+
+  beforeAll(async () => {
+    server = await startFixtureServer();
+  });
+
+  afterAll(async () => {
+    await server?.close();
+  });
+
+  it('renders an inert report from a page built to break the generator', async () => {
+    const scan = await runScan(`${server.origin}/hostile.html`, {
+      allowPrivateTargets: true,
+      limits: { ...SCAN_LIMITS, maxPages: 1, requestDelayMs: 0 },
+      useRobots: false,
+    });
+
+    // The page really is defective, so there is something to report.
+    expect(scan.issues.length).toBeGreaterThan(0);
+
+    const reportFile = join(tempDir, 'scanned-report.html');
+    writeFileSync(reportFile, renderHtmlReport(scan), 'utf8');
+
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const dialogs: string[] = [];
+    page.on('dialog', async (d) => {
+      dialogs.push(d.message());
+      await d.dismiss();
+    });
+
+    await page.goto(`file://${reportFile}`, { waitUntil: 'load' });
+    await page.waitForTimeout(400);
+
+    const forensics = await page.evaluate(() => {
+      const events: string[] = [];
+      for (const el of Array.from(document.querySelectorAll('*'))) {
+        for (const attr of Array.from(el.attributes)) {
+          if (/^on/i.test(attr.name)) events.push(`${el.tagName}[${attr.name}]`);
+        }
+      }
+      return {
+        scripts: document.querySelectorAll('script').length,
+        events,
+        pwned: Object.keys(globalThis).filter((k) => k.startsWith('__pwned')),
+        bodyVisible: getComputedStyle(document.body).display !== 'none',
+      };
+    });
+
+    await context.close();
+
+    expect(dialogs).toEqual([]);
+    expect(forensics.scripts).toBe(0);
+    expect(forensics.events).toEqual([]);
+    expect(forensics.pwned).toEqual([]);
+    expect(forensics.bodyVisible).toBe(true);
+  }, 90_000);
 });

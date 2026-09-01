@@ -33,16 +33,32 @@ reached via a redirect from a public host.
 4. Literal-IP hostnames are checked directly, without DNS.
 5. Credentials in the URL (`http://user:pass@host`) are rejected.
 6. Non-standard ports are rejected — only 80, 443, and blank.
-7. **Redirects are re-checked.** Playwright follows redirects internally, so the
-   guard also runs as a route handler on every request the browser makes; a
-   navigation that lands on a disallowed host is aborted.
+7. **Redirects are validated hop by hop, in Node, before the browser is used.**
+   `src/security/redirect-guard.ts` follows the chain with `redirect: 'manual'`
+   and runs the full guard on every hop. Only a URL known to be terminal and
+   allowed is handed to `page.goto()`.
 
-**Residual risk — DNS rebinding.** Between the guard's `dns.lookup` and the
-browser's own resolution, an attacker-controlled DNS server can return a public
-IP then a private one. Fully closing this needs connection-level IP pinning,
-which is not reachable through Playwright's API. Mitigations in place: the route
-handler re-resolves and re-checks on every request, which shrinks but does not
-eliminate the window. **Documented rather than hidden.** For untrusted bulk
+**Why the preflight exists, and what was wrong before.** An earlier version of
+this document claimed the route handler re-checked redirects. That was false, and
+was caught by testing it rather than reasoning about it: Playwright's
+`context.route()` fires for the request the browser *initiates*, but not for the
+hops of a redirect the network stack follows internally — and fulfilling a 3xx
+from inside the handler does not re-enter it either. A fixture answering
+`302 → http://169.254.169.254/latest/meta-data/` reached the cloud metadata
+endpoint with the handler none the wiser and `blockedRequests` empty.
+`tests/redirect-guard.test.ts` fails if that regresses.
+
+Chromium blocks two of these cases on its own (`ERR_UNSAFE_REDIRECT` for
+`file://`, `ERR_UNSAFE_PORT` for port 1). Those are its protections, not ours,
+and they do not cover a plain http redirect to a private address on port 80.
+
+**Residual risk — DNS rebinding, and the preflight TOCTOU.** Between the guard's
+`dns.lookup` and the browser's own resolution, an attacker-controlled DNS server
+can return a public IP then a private one. The same window exists between the
+preflight and the browser's navigation: the server can answer them differently.
+Fully closing either needs connection-level IP pinning, which is not reachable
+through Playwright's API. The preflight and the route handler shrink the window;
+they do not eliminate it. **Documented rather than hidden.** For untrusted bulk
 prospecting, run the scanner in a network-isolated container with an egress
 allowlist — that is the real fix, and it is an ops control, not a code one.
 
@@ -109,12 +125,19 @@ whole pipeline and asserts no executable markup survives.
 | Per-page navigation timeout | 20s | 15s |
 | Whole-run budget | 5 min | 90s |
 | Max queued URLs | 300 | 60 |
-| Response size cap | 8 MB | 8 MB |
+| Declared response size cap | 8 MB | 8 MB |
+| DOM element cap | 25,000 | 25,000 |
 | Delay between requests | 400ms | 400ms |
 
 Plus: normalized-URL dedup, same-registrable-domain only, and a hard cap on
 in-flight pages (sequential by default). The run budget is checked between pages,
 so a slow site degrades to fewer pages rather than hanging.
+
+**The response-size cap only binds when the server declares a
+`content-length`.** A chunked response bypasses it entirely, which is why the
+DOM element cap exists: it measures the thing that actually costs us — axe
+walking a pathological DOM — after the page has loaded, and cannot be defeated by
+omitting a header. Both are tested, including the chunked case.
 
 ## T7 — Doing something destructive on the target
 
@@ -154,14 +177,20 @@ no cookie jar shared between runs. Storage state is never saved.
 
 ## T10 — Test escape hatch used in production
 
-`allowPrivateTargets` exists so the test suite can scan a fixture server on
+The guard exemption exists so the test suite can scan a fixture server on
 127.0.0.1.
 
-**Mitigation.** Defaults to `false`. Settable only by passing it explicitly in
-code or by `--allow-private-targets`, which prints a prominent warning banner to
-stderr on every run. It is never read from an ambient environment variable, so it
-cannot be switched on by a stray export in CI. `tests/url-guard.test.ts` asserts
-the default is off.
+**Mitigation.** It is a **list of hostnames** (`allowPrivateHosts`), not a
+boolean. A global "allow private" switch would also whitelist wherever a target
+redirects, defeating T1's redirect check: a fixture on 127.0.0.1 answering
+`302 → 169.254.169.254` would sail straight through. Scoping the exemption to
+the single host being scanned keeps every other address blocked, which
+`tests/redirect-guard.test.ts` asserts directly.
+
+Defaults to empty. The CLI's `--allow-private-targets` grants it to the target's
+own hostname only, and prints a prominent warning banner to stderr on every run.
+It is never read from an ambient environment variable, so it cannot be switched
+on by a stray export in CI. `tests/url-guard.test.ts` asserts the default is off.
 
 ---
 
@@ -175,6 +204,11 @@ Honest statements of what is *not* defended against:
 - **Denial of service against the target.** The tool is polite (sequential, 400ms
   delay, ≤12 pages) but does not implement adaptive back-off on 429/503.
   It stops on repeated failures; it does not negotiate.
+
+  Note that the redirect preflight adds one request per page. It is sent as
+  HEAD wherever the server accepts one, and the body is cancelled rather than
+  read, so the extra cost to the target is small — but it is not zero, and a
+  12-page scan makes up to 24 requests rather than 12.
 - **Legal authorization to scan.** The tool cannot know whether the operator has
   permission to scan a given site. Scanning publicly reachable pages of a
   prospect's shop at this volume is ordinary crawler behaviour, but the operator

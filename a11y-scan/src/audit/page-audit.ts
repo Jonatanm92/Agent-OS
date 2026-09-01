@@ -10,6 +10,7 @@ import type { Page } from 'playwright';
 import type { DiscoveredPage, Finding, PageRole } from '../types.js';
 import type { Limits } from '../config.js';
 import type { GuardOptions } from '../security/url-guard.js';
+import { resolveRedirects } from '../security/redirect-guard.js';
 import type { EngineContext } from './engines.js';
 import { axeEngine } from './axe-engine.js';
 import { runDomChecks } from './checks/dom-checks.js';
@@ -36,9 +37,36 @@ export interface AuditOptions {
 export async function auditPage(page: Page, url: string, options: AuditOptions): Promise<PageAuditResult> {
   const { limits, startUrl, depth } = options;
 
+  // Validate the whole redirect chain in Node before the browser touches it.
+  // Playwright's route handler does not see internal redirect hops, so without
+  // this a 302 to an internal address would be fetched (THREAT-MODEL.md T1).
+  const redirect = await resolveRedirects(url, {
+    ...(options.guard ?? {}),
+    maxResponseBytes: limits.maxResponseBytes,
+    // A quarter of the navigation budget: generous for a HEAD, and bounded so
+    // twelve slow preflights cannot eat the whole run budget before any page is
+    // actually examined.
+    timeoutMs: Math.max(3000, Math.round(limits.navigationTimeoutMs / 4)),
+  });
+  if (!redirect.allowed) {
+    return {
+      page: {
+        url,
+        role: classifyByUrl(url, startUrl),
+        depth,
+        title: '',
+        status: null,
+        error: `Not tested: ${redirect.reason}`,
+      },
+      findings: [],
+      links: [],
+    };
+  }
+  const target = redirect.finalUrl ?? url;
+
   let status: number | null = null;
   try {
-    const response = await page.goto(url, {
+    const response = await page.goto(target, {
       waitUntil: 'domcontentloaded',
       timeout: limits.navigationTimeoutMs,
     });
@@ -100,10 +128,34 @@ export async function auditPage(page: Page, url: string, options: AuditOptions):
     title = '';
   }
 
-  const urlGuess = classifyByUrl(url, startUrl);
+  const urlGuess = classifyByUrl(target, startUrl);
   const role: PageRole = await classifyByDom(page, urlGuess);
 
-  const context: EngineContext = { url, role, maxSnippetChars: limits.maxSnippetChars };
+  // Header-independent backstop: a chunked response defeats the content-length
+  // cap, but the DOM is measurable once it exists. Running axe over hundreds of
+  // thousands of nodes is where a pathological page actually costs us.
+  // getElementsByTagName returns a LIVE collection, so reading .length does not
+  // materialise an array of every node — which matters precisely on the page
+  // this guard exists for.
+  const nodeCount = await page
+    .evaluate(() => document.getElementsByTagName('*').length)
+    .catch(() => 0);
+  if (nodeCount > limits.maxDomNodes) {
+    return {
+      page: {
+        url: target,
+        role,
+        depth,
+        title,
+        status,
+        error: `Not fully tested: the page contains ${nodeCount.toLocaleString('en')} elements, above the ${limits.maxDomNodes.toLocaleString('en')} limit for a single page.`,
+      },
+      findings: [],
+      links: await extractLinks(page, target, options.guard ?? {}),
+    };
+  }
+
+  const context: EngineContext = { url: target, role, maxSnippetChars: limits.maxSnippetChars };
 
   const findings: Finding[] = [];
 
@@ -134,10 +186,12 @@ export async function auditPage(page: Page, url: string, options: AuditOptions):
   // inside leaves the findings untouched.
   await attachScreenshots(page, findings, limits).catch(() => 0);
 
-  const links = await extractLinks(page, url, options.guard ?? {});
+  const links = await extractLinks(page, target, options.guard ?? {});
 
   return {
-    page: { url, role, depth, title, status },
+    // The terminal URL is what was actually examined; recording the pre-redirect
+    // one would put a URL in the report that nobody tested.
+    page: { url: target, role, depth, title, status },
     findings,
     links,
   };

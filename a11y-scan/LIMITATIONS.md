@@ -99,7 +99,12 @@ Do not present our severity as a legal grading.
 Fully described in `THREAT-MODEL.md`. The headline residual risks:
 
 - **DNS rebinding** is mitigated but not eliminated; closing it needs an
-  egress allowlist at the network layer, which is an ops control.
+  egress allowlist at the network layer, which is an ops control. The same
+  time-of-check window exists between the redirect preflight and the browser's
+  own navigation — a server can answer the two differently.
+- **The declared-size cap only binds when the server sends a
+  `content-length`.** A chunked response bypasses it; the DOM element cap is the
+  backstop that does not depend on the server being honest.
 - **A malicious page exploiting a browser vulnerability** is out of scope; run
   bulk prospecting in a disposable container and keep Playwright current.
 - The tool is polite but does **not** implement adaptive back-off on 429/503.

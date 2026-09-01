@@ -31,16 +31,26 @@ export interface GuardResult {
 
 export interface GuardOptions {
   /**
-   * Test-only. Relaxes the checks that stop the scanner reaching a locally
-   * controlled fixture server: private/loopback addresses AND non-standard
-   * ports, since such a server binds an ephemeral port rather than 80.
+   * Hostnames permitted to resolve to a private address or use a non-standard
+   * port. Test-only, and deliberately a LIST OF HOSTS rather than a boolean.
    *
-   * They are one flag rather than two on purpose — partially relaxing the guard
-   * is a configuration mistake waiting to happen, and there is no scenario where
-   * you want one without the other. Never enabled by default and never read
-   * from the environment. See THREAT-MODEL.md T10.
+   * A global "allow private" switch would also whitelist wherever a redirect
+   * points, which defeats the redirect check entirely: a fixture on 127.0.0.1
+   * redirecting to 169.254.169.254 would sail through. Scoping the exemption to
+   * the one host being scanned keeps every other address blocked.
+   *
+   * Empty or absent means nothing private is reachable. Never read from the
+   * environment. See THREAT-MODEL.md T10.
    */
-  allowPrivateTargets?: boolean;
+  allowPrivateHosts?: string[];
+}
+
+/** True when this specific hostname carries the test-only exemption. */
+function isExempt(hostname: string, options: GuardOptions): boolean {
+  const list = options.allowPrivateHosts;
+  if (!list || list.length === 0) return false;
+  const host = hostname.toLowerCase();
+  return list.some((entry) => entry.toLowerCase() === host);
 }
 
 const ALLOWED_SCHEMES = new Set(['http:', 'https:']);
@@ -142,7 +152,7 @@ export function checkUrlSyntax(raw: string, options: GuardOptions = {}): GuardRe
     };
   }
 
-  if (!ALLOWED_PORTS.has(url.port) && !options.allowPrivateTargets) {
+  if (!ALLOWED_PORTS.has(url.port) && !isExempt(url.hostname, options)) {
     return {
       allowed: false,
       reason: 'blocked-port',
@@ -163,9 +173,11 @@ export async function checkUrl(raw: string, options: GuardOptions = {}): Promise
   if (!syntax.allowed || !syntax.url) return syntax;
   const url = syntax.url;
 
+  const exempt = isExempt(url.hostname, options);
+
   const literal = isIP(url.hostname);
   if (literal) {
-    if (!options.allowPrivateTargets && isPrivateAddress(url.hostname)) {
+    if (!exempt && isPrivateAddress(url.hostname)) {
       return {
         allowed: false,
         reason: 'private-address',
@@ -191,7 +203,7 @@ export async function checkUrl(raw: string, options: GuardOptions = {}): Promise
     return { allowed: false, reason: 'dns-failure', detail: `"${url.hostname}" resolved to nothing.` };
   }
 
-  if (!options.allowPrivateTargets) {
+  if (!exempt) {
     const bad = addresses.find((a) => isPrivateAddress(a));
     if (bad) {
       return {

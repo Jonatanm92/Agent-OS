@@ -44,7 +44,7 @@ describe('scheme allowlist (T2)', () => {
   it('relaxes the port check only under the test escape hatch', () => {
     // The fixture server binds an ephemeral port, so the hatch has to cover
     // ports as well as addresses — but only when explicitly passed.
-    expect(checkUrlSyntax('http://127.0.0.1:34045/', { allowPrivateTargets: true }).allowed).toBe(true);
+    expect(checkUrlSyntax('http://127.0.0.1:34045/', { allowPrivateHosts: ['127.0.0.1'] }).allowed).toBe(true);
     expect(checkUrlSyntax('http://127.0.0.1:34045/').allowed).toBe(false);
   });
 });
@@ -93,13 +93,13 @@ describe('checkUrl end to end', () => {
     expect(result.reason).toBe('private-address');
   });
 
-  it('defaults allowPrivateTargets to off (T10)', async () => {
+  it('defaults the private-host exemption to empty (T10)', async () => {
     // No options object at all — the dangerous default must be the safe one.
     expect((await checkUrl('http://127.0.0.1/')).allowed).toBe(false);
   });
 
-  it('permits loopback only when the test escape hatch is passed explicitly', async () => {
-    const result = await checkUrl('http://127.0.0.1/', { allowPrivateTargets: true });
+  it('permits loopback only for a host named in the exemption list', async () => {
+    const result = await checkUrl('http://127.0.0.1/', { allowPrivateHosts: ['127.0.0.1'] });
     expect(result.allowed).toBe(true);
   });
 

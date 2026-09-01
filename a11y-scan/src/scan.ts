@@ -16,6 +16,11 @@ import { buildManualScript } from './analyze/manual-script.js';
 import { collectPositives } from './analyze/journey.js';
 
 export interface ScanOptions extends GuardOptions {
+  /**
+   * Test/CLI escape hatch. When true, the exemption is granted to the TARGET
+   * HOST ONLY — never to wherever it redirects.
+   */
+  allowPrivateTargets?: boolean;
   limits?: Limits;
   /** Prescan skips the slower viewport passes and uses tighter limits. */
   quick?: boolean;
@@ -36,7 +41,19 @@ export async function runScan(target: string, options: ScanOptions = {}): Promis
   const report = options.onProgress ?? (() => {});
   const startedAt = Date.now();
 
-  const guard: GuardOptions = { allowPrivateTargets: options.allowPrivateTargets === true };
+  // The exemption is scoped to the host actually named in the target, so a
+  // redirect to any other private address is still refused (THREAT-MODEL.md T1).
+  let exemptHost: string[] = [];
+  if (options.allowPrivateTargets === true) {
+    try {
+      exemptHost = [new URL(target).hostname];
+    } catch {
+      exemptHost = [];
+    }
+  }
+  const guard: GuardOptions = {
+    allowPrivateHosts: options.allowPrivateHosts ?? exemptHost,
+  };
 
   const verdict = await checkUrl(target, guard);
   if (!verdict.allowed || !verdict.url) {

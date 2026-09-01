@@ -20,7 +20,7 @@ URL ──▶ guard ──▶ discover ──▶ audit ──▶ normalize ─�
 
 | # | Module | Responsibility |
 |---|---|---|
-| 1 | `src/security/url-guard.ts` | Decide whether a URL may be fetched at all. Protocol, DNS, IP range, redirect re-checks. |
+| 1 | `src/security/url-guard.ts` + `redirect-guard.ts` | Decide whether a URL may be fetched at all. Protocol, DNS, IP range, and a Node-side preflight that validates every redirect hop before the browser is used. |
 | 2 | `src/crawl/discover.ts` | Bounded, role-aware BFS. Respects robots.txt. Never submits a form. |
 | 3 | `src/audit/*` | Per page: axe-core + custom structural checks in a real browser. |
 | 4 | `src/analyze/normalize.ts` | Engine output → one `Finding` shape. |
@@ -114,6 +114,13 @@ axe is one implementation. Adding pa11y later is a new file, not a refactor.
 Target sites are treated as hostile input from the first character of the URL to
 the last character of the rendered report. See `THREAT-MODEL.md`.
 
+One consequence worth naming here, because it shaped the pipeline: **a redirect
+is resolved and validated in Node before `page.goto()` is called at all.**
+Playwright's route handler does not fire for redirect hops the network stack
+follows internally, so the guard cannot live only there. This was found by
+testing the claim rather than trusting it — the earlier design let a
+`302 → 169.254.169.254` through.
+
 ## What runs where
 
 Node process: crawling decisions, guards, grouping, reporting.
@@ -131,7 +138,8 @@ src/
   config.ts                 all limits in one place
   types.ts                  Finding, Issue, PageAudit, ScanResult
   security/
-    url-guard.ts            protocol + DNS + IP + redirect checks, normalization
+    url-guard.ts            protocol + DNS + IP checks, normalization
+    redirect-guard.ts       hop-by-hop redirect validation before navigation
     escape.ts               HTML escaping and snippet truncation
   crawl/
     robots.ts               robots.txt fetch + parse + match
