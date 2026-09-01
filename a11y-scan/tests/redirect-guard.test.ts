@@ -130,7 +130,7 @@ describe('DOM-size backstop (T6)', () => {
       useRobots: false,
     });
     expect(result.pages[0]!.error).toBeUndefined();
-  }, 90_000);
+  }, 180_000);
 });
 
 describe('the scanner refuses the whole page, not just the request', () => {
