@@ -51,8 +51,12 @@ function definitionFor(rule: string, issue: RawIssue): RuleDefinition | null {
     confidence: override?.confidence ?? 'CONFIRMED_AUTOMATED',
     componentScoped: override?.componentScoped,
     title: override?.title ?? { sv: fallbackTitle, en: fallbackTitle },
+    // axe-core's own rule description is English only. It is fine as the
+    // English fallback, but must never be used for `sv` — that silently put
+    // English prose into "Förväntat beteende" on every axe rule until this was
+    // caught by reading a generated developer report.
     expected: override?.expected ?? {
-      sv: data.description ?? 'Elementet ska uppfylla det angivna framgångskriteriet.',
+      sv: 'Elementet ska uppfylla det angivna framgångskriteriet.',
       en: data.description ?? 'The element meets the referenced success criterion.',
     },
     observed: override?.observed,

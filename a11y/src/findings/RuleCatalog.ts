@@ -653,6 +653,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'image-alt': {
     baseSeverity: 'high',
     title: t('Bilden saknar alternativtext', 'Image has no text alternative'),
+    expected: t('Varje informationsbärande bild har en alternativtext.', 'Every informative image has a text alternative.'),
     observed: t('Bilden saknar alt-attribut, så hjälpmedel har ingenting att läsa upp i dess ställe.', 'The image has no alt attribute, so assistive technology has nothing to announce in its place.'),
     userImpact: t(
       'Skärmläsaranvändare får ingenting där bilden är — på en produktlista innebär det att produkten i praktiken är osynlig för dem.',
@@ -666,6 +667,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'button-name': {
     baseSeverity: 'critical',
     title: t('Knappen saknar tillgängligt namn', 'Button has no accessible name'),
+    expected: t('Varje knapp berättar vad den gör.', 'Every button announces what it does.'),
     observed: t('Knappen saknar text, aria-label och title, så den läses upp som enbart ”knapp”.', 'The button has no text, aria-label or title, so it is announced as just "button".'),
     userImpact: t(
       'Knappen läses upp som bara ”knapp”. På en varukorgs- eller kassasida kan kunden inte avgöra vad den gör.',
@@ -676,6 +678,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'link-name': {
     baseSeverity: 'high',
     title: t('Länken saknar tillgängligt namn', 'Link has no accessible name'),
+    expected: t('Varje länk berättar vart den leder.', 'Every link announces where it leads.'),
     observed: t('Länken saknar text och tillgängligt namn, så den läses upp som enbart ”länk”.', 'The link has no text or accessible name, so it is announced as just "link".'),
     userImpact: t(
       'Länken läses upp som bara ”länk”, så skärmläsaranvändare kan inte avgöra vart den leder.',
@@ -686,6 +689,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   label: {
     baseSeverity: 'critical',
     title: t('Formulärfältet saknar etikett', 'Form field has no label'),
+    expected: t('Varje formulärfält har en kopplad etikett.', 'Every form field has an associated label.'),
     observed: t('Fältet har ingen kopplad etikett, så hjälpmedel kan inte berätta vad det är till för.', 'The field has no associated label, so assistive technology cannot say what it is for.'),
     userImpact: t('Skärmläsaranvändare kan inte avgöra vad de ska skriva i fältet.', 'Screen reader users cannot tell what to type into the field.'),
     remediation: t('Lägg till en <label for="…"> eller ett aria-label.', 'Add a <label for="…"> or aria-label.'),
@@ -694,6 +698,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
     baseSeverity: 'medium',
     confidence: 'HIGH_CONFIDENCE',
     title: t('Textkontrasten är under WCAG AA-gränsen', 'Text contrast is below the WCAG AA minimum'),
+    expected: t('Text har minst den kontrast mot bakgrunden som WCAG AA kräver.', 'Text has at least the contrast against its background that WCAG AA requires.'),
     observed: t('Texten har lägre kontrast mot sin bakgrund än WCAG AA kräver.', 'The text has lower contrast against its background than WCAG AA requires.'),
     userImpact: t(
       'Kunder med nedsatt syn, och alla som använder mobilen i dagsljus, kan inte läsa texten bekvämt. Priser och lagerstatus är de vanligaste offren.',
@@ -707,6 +712,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'html-has-lang': {
     baseSeverity: 'medium',
     title: t('Sidans språk är inte angivet', 'Page language is not declared'),
+    expected: t('<html>-elementet anger sidans språk.', 'The <html> element declares the page language.'),
     observed: t('<html>-elementet saknar lang-attribut.', 'The <html> element has no lang attribute.'),
     userImpact: t(
       'Skärmläsare gissar språket och kan läsa svenskt innehåll med engelsk röst, vilket är nästan obegripligt.',
@@ -717,6 +723,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'document-title': {
     baseSeverity: 'medium',
     title: t('Sidan saknar titel', 'Page has no title'),
+    expected: t('Varje sida har en unik, beskrivande <title>.', 'Every page has a unique, descriptive <title>.'),
     observed: t('Sidan saknar <title>, så webbläsarflik och skärmläsare har inget namn att visa.', 'The page has no <title>, so the browser tab and screen readers have no name to present.'),
     userImpact: t(
       'Användare med många flikar öppna, och skärmläsaranvändare som landar på sidan, får ingen ledtråd om var de är.',
@@ -727,6 +734,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'aria-hidden-focus': {
     baseSeverity: 'high',
     title: t('Fokuserbart element är dolt för hjälpmedel', 'Focusable element is hidden from assistive technology'),
+    expected: t('Allt som kan få tangentbordsfokus exponeras också för hjälpmedel.', 'Anything that can receive keyboard focus is also exposed to assistive technology.'),
     observed: t('Elementet kan få tangentbordsfokus men ligger inuti aria-hidden="true".', 'The element can receive keyboard focus but sits inside aria-hidden="true".'),
     userImpact: t(
       'Tangentbordsfokus hamnar på en kontroll som skärmläsaren fått besked att ignorera, så ingenting läses upp.',
@@ -737,6 +745,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'nested-interactive': {
     baseSeverity: 'high',
     title: t('Interaktiv kontroll ligger inuti en annan', 'Interactive control nested inside another'),
+    expected: t('Interaktiva kontroller är syskon i markupen, aldrig kapslade i varandra.', 'Interactive controls are siblings in the markup, never nested inside one another.'),
     observed: t('En interaktiv kontroll ligger inuti en annan interaktiv kontroll.', 'An interactive control is nested inside another interactive control.'),
     userImpact: t(
       'Skärmläsare läser upp kontrollerna olika i olika webbläsare och vissa går inte att nå alls.',
@@ -747,6 +756,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'select-name': {
     baseSeverity: 'critical',
     title: t('Rullgardinsmenyn saknar tillgängligt namn', 'Select element has no accessible name'),
+    expected: t('Varje rullgardinsmeny berättar vad den styr.', 'Every select element announces what it controls.'),
     observed: t('<select>-elementet saknar kopplad etikett och aria-label.', 'The <select> element has no associated label or aria-label.'),
     userImpact: t(
       'En skärmläsaranvändare som väljer storlek eller antal får inte veta vad rullgardinsmenyn styr.',
@@ -757,6 +767,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'landmark-one-main': {
     baseSeverity: 'medium',
     title: t('Sidan saknar main-landmärke', 'Page has no main landmark'),
+    expected: t('Sidans innehåll ligger i ett <main>-landmärke.', 'The page content sits inside a <main> landmark.'),
     observed: t('Sidan saknar ett <main>-landmärke.', 'The page has no <main> landmark.'),
     userImpact: t('Skärmläsaranvändare kan inte hoppa förbi sidhuvudet på varje sida.', 'Screen reader users cannot jump past the header on every page.'),
     remediation: t('Omslut sidans innehåll med ett enda <main>.', 'Wrap the page content in a single <main>.'),
@@ -764,6 +775,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'target-size': {
     baseSeverity: 'medium',
     title: t('Klickytan är mindre än minimimåttet', 'Touch target is smaller than the minimum'),
+    expected: t('Interaktiva ytor är minst 24×24 CSS-pixlar, eller har tillräckligt avstånd runt omkring.', 'Interactive targets are at least 24×24 CSS pixels, or have enough spacing around them.'),
     observed: t('Den interaktiva ytan är mindre än 24×24 CSS-pixlar och har inte tillräckligt avstånd till närliggande kontroller.', 'The interactive target is smaller than 24×24 CSS pixels without sufficient spacing.'),
     userImpact: t(
       'Kunder med tremor eller nedsatt finmotorik träffar fel och hamnar på fel produkt eller raderar fel rad i varukorgen.',
@@ -774,6 +786,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   region: {
     baseSeverity: 'low',
     title: t('Innehåll ligger utanför landmärken', 'Content sits outside landmarks'),
+    expected: t('Allt sidinnehåll ligger inuti ett landmärke (header, nav, main eller footer).', 'All page content sits inside a landmark (header, nav, main or footer).'),
     observed: t('Delar av sidans innehåll ligger utanför alla landmärken.', 'Some page content is not contained by any landmark.'),
     userImpact: t(
       'Skärmläsaranvändare som navigerar via landmärken missar innehållet som ligger utanför dem.',
@@ -784,6 +797,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'heading-order': {
     baseSeverity: 'low',
     title: t('Rubriknivåerna är i fel ordning', 'Heading levels are out of order'),
+    expected: t('Rubriknivåer ökar ett steg i taget.', 'Heading levels increase one step at a time.'),
     observed: t('Rubriknivåerna följer inte en stigande ordning.', 'Heading levels do not follow an increasing order.'),
     userImpact: t('Rubriknavigering ger en missvisande bild av sidans struktur.', 'Heading navigation gives a misleading picture of the page structure.'),
     remediation: t('Välj rubriknivå efter struktur och styr storleken med CSS.', 'Choose heading levels by structure and control size with CSS.'),
@@ -791,6 +805,7 @@ export const AXE_RULE_OVERRIDES: Record<string, Partial<RuleDefinition>> = {
   'aria-dialog-name': {
     baseSeverity: 'medium',
     title: t('Dialogen saknar tillgängligt namn', 'Dialog has no accessible name'),
+    expected: t('En dialog berättar vad den är när den öppnas.', 'A dialog announces what it is when it opens.'),
     observed: t('Elementet har role="dialog" men varken aria-label eller aria-labelledby.', 'The element has role="dialog" but neither aria-label nor aria-labelledby.'),
     userImpact: t('Skärmläsaren säger bara ”dialog” utan att berätta vad den gäller.', 'A screen reader announces only "dialog" without saying what it is.'),
     remediation: t('Lägg till aria-labelledby mot dialogens rubrik, eller aria-label.', 'Add aria-labelledby pointing at the dialog heading, or aria-label.'),

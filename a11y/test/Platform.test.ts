@@ -10,6 +10,7 @@ import { Queue } from '../src/queue/Queue.js';
 import { ReviewService } from '../src/services/ReviewService.js';
 import { OutreachService } from '../src/services/OutreachService.js';
 import { PipelineService } from '../src/services/PipelineService.js';
+import { PIPELINE } from '../src/pipeline/Stages.js';
 import { RetestService } from '../src/services/RetestService.js';
 import { MonitoringService } from '../src/services/MonitoringService.js';
 import { computeMetrics } from '../src/analytics/Metrics.js';
@@ -255,6 +256,20 @@ describe('pipeline', () => {
     const { prospectId } = seedScan(platform, 'nordvik.se', [{ rule: 'component.enter-does-not-activate', pageType: 'search', url: 'https://nordvik.se/sok' }]);
     new PipelineService(platform).advance(prospectId, 'WON', { force: true });
     expect(platform.store.listMonitoredSites().map((s) => s.domain)).toContain('nordvik.se');
+  });
+
+  /**
+   * Regression test for a real defect found by screenshotting the console:
+   * the "next action" column is the entire point of the pipeline system, and
+   * it was quietly composed in English inside an otherwise Swedish UI. Every
+   * stage's default text, and every place a service composes its own next
+   * action, must actually be in Swedish — not merely non-empty.
+   */
+  it('writes every default next action in Swedish, not the operational English it used to leak', () => {
+    const englishTells = ['Scan the site', 'Generate the', 'Review the findings', 'Sign the audit', 'Follow up', 'Deliver the professional', 'No action', 'Offer a', 'Send a proposal'];
+    for (const stage of Object.values(PIPELINE)) {
+      for (const tell of englishTells) expect(stage.defaultNextAction).not.toContain(tell);
+    }
   });
 });
 

@@ -120,9 +120,15 @@ export function evidenceCard(pack: EvidencePack, options: EvidenceCardOptions = 
        <div class="block"><h4>Källa</h4><p>${escapeHtml(pack.sourceEngine)} · ${escapeHtml(pack.detectedAt)}</p></div>`
     : '';
 
+  // When a finding has no natural component name, buildEvidencePack falls
+  // back to the rule title as the component too — printing it a second time
+  // ("Textkontrasten … — Textkontrasten …") would look like a copy-paste bug
+  // rather than a deliberate heading. Show it once.
+  const heading = pack.component && pack.component !== pack.title ? `${pack.title} — ${pack.component}` : pack.title;
+
   return `<article class="finding ${pack.severity}">
   <div class="badges">${severityBadge(pack.severity)}${confidenceBadge(pack.confidence)}${systemic}${wcag}</div>
-  <h3>${index ? `${index}. ` : ''}${escapeHtml(pack.title)} — ${escapeHtml(pack.component)}</h3>
+  <h3>${index ? `${index}. ` : ''}${escapeHtml(heading)}</h3>
   <p class="meta">${escapeHtml(pageTypeLabel(pack.pageType))} · <code>${escapeHtml(pack.url)}</code></p>
   ${shot}
   <div class="block"><h4>Vad som händer</h4><p>${escapeHtml(pack.observedBehaviour)}</p></div>

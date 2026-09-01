@@ -110,7 +110,8 @@ describe('vertical slice 1: one domain in, sendable evidence out', () => {
   it('disqualifies a B2B site as outside the consumer-ecommerce ICP', () => {
     expect(b2b.scoring?.applied.map((s) => s.id)).toContain('b2b_only');
     expect(b2b.prospect.qualificationStatus).toBe('disqualified');
-    expect(b2b.prospect.nextAction).toMatch(/Do not work this prospect/);
+    expect(b2b.prospect.nextAction).toMatch(/Arbeta inte med det här prospektet/);
+    expect(b2b.prospect.nextAction).toContain('säljer till företag');
   });
 
   it('produces a mini audit a human would actually send', async () => {

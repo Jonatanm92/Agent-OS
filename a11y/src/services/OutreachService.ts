@@ -100,7 +100,7 @@ export class OutreachService {
     if (draft.status !== 'approved') throw new Error('Only an approved draft can be marked as sent.');
     const updated = this.platform.store.setOutreachStatus(draftId, 'sent')!;
     this.platform.store.setProspectFacts(draft.prospectId, { outreachStatus: 'sent' });
-    this.platform.store.setStage(draft.prospectId, 'CONTACTED', 'Follow up in five working days if there is no reply.');
+    this.platform.store.setStage(draft.prospectId, 'CONTACTED', 'Följ upp inom fem arbetsdagar om inget svar kommit.');
     this.platform.store.addTimelineEvent(draft.prospectId, 'outreach_sent', `Outreach sent to ${draft.toValue ?? 'unknown recipient'}`, { draftId });
     return updated;
   }
@@ -115,13 +115,13 @@ export class OutreachService {
       store.addSuppression('domain', prospect.domain, 'Recipient asked not to be contacted');
       if (contactValue) store.addSuppression('email', contactValue, 'Recipient asked not to be contacted');
       store.setProspectFacts(prospectId, { outreachStatus: 'suppressed' });
-      store.setStage(prospectId, 'LOST', 'Opted out — do not contact again.', 'Opt-out received');
+      store.setStage(prospectId, 'LOST', 'Ingen åtgärd — bett om att inte bli kontaktad igen.', 'Opt-out received');
       store.addTimelineEvent(prospectId, 'stage_changed', 'Opt-out received; prospect suppressed', { replyExcerpt: replyText.slice(0, 200) });
       return { optedOut: true };
     }
 
     store.setProspectFacts(prospectId, { outreachStatus: 'replied' });
-    store.setStage(prospectId, 'REPLIED', 'Offer a 30-minute walkthrough of the findings.');
+    store.setStage(prospectId, 'REPLIED', 'Erbjud en 30-minuters genomgång av fynden.');
     return { optedOut: false };
   }
 

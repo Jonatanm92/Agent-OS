@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS prospects (
   evidence_score REAL NOT NULL DEFAULT 0,
   outreach_status TEXT NOT NULL DEFAULT 'none',
   sales_stage TEXT NOT NULL DEFAULT 'DISCOVERED',
-  next_action TEXT NOT NULL DEFAULT 'Scan the site',
+  next_action TEXT NOT NULL DEFAULT 'Skanna sajten.',
   notes TEXT,
   site_id TEXT REFERENCES sites(id),
   created_at TEXT NOT NULL,

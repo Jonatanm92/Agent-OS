@@ -194,3 +194,77 @@ describe('third-party attribution', () => {
     expect([...sections.criticalBarriers, ...sections.highPriority].map((f) => f.id)).not.toContain('vendor');
   });
 });
+
+describe('axe finding copy is actually Swedish, not just labelled as such', () => {
+  /**
+   * Regression test for a real defect found by reading a generated developer
+   * report: axe-core's own rule description is English-only, and the fallback
+   * path in Normalize.ts was using it for BOTH the sv and en slots whenever it
+   * was present — which is essentially always. Every axe finding without an
+   * explicit `expected` override therefore showed raw English under "Förväntat
+   * beteende" in an otherwise fully Swedish report.
+   */
+  it('never lets axe-core\'s English description leak into the Swedish expected-behaviour text', () => {
+    const finding = normalizeIssue(
+      issue({
+        rule: 'axe.color-contrast',
+        engine: 'axe-core',
+        observed: 'contrast too low',
+        data: { tags: ['wcag2aa', 'wcag143'], description: 'Ensure the contrast between foreground and background colors meets WCAG 2 AA contrast ratio thresholds' },
+      }),
+      context('product'),
+    );
+    expect(finding.expectedBehaviour).not.toContain('Ensure the contrast');
+    expect(finding.expectedBehaviour).toContain('kontrast');
+  });
+
+  it('falls back to generic Swedish, never axe\'s English, for a rule with no catalog entry at all', () => {
+    const finding = normalizeIssue(
+      issue({
+        rule: 'axe.some-totally-unmapped-rule',
+        engine: 'axe-core',
+        observed: 'axe says so',
+        data: { tags: [], description: 'Some english axe-core description that has never been translated' },
+      }),
+      context('cart'),
+    );
+    expect(finding.expectedBehaviour).not.toContain('Some english axe-core description');
+    expect(finding.expectedBehaviour).toBe('Elementet ska uppfylla det angivna framgångskriteriet.');
+  });
+
+  it('gives every axe rule override an expected-behaviour translation, so none can silently fall through', async () => {
+    const { AXE_RULE_OVERRIDES } = await import('../src/findings/RuleCatalog.js');
+    for (const [id, override] of Object.entries(AXE_RULE_OVERRIDES)) {
+      expect(override.expected, `axe rule "${id}" has no expected-behaviour copy`).toBeDefined();
+      expect(override.expected?.sv, `axe rule "${id}" has no Swedish expected-behaviour text`).toBeTruthy();
+    }
+  });
+});
+
+describe('evidence card heading never repeats itself', () => {
+  /**
+   * Regression test for a real defect found the same way: a finding with no
+   * natural component name (common for axe findings on an unnamed <span> or
+   * <div>) falls back to the rule title as its "component" too, so the report
+   * and the review console both printed "Textkontrasten … — Textkontrasten …".
+   */
+  it('shows the title once when the finding has no distinct component name', async () => {
+    const { evidenceCard } = await import('../src/reports/Html.js');
+    const finding = normalizeIssue(issue({ rule: 'axe.color-contrast', engine: 'axe-core', componentLabel: null, observed: 'x' }), context('product'));
+    const { buildEvidencePack } = await import('../src/evidence/EvidencePack.js');
+    const pack = buildEvidencePack(finding);
+    expect(pack.component).toBe(pack.title);
+    const html = evidenceCard(pack);
+    const titleOccurrences = html.split(pack.title).length - 1;
+    expect(titleOccurrences).toBe(1);
+  });
+
+  it('still shows "title — component" when the component is genuinely distinct', async () => {
+    const { evidenceCard } = await import('../src/reports/Html.js');
+    const { buildEvidencePack } = await import('../src/evidence/EvidencePack.js');
+    const finding = normalizeIssue(issue({ componentLabel: 'Filtrera' }), context('category'));
+    const pack = buildEvidencePack(finding);
+    const html = evidenceCard(pack);
+    expect(html).toContain(`${pack.title} — Filtrera`);
+  });
+});

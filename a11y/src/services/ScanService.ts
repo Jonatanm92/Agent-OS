@@ -230,19 +230,34 @@ export class ScanService {
     });
 
     const nextAction = decideNextAction(scoring);
-    if (!reachable) store.setStage(prospectId, 'DISCOVERED', 'Site could not be tested — verify manually or drop.');
+    if (!reachable) store.setStage(prospectId, 'DISCOVERED', 'Sajten kunde inte testas — verifiera manuellt eller släpp prospektet.');
     else if (scoring.qualification === 'qualified') store.setStage(prospectId, 'QUALIFIED', nextAction);
     else store.setStage(prospectId, 'SCANNED', nextAction);
   }
 }
 
+/**
+ * Swedish text for the ICP signal ids that can drive a disqualification reason
+ * (any signal worth -25 points or more in the default config). An operator can
+ * override the ICP config with their own signal ids, so a signal not in this
+ * map falls back to its own — possibly English — label rather than failing.
+ */
+const DISQUALIFICATION_REASON_SV: Record<string, string> = {
+  unreachable: 'sajten kunde inte testas tekniskt',
+  no_ecommerce: 'inget ehandelsbeteende hittades',
+  b2b_only: 'säljer till företag, inte konsumenter',
+  mature_a11y_program: 'driver redan ett seriöst tillgänglighetsarbete',
+  no_meaningful_findings: 'inga fynd med hög allvarlighet att utgå från',
+};
+
 function decideNextAction(scoring: ScoringResult): string {
   if (scoring.qualification === 'disqualified') {
-    const reason = scoring.applied.filter((s) => s.points <= -25).map((s) => s.label)[0] ?? 'outside ICP';
-    return `Do not work this prospect: ${reason}.`;
+    const signal = scoring.applied.filter((s) => s.points <= -25)[0];
+    const reason = signal ? (DISQUALIFICATION_REASON_SV[signal.id] ?? signal.label) : 'utanför ICP:t';
+    return `Arbeta inte med det här prospektet: ${reason}.`;
   }
-  if (scoring.qualification === 'qualified') return 'Generate the mini audit and send it to review.';
-  return `Lead score ${scoring.leadScore} is below the qualification threshold — re-check only if the ICP changes.`;
+  if (scoring.qualification === 'qualified') return 'Generera mini-audit och skicka till granskning.';
+  return `Lead score ${scoring.leadScore} är under kvalificeringsgränsen — kontrollera igen bara om ICP:t ändras.`;
 }
 
 /**

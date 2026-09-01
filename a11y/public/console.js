@@ -95,7 +95,9 @@ function reviewCard(item) {
       group?.systemic ? badge(`${group.affectedPageCount} sidor`, '') : null,
       ...pack.wcag.map((w) => badge(`WCAG ${w.criterion}`, '')),
     ]),
-    el('h3', { text: `${pack.title} — ${pack.component}` }),
+    // A finding with no natural component name falls back to the rule title as
+    // its component too — showing both would repeat the same text twice.
+    el('h3', { text: pack.component && pack.component !== pack.title ? `${pack.title} — ${pack.component}` : pack.title }),
     el('p', { class: 'meta', text: `${prospectDomain} · ${pack.pageType} · ${pack.url}` }),
     evidence,
     el('div', { class: 'actions' }, [
@@ -243,6 +245,16 @@ const METRIC_LABELS = {
   computeCostPerAuditSek: 'Datorkostnad/audit (SEK)',
 };
 
+// Keys match BusinessMetrics['rates'] in src/analytics/Metrics.ts.
+const RATE_LABELS = {
+  scanToQualified: 'Scan → kvalificerad',
+  qualifiedToContacted: 'Kvalificerad → kontaktad',
+  contactedToResponse: 'Kontaktad → svar',
+  responseToMeeting: 'Svar → möte',
+  meetingToWon: 'Möte → vunnen',
+  discoveredToWon: 'Upptäckt → vunnen',
+};
+
 async function renderMetrics() {
   const { metrics, biggestDropOff } = await api('/api/metrics');
   const target = document.getElementById('metrics');
@@ -251,7 +263,7 @@ async function renderMetrics() {
       el('div', { class: 'cell' }, [el('span', { class: 'n', text: String(metrics[key] ?? 0) }), el('span', { class: 'l', text: label })]),
     ),
     ...Object.entries(metrics.rates).map(([key, value]) =>
-      el('div', { class: 'cell' }, [el('span', { class: 'n', text: `${value}%` }), el('span', { class: 'l', text: key })]),
+      el('div', { class: 'cell' }, [el('span', { class: 'n', text: `${value}%` }), el('span', { class: 'l', text: RATE_LABELS[key] ?? key })]),
     ),
   );
   say(`Största tappet: ${biggestDropOff}.`);
