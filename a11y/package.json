@@ -1,0 +1,35 @@
+{
+  "name": "@agent-os/a11y",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A11Y Revenue OS — accessibility operations platform for finding, auditing, converting and monitoring ecommerce customers",
+  "main": "dist/index.js",
+  "bin": {
+    "a11y-os": "dist/cli/Main.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli/Main.ts",
+    "cli": "node dist/cli/Main.js",
+    "console": "node dist/api/Main.js",
+    "fixtures": "node fixtures/Server.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "axe-core": "^4.10.2",
+    "better-sqlite3": "^11.7.0",
+    "express": "^4.21.2",
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": { "node": ">=20" }
+}

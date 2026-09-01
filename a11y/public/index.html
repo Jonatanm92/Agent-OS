@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A11Y Revenue OS — intern konsol</title>
+<link rel="stylesheet" href="/console.css">
+</head>
+<body>
+<a class="skip" href="#innehall">Hoppa till innehåll</a>
+<header class="topbar">
+  <h1>A11Y Revenue OS</h1>
+  <p class="sub">Intern konsol — granskning, pipeline, outreach och nyckeltal</p>
+</header>
+
+<nav aria-label="Huvudmeny" class="tabs">
+  <button type="button" class="tab" data-view="review" aria-current="page">Granskningskö</button>
+  <button type="button" class="tab" data-view="pipeline">Pipeline</button>
+  <button type="button" class="tab" data-view="outreach">Outreach</button>
+  <button type="button" class="tab" data-view="metrics">Nyckeltal</button>
+</nav>
+
+<main id="innehall">
+  <p id="status" role="status" class="status"></p>
+
+  <section id="view-review" class="view">
+    <h2>Granskningskö</h2>
+    <p class="hint">Endast fynd som en granskare godkänt, eller som en motor bekräftat automatiskt, får hamna i en kundrapport.</p>
+    <div id="review-list" class="list"></div>
+  </section>
+
+  <section id="view-pipeline" class="view" hidden>
+    <h2>Pipeline</h2>
+    <div id="board" class="board"></div>
+    <h3>Arbetslista</h3>
+    <table id="worklist"><caption class="visually-hidden">Prospekt med nästa åtgärd</caption>
+      <thead><tr><th>Domän</th><th>Steg</th><th>Lead</th><th>Evidens</th><th>Nästa åtgärd</th><th>Dagar</th><th>Åtgärd</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="view-outreach" class="view" hidden>
+    <h2>Outreach — granskning före utskick</h2>
+    <p class="hint">Inget skickas härifrån. Konsolen förbereder utkast; en människa läser, godkänner och skickar.</p>
+    <div id="outreach-list" class="list"></div>
+  </section>
+
+  <section id="view-metrics" class="view" hidden>
+    <h2>Nyckeltal</h2>
+    <div id="metrics" class="metrics"></div>
+  </section>
+</main>
+
+<script type="module" src="/console.js"></script>
+</body>
+</html>
