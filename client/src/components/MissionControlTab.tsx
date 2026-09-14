@@ -60,7 +60,7 @@ export function MissionControlTab({
         {tiles.map((t) => (
           <div className={`tile ${t.ok ? 'ok' : 'down'}`} key={t.label}>
             <div className="tile-label">
-              <span className="tile-led" /> {t.label}
+              <span className="tile-led" aria-hidden="true" /> {t.label}
             </div>
             <div className="tile-value">{t.value}</div>
             <div className="tile-sub">{t.sub}</div>

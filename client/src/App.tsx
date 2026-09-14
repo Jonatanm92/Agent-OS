@@ -84,7 +84,7 @@ export function App() {
   }, [gate, refreshStatus, refreshProjects, refreshAgents]);
 
   if (gate === 'loading') {
-    return <div className="boot">Loading Agent OS…</div>;
+    return <div className="boot" role="status">Loading Agent OS…</div>;
   }
   if (gate === 'login') {
     return (
@@ -102,7 +102,8 @@ export function App() {
 
   return (
     <div className={`app ${navOpen ? 'nav-open' : ''}`}>
-      <div className="nav-scrim" onClick={() => setNavOpen(false)} />
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <div className="nav-scrim" aria-hidden="true" onClick={() => setNavOpen(false)} />
       <Sidebar
         tab={tab}
         setTab={(t) => {
@@ -123,9 +124,11 @@ export function App() {
           <button
             className="hamburger"
             aria-label="Menu"
+            aria-expanded={navOpen}
+            aria-controls="sidebar-nav"
             onClick={() => setNavOpen((v) => !v)}
           >
-            ☰
+            <span aria-hidden="true">☰</span>
           </button>
           <h1 className="topbar-title">{tabTitle(tab, activeAgent?.label)}</h1>
           <ProjectPill
@@ -143,7 +146,7 @@ export function App() {
           />
         </header>
 
-        <section className="content">
+        <section className="content" id="main-content" tabIndex={-1}>
           {tab === 'mission' && (
             <MissionControlTab
               onOpenAgent={(id) => {

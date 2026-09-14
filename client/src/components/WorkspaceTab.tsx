@@ -121,7 +121,7 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
       <div className="ws-files">
         <div className="ws-files-head">
           <span>{activeProject.name}</span>
-          <button className="ghost-btn" onClick={refresh} title="Refresh">↻</button>
+          <button className="ghost-btn" onClick={refresh} title="Refresh" aria-label="Refresh file list"><span aria-hidden="true">↻</span></button>
         </div>
         <p className="muted tiny path">{activeProject.path}</p>
         <form
@@ -134,6 +134,7 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
           <input
             value={newName}
             placeholder="new-file.js"
+            aria-label="New file name"
             onChange={(e) => setNewName(e.target.value)}
           />
           <button className="ghost-btn small-btn" type="submit">+ file</button>
@@ -144,6 +145,7 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
             <input
               value={runCmd}
               placeholder={run?.suggested || 'npm run dev'}
+              aria-label="Run command"
               onChange={(e) => setRunCmd(e.target.value)}
             />
             <button
@@ -155,10 +157,11 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
             </button>
           </div>
           <div className="ws-run-row">
-            <span className="muted tiny">localhost:</span>
+            <span className="muted tiny" id="ws-port-label">localhost:</span>
             <input
               className="port-input"
               value={port}
+              aria-labelledby="ws-port-label"
               onChange={(e) => setPort(e.target.value)}
             />
             <button
@@ -168,30 +171,32 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
             >
               ⇗ Preview
             </button>
-            <button className="ghost-btn small-btn" onClick={() => setShowLogs((s) => !s)}>
+            <button className="ghost-btn small-btn" onClick={() => setShowLogs((s) => !s)} aria-expanded={showLogs} aria-controls="ws-run-logs">
               {showLogs ? 'Hide logs' : 'Logs'}
             </button>
-            <span className={`run-led ${run?.running ? 'on' : ''}`} />
+            <span className={`run-led ${run?.running ? 'on' : ''}`} aria-hidden="true" />
           </div>
           {showLogs && (
-            <pre className="run-logs">{runLogs.length ? runLogs.join('\n') : '(no output yet)'}</pre>
+            <pre className="run-logs" id="ws-run-logs">{runLogs.length ? runLogs.join('\n') : '(no output yet)'}</pre>
           )}
         </div>
 
         {activeProject && <GitPanel projectId={activeProject.id} />}
         <div className="ws-file-list">
           {files.map((f) => (
-            <div
+            <button
               key={f.path}
+              type="button"
               className={`ws-file ${selected?.path === f.path ? 'active' : ''}`}
+              aria-current={selected?.path === f.path ? 'true' : undefined}
               onClick={() => {
                 setSelected(f);
                 setMode(f.kind === 'source' ? 'source' : 'preview');
               }}
             >
-              <span className={`ws-kind ${f.kind}`}>{kindIcon(f.kind)}</span>
+              <span className={`ws-kind ${f.kind}`} aria-hidden="true">{kindIcon(f.kind)}</span>
               <span className="ws-name">{f.path}</span>
-            </div>
+            </button>
           ))}
           {files.length === 0 && (
             <p className="muted small">Empty. Files the agent writes appear here — or create one above.</p>
@@ -207,11 +212,11 @@ export function WorkspaceTab({ activeProject }: { activeProject?: Project }) {
               <span className="ws-preview-name">{selected.path}</span>
               <div className="ws-bar-right">
                 {selected.kind !== 'source' && (
-                  <div className="toggle">
-                    <button className={mode === 'preview' ? 'on' : ''} onClick={() => setMode('preview')}>
+                  <div className="toggle" role="group" aria-label="View mode">
+                    <button className={mode === 'preview' ? 'on' : ''} aria-pressed={mode === 'preview'} onClick={() => setMode('preview')}>
                       Preview
                     </button>
-                    <button className={mode === 'source' ? 'on' : ''} onClick={() => setMode('source')}>
+                    <button className={mode === 'source' ? 'on' : ''} aria-pressed={mode === 'source'} onClick={() => setMode('source')}>
                       Edit
                     </button>
                   </div>
