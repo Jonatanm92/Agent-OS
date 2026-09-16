@@ -21,7 +21,7 @@ export function renderTasks(state, missionId, agentOsOnline) {
   if (!tasks.length) return '<div class="empty">No tasks for this mission.</div>';
   return tasks.map((task) => {
     const role = state.roles.find((item) => item.id === task.roleId);
-    const runnable = task.executionMode === 'internal' && ['queued', 'failed'].includes(task.status);
+    const runnable = task.executionMode === 'internal' && !task.runBlockedReason && ['queued', 'failed'].includes(task.status);
     const recordable = task.executionMode !== 'internal' && ['blocked', 'queued', 'failed'].includes(task.status);
     return `<article class="task">
       <div>
@@ -34,10 +34,14 @@ export function renderTasks(state, missionId, agentOsOnline) {
         <p class="task-description"><strong>Done when:</strong> ${escapeHtml(task.definitionOfDone)}</p>
         ${task.blockedBy && task.status === 'blocked' ? `<div class="task-blocker">Blocked: ${escapeHtml(task.blockedBy)}</div>` : ''}
         ${task.error ? `<div class="task-blocker">Error: ${escapeHtml(task.error)}</div>` : ''}
+        ${task.status === 'review' ? '<div class="task-blocker">Arbetsutkast klart. Intern QA behöver verifiera källor och resultat.</div>' : ''}
+        ${task.runBlockedReason && ['queued', 'failed'].includes(task.status) ? `<div class="task-blocker">${escapeHtml(task.runBlockedReason)}</div>` : ''}
       </div>
       <div class="task-actions">
         ${runnable ? `<button class="button primary" data-action="run-task" data-task-id="${escapeHtml(task.id)}" ${agentOsOnline ? '' : 'disabled'}>${task.status === 'failed' ? 'Retry' : 'Run'}</button>` : ''}
         ${recordable ? `<button class="button" data-action="record-task" data-task-id="${escapeHtml(task.id)}">Record done</button>` : ''}
+        ${task.status === 'review' ? `<button class="button" data-action="review-task" data-task-id="${escapeHtml(task.id)}">Verifiera resultat</button>` : ''}
+        ${task.executionMode === 'internal' && ['failed', 'blocked', 'review'].includes(task.status) ? `<button class="button ghost" data-action="requeue-task" data-task-id="${escapeHtml(task.id)}">Återköa efter granskning</button>` : ''}
         ${task.output || task.error ? `<button class="button ghost" data-action="view-task" data-task-id="${escapeHtml(task.id)}">View output</button>` : ''}
       </div>
     </article>`;
