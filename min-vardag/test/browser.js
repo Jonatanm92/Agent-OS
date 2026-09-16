@@ -67,11 +67,15 @@ function check(name, condition, extra) {
 
 (async () => {
   const { server, port } = await serve();
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({
+    executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+    args: ['--ignore-certificate-errors'],
+  });
   const context = await browser.newContext({
     ...devices['Pixel 7'],
     locale: 'sv-SE',
     timezoneId: 'Europe/Stockholm',
+    ignoreHTTPSErrors: true,   // sandlådans proxy har en egen rot — inte ett appfel
   });
   const page = await context.newPage();
   const errors = [];
@@ -98,8 +102,10 @@ function check(name, condition, extra) {
 
   check('sidan laddar utan javascript-fel', errors.length === 0, errors.join('\n      '));
   check('"Min dag" är startvyn', await page.locator('h1', { hasText: 'Min dag' }).count() === 1);
-  check('rutan "Gör det här nu" finns', await page.locator('.now').count() >= 1);
-  check('lagringsläget redovisas ärligt', /webbläsaren/i.test(await page.locator('.chiprow').last().innerText()));
+  check('rutan "Gör det här nu" finns', await page.locator('.next').count() >= 1);
+  check('dagsbandet ritas ut', await page.locator('.ribbon-track').count() === 1);
+  check('nu-markören syns på dagsbandet', await page.locator('.ribbon-now').count() === 1);
+  check('lagringsläget redovisas ärligt', /webbläsaren/i.test(await page.locator('#app').innerText()));
   check('AI-läget redovisas ärligt', /Ingen AI|regeltolkning/i.test(await page.locator('body').innerText()));
 
   const scroll = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -117,7 +123,7 @@ function check(name, condition, extra) {
   check('alla tryckytor är minst 36 px höga', small.length === 0, small.join(', '));
 
   /* --- navigering --- */
-  for (const [label, heading] of [['Barn', 'Barn'], ['Kan vänta', 'Kan vänta'], ['Kväll', 'Kväll och morgon'], ['Berätta', 'Berätta']]) {
+  for (const [label, heading] of [['Barn', 'Barn'], ['Vecka', 'Vecka'], ['Kväll', 'Kväll och morgon'], ['Berätta', 'Berätta']]) {
     await page.locator(`.nav button:has-text("${label}")`).click();
     await page.waitForTimeout(150);
     check(`navigering till ${label}`, await page.locator('h1', { hasText: heading }).count() === 1);
@@ -169,8 +175,8 @@ function check(name, condition, extra) {
   await page.waitForTimeout(200);
   const barnText = await page.locator('#app').innerText();
   check('status finns kvar efter omladdning', /Bekräftat klart/.test(barnText), barnText.slice(0, 300));
-  const alvaText = await page.locator('.card').filter({ hasText: 'Alva' }).first().innerText();
-  const noaText = await page.locator('.card').filter({ hasText: 'Noa' }).first().innerText();
+  const alvaText = await page.locator('section.section').filter({ hasText: 'Alva' }).first().innerText();
+  const noaText = await page.locator('section.section').filter({ hasText: 'Noa' }).first().innerText();
   check('Alvas jacka rördes inte — den var aldrig vald',
     /Behöver ordnas/.test(alvaText) && !/Bekräftat klart/.test(alvaText), alvaText.slice(0, 200));
   check('Noas jacka blev bekräftad', /Bekräftat klart/.test(noaText), noaText.slice(0, 200));
@@ -178,7 +184,7 @@ function check(name, condition, extra) {
   check('orsaken "slut i butiken" sparades på rätt behov', /Slut i butiken/.test(alvaText), alvaText.slice(0, 200));
 
   /* --- delvis inköp --- */
-  const alvaCard = page.locator('.card').filter({ hasText: 'Alva' }).first();
+  const alvaCard = page.locator('section.section').filter({ hasText: 'Alva' }).first();
   await alvaCard.locator('.row', { hasText: '2 byxor' }).locator('.tick').click();
   await page.waitForTimeout(300);
   const partial = await alvaCard.innerText();
@@ -188,16 +194,17 @@ function check(name, condition, extra) {
   /* --- ångra --- */
   await page.locator('.toast button:has-text("Ångra")').click();
   await page.waitForTimeout(300);
-  check('ångra återställer delköpet', !/1 av 2 klara/.test(await page.locator('.card').filter({ hasText: 'Alva' }).first().innerText()));
+  check('ångra återställer delköpet', !/1 av 2 klara/.test(await page.locator('section.section').filter({ hasText: 'Alva' }).first().innerText()));
 
   /* --- låg ork --- */
   await page.locator('.nav button:has-text("Min dag")').click();
   await page.waitForTimeout(200);
-  const energyChip = page.locator('.chip', { hasText: 'Ork:' }).first();
-  for (let i = 0; i < 4; i++) {
-    if (/Låg/.test(await energyChip.innerText())) break;
-    await energyChip.click(); await page.waitForTimeout(200);
-  }
+  await page.locator('.chip', { hasText: 'Ork:' }).first().click();
+  await page.waitForTimeout(250);
+  check('orken sätts i ett ark, inte en systemruta', await page.locator('.sheet').count() === 1);
+  await page.locator('.sheet button:has-text("Låg")').click();
+  await page.waitForTimeout(300);
+  check('arket stängs när valet är gjort', await page.locator('.sheet').count() === 0);
   check('orken går att sätta till låg', /Låg/.test(await page.locator('.chip', { hasText: 'Ork:' }).first().innerText()));
   const dayText = await page.locator('#app').innerText();
   check('låg ork ger en lättare dag utan skuldbeläggning',
@@ -229,6 +236,109 @@ function check(name, condition, extra) {
     contrast.bg !== 'rgba(0, 0, 0, 0)' && contrast.bg !== contrast.fg, JSON.stringify(contrast));
 
   check('inga javascript-fel under hela flödet', errors.length === 0, errors.slice(0, 3).join('\n      '));
+
+  /* --- vecka och återkommande --- */
+  await page.locator('.nav button:has-text("Vecka")').click();
+  await page.waitForTimeout(250);
+  check('veckan visar sju dagar', await page.locator('.daycard').count() >= 7,
+    `fick ${await page.locator('.daycard').count()}`);
+  check('i dag är markerad', await page.locator('.daycard.today').count() === 1);
+  check('okända dagar redovisas som okända i veckan',
+    /Arbete okänt/.test(await page.locator('#app').innerText()));
+
+  await page.locator('button:has-text("Lägg till")').first().click();
+  await page.waitForTimeout(250);
+  check('återkommande läggs till i ett ark', await page.locator('.sheet').count() === 1);
+  await page.locator('.sheet [data-input="title"]').fill('Styrketräning');
+  // Dagsväljaren börjar på måndag: index 0 = mån, 1 = tis, 2 = ons …
+  await page.locator('.sheet .daypick button').nth(1).click();   // tisdag
+  await page.waitForTimeout(150);
+  await page.locator('.sheet [data-input="start"]').fill('19:00');
+  await page.locator('.sheet button:has-text("Lägg till")').last().click();
+  await page.waitForTimeout(350);
+  check('det återkommande sparas och beskrivs på svenska',
+    /Tisdagar 19:00/.test(await page.locator('#app').innerText()),
+    (await page.locator('#app').innerText()).slice(0, 300));
+
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(400);
+  await page.locator('.nav button:has-text("Vecka")').click();
+  await page.waitForTimeout(250);
+  check('det återkommande finns kvar efter omladdning',
+    /Styrketräning/.test(await page.locator('#app').innerText()));
+
+  /* --- bekräfta en dag via dagsarket --- */
+  await page.locator('.daycard').first().click();
+  await page.waitForTimeout(250);
+  check('dagsarket öppnas', await page.locator('.sheet').count() === 1);
+  await page.locator('.sheet .seg').first().locator('button:has-text("Jobb")').click();
+  await page.waitForTimeout(300);
+  await page.locator('.sheet button:has-text("Klar")').click();
+  await page.waitForTimeout(300);
+  check('dagen är nu bekräftad arbetsdag',
+    /Arbete(?!\s*okänt)/.test(await page.locator('.daycard').first().innerText()),
+    await page.locator('.daycard').first().innerText());
+
+  /* --- rutiner --- */
+  await page.locator('.nav button:has-text("Kväll")').click();
+  await page.waitForTimeout(250);
+  const kvallFirst = await page.locator('#app').innerText();
+  check('utan rutin erbjuds att lägga till en, inget hittas på',
+    /Ingen kvällsrutin än/.test(kvallFirst), kvallFirst.slice(0, 200));
+
+  await page.locator('button:has-text("Lägg till rutin")').click();
+  await page.waitForTimeout(250);
+  check('rutinarket erbjuder färdiga förslag', await page.locator('.sheet .chip').count() >= 1);
+  await page.locator('.sheet .chip').first().click();
+  await page.waitForTimeout(200);
+  await page.locator('.sheet button:has-text("Lägg till")').last().click();
+  await page.waitForTimeout(350);
+  check('rutinen visas i kvällsvyn', await page.locator('.routine').count() >= 1);
+
+  await page.locator('.routine-head').first().click();
+  await page.waitForTimeout(250);
+  const ticks = page.locator('.routine .tick');
+  check('rutinens punkter går att bocka av', await ticks.count() >= 1);
+  await ticks.first().click();
+  await page.waitForTimeout(350);
+  check('avbockningen räknas', /1\//.test(await page.locator('.routine .val').first().innerText()),
+    await page.locator('.routine .val').first().innerText());
+
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(400);
+  await page.locator('.nav button:has-text("Kväll")').click();
+  await page.waitForTimeout(250);
+  check('rutinen och avbockningen finns kvar efter omladdning',
+    /1\//.test(await page.locator('.routine .val').first().innerText()));
+
+  const kvallHead = await page.locator('.next h2').first().innerText();
+  check('kvällsrubriken räknar även rutinen, inte bara förberedelserna',
+    /kvar innan du kan sl\u00e4ppa dagen|Allt \u00e4r f\u00f6rberett/.test(kvallHead), kvallHead);
+  check('l\u00e4ggdagsr\u00e5det skrivs med svenskt decimalkomma',
+    !/\d\.\d timmars/.test(await page.locator('#app').innerText()));
+
+  /* --- inga systemrutor kvar i de vanliga flödena --- */
+  let nativeDialog = false;
+  page.on('dialog', async (d) => { nativeDialog = true; await d.dismiss(); });
+  await page.locator('.nav button:has-text("Barn")').click();
+  await page.waitForTimeout(250);
+  await page.locator('button:has-text("Lägg till behov")').first().click();
+  await page.waitForTimeout(300);
+  check('behov läggs till i ett ark, inte en systemruta',
+    await page.locator('.sheet').count() === 1 && !nativeDialog);
+  await page.locator('.sheet [data-input="title"]').fill('Regnbyxor');
+  await page.locator('.sheet [data-input="qty"]').fill('2');
+  await page.locator('.sheet button:has-text("Lägg till")').last().click();
+  await page.waitForTimeout(350);
+  check('behovet hamnar under rätt barn',
+    /Regnbyxor/.test(await page.locator('section.section').filter({ hasText: 'Alva' }).first().innerText()));
+
+  /* --- typsnitt --- */
+  const fonts = await page.evaluate(() => {
+    const h1 = document.querySelector('h1');
+    return h1 ? getComputedStyle(h1).fontFamily : '';
+  });
+  check('rubriker använder display-typsnittet', /Bricolage/i.test(fonts), fonts);
 
   console.log(`\n${'─'.repeat(52)}\n${pass} godkända, ${fail} underkända`);
   await browser.close();

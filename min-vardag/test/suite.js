@@ -519,4 +519,196 @@ suite('12. "Gör det här nu" utgår alltid från klockan', () => {
   });
 });
 
+/* ─────────────────────────────────────────────────────────── */
+suite('13. Återkommande åtaganden', () => {
+  const R = MV.recurring;
+
+  function withTraining() {
+    const s = workdayState();                       // 2026-09-16 är en onsdag (veckodag 3)
+    s.recurring.push(M.newRecurring({ title: 'Styrketräning', kind: 'egen', weekdays: [3, 5], start: '19:00', end: '20:00' }));
+    return s;
+  }
+
+  test('infaller på vald veckodag', () => {
+    const items = R.forDate(withTraining(), TODAY);
+    equal(items.length, 1);
+    equal(items[0].title, 'Styrketräning');
+  });
+  test('infaller inte på andra dagar', () => {
+    equal(R.forDate(withTraining(), TOMORROW).length, 0, 'torsdag ska vara tom');
+  });
+  test('syns bland dagens fasta åtaganden', () => {
+    const plan = P.planDay(withTraining(), at('16:30'));
+    assert(plan.fixed.some((f) => f.title === 'Styrketräning'), 'saknas i planen');
+  });
+  test('blockeras inte över av andra uppgifter', () => {
+    const s = withTraining();
+    for (let i = 0; i < 6; i++) addTask(s, { title: `Uppgift ${i}`, minutes: 45 });
+    const plan = P.planDay(s, at('16:30'));
+    const training = plan.fixed.find((f) => f.title === 'Styrketräning');
+    for (const pri of plan.priorities) {
+      assert(pri.end <= training.start || pri.start >= training.end,
+        `${pri.title} krockar med träningen`);
+    }
+  });
+  test('gör inte dagen till arbetsdag av sig själv', () => {
+    const s = fixtureState(MV);
+    s.recurring.push(M.newRecurring({ title: 'Gitarr', weekdays: [3], start: '20:00' }));
+    equal(M.workdayFor(s, TODAY), 'okand', 'arbetsdagen ska fortfarande vara okänd');
+  });
+  test('ett barnbundet åtagande hoppas över när barnet inte är här', () => {
+    const s = fixtureState(MV);
+    s.recurring.push(M.newRecurring({ title: 'Simskola', weekdays: [3], start: '17:00', childIds: ['barn_alva'] }));
+    equal(R.forDate(s, TODAY).length, 0, 'okänd närvaro ska inte ge något åtagande');
+    s.days[TODAY] = Object.assign(M.dayDefaults(), { children: { barn_alva: 'ja' } });
+    equal(R.forDate(s, TODAY).length, 1, 'nu är barnet här');
+  });
+  test('pausat åtagande infaller inte', () => {
+    let s = withTraining();
+    s = A.applyOps(s, [{ op: 'recurring.toggle', id: s.recurring[0].id }], at('12:00')).state;
+    equal(R.forDate(s, TODAY).length, 0);
+  });
+  test('beskrivs på läsbar svenska', () => {
+    equal(R.describe({ weekdays: [1, 2, 3, 4, 5], start: '07:00' }), 'Vardagar 07:00');
+    equal(R.describe({ weekdays: [3], start: '19:00' }), 'Onsdagar 19:00');
+    equal(R.describe({ weekdays: [0, 6], start: '' }), 'Helger');
+  });
+});
+
+/* ─────────────────────────────────────────────────────────── */
+suite('14. Veckoöversikt', () => {
+  test('sju dagar framåt, med i dag först', () => {
+    const week = MV.recurring.weekOverview(workdayState(), at('08:00'), 7);
+    equal(week.length, 7);
+    equal(week[0].dateKey, TODAY);
+    equal(week[0].isToday, true);
+    equal(week[1].dateKey, TOMORROW);
+  });
+  test('okända dagar redovisas som okända', () => {
+    const week = MV.recurring.weekOverview(fixtureState(MV), at('08:00'), 7);
+    assert(week.every((d) => d.work === 'okand'), 'arbetsdagar ska vara okända');
+    assert(week.every((d) => d.unknownChildren.length === 3), 'barnens dagar ska vara okända');
+    assert(week.every((d) => d.present.length === 0), 'inga barn ska antas vara här');
+  });
+  test('tidsgränser syns på rätt dag', () => {
+    const s = workdayState();
+    addTask(s, { title: 'Lämna in blankett', deadline: TOMORROW });
+    const week = MV.recurring.weekOverview(s, at('08:00'), 7);
+    equal(week[1].deadlines.length, 1);
+    equal(week[1].deadlines[0].title, 'Lämna in blankett');
+    equal(week[0].deadlines.length, 0);
+  });
+});
+
+/* ─────────────────────────────────────────────────────────── */
+suite('15. Rutiner återkommer utan att skrivas in på nytt', () => {
+  const Rt = MV.routines;
+
+  function withRoutine() {
+    const s = workdayState();
+    s.routines.push(M.newRoutine({ name: 'Kvällsrutin', when: 'kvall', items: ['Diska', 'Lägg fram kläder'] }));
+    return s;
+  }
+
+  test('rutinen finns utan att skrivas in varje dag', () => {
+    const s = withRoutine();
+    equal(Rt.forDate(s, TODAY, 'kvall').length, 1);
+    equal(Rt.forDate(s, TOMORROW, 'kvall').length, 1);
+    equal(Rt.forDate(s, U.addDays(TODAY, 30), 'kvall').length, 1);
+  });
+
+  test('avbockning gäller bara den dagen — listan nollställs i morgon', () => {
+    let s = withRoutine();
+    const routine = s.routines[0];
+    s = A.applyOps(s, [{ op: 'routine.item', date: TODAY, routineId: routine.id, itemId: routine.items[0].id, done: true }], at('20:00')).state;
+
+    equal(Rt.forDate(s, TODAY, 'kvall')[0].remaining, 1, 'en kvar i dag');
+    equal(Rt.forDate(s, TOMORROW, 'kvall')[0].remaining, 2, 'i morgon ska allt vara obockat igen');
+  });
+
+  test('avbockning går att ångra', () => {
+    let s = withRoutine();
+    const routine = s.routines[0];
+    const item = routine.items[0].id;
+    s = A.applyOps(s, [{ op: 'routine.item', date: TODAY, routineId: routine.id, itemId: item, done: true }], at('20:00')).state;
+    s = A.applyOps(s, [{ op: 'routine.item', date: TODAY, routineId: routine.id, itemId: item, done: false }], at('20:01')).state;
+    equal(Rt.forDate(s, TODAY, 'kvall')[0].remaining, 2);
+  });
+
+  test('sammanfattningen säger när allt är klart', () => {
+    let s = withRoutine();
+    const routine = s.routines[0];
+    for (const item of routine.items) {
+      s = A.applyOps(s, [{ op: 'routine.item', date: TODAY, routineId: routine.id, itemId: item.id, done: true }], at('20:00')).state;
+    }
+    const sum = Rt.summary(s, TODAY, 'kvall');
+    equal(sum.complete, true);
+    equal(sum.label, 'Kvällsrutinen är klar');
+  });
+
+  test('en rutin som kräver barn visas inte när inga barn är här', () => {
+    const s = fixtureState(MV);
+    s.routines.push(M.newRoutine({ name: 'Kväll med barnen', when: 'kvall', items: ['Saga'], requiresChildren: true }));
+    equal(Rt.forDate(s, TODAY, 'kvall').length, 0, 'okänd närvaro ska inte ge rutinen');
+    s.days[TODAY] = Object.assign(M.dayDefaults(), { children: { barn_alva: 'ja' } });
+    equal(Rt.forDate(s, TODAY, 'kvall').length, 1);
+  });
+
+  test('veckodagsfilter respekteras', () => {
+    const s = fixtureState(MV);
+    s.routines.push(M.newRoutine({ name: 'Bara fredag', when: 'morgon', items: ['Sopor'], weekdays: [5] }));
+    equal(Rt.forDate(s, TODAY, 'morgon').length, 0, 'onsdag');
+    equal(Rt.forDate(s, '2026-09-18', 'morgon').length, 1, 'fredag');
+  });
+
+  test('appen skapar inga rutiner åt mig', () => {
+    equal(fixtureState(MV).routines.length, 0);
+    assert(Rt.ROUTINE_TEMPLATES.length > 0, 'förslag ska finnas att välja');
+  });
+});
+
+/* ─────────────────────────────────────────────────────────── */
+suite('16. Packlistor', () => {
+  const Rt = MV.routines;
+
+  function withPack() {
+    const s = fixtureState(MV);
+    s.days[TODAY] = Object.assign(M.dayDefaults(), { children: { barn_alva: 'ja', barn_noa: 'nej' } });
+    s.packLists.push(M.newPackList({ name: 'Förskola', childId: 'barn_alva', items: ['Extrakläder', 'Blöjor'] }));
+    s.packLists.push(M.newPackList({ name: 'Förskola', childId: 'barn_noa', items: ['Extrakläder'] }));
+    return s;
+  }
+
+  test('bara listor för barn som faktiskt är här visas', () => {
+    const lists = Rt.packForDate(withPack(), TODAY);
+    equal(lists.length, 1);
+    equal(lists[0].childName, 'Alva');
+  });
+
+  test('avbockning räknas och nollställs nästa dag', () => {
+    let s = withPack();
+    const list = s.packLists[0];
+    s = A.applyOps(s, [{ op: 'pack.item', date: TODAY, listId: list.id, itemId: list.items[0].id, done: true }], at('19:00')).state;
+    equal(Rt.packForDate(s, TODAY)[0].remaining, 1);
+    s.days[TOMORROW] = Object.assign(M.dayDefaults(), { children: { barn_alva: 'ja' } });
+    equal(Rt.packForDate(s, TOMORROW)[0].remaining, 2, 'ny dag, ny lista');
+  });
+
+  test('en lista utan barn gäller alla dagar', () => {
+    const s = fixtureState(MV);
+    s.packLists.push(M.newPackList({ name: 'Gympapåse', childId: null, items: ['Skor'] }));
+    equal(Rt.packForDate(s, TODAY).length, 1);
+  });
+
+  test('punkter kan läggas till och tas bort', () => {
+    let s = withPack();
+    const id = s.packLists[0].id;
+    s = A.applyOps(s, [{ op: 'pack.addItem', listId: id, label: 'Regnkläder' }], at('19:00')).state;
+    equal(s.packLists[0].items.length, 3);
+    const removed = s.packLists[0].items[2].id;
+    s = A.applyOps(s, [{ op: 'pack.removeItem', listId: id, itemId: removed }], at('19:01')).state;
+    equal(s.packLists[0].items.length, 2);
+  });
+});
+
 process.exitCode = h.report() ? 0 : 1;

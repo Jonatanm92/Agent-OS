@@ -87,6 +87,11 @@
       });
     }
 
+    // Återkommande åtaganden som infaller denna veckodag.
+    if (MV.recurring) {
+      for (const r of MV.recurring.forDate(state, dateKey)) fixed.push(r);
+    }
+
     // Engångsåtaganden för just detta datum.
     for (const c of state.commitments) {
       if (c.date !== dateKey) continue;
@@ -299,7 +304,9 @@
     let reserved = null;
     const biggest = leftover.slice().sort((a, b) => (b.end - b.start) - (a.end - a.start))[0];
     if (biggest && biggest.end - biggest.start >= 45 && biggest.start < quietFrom) {
-      const idea = (s.ownTime || []).find((o) => !o.disabled);
+      // Ligger aktiviteten redan i dagen som ett åtagande föreslås den inte igen.
+      const alreadyToday = new Set(fixed.map((f) => U.normalize(f.title)));
+      const idea = (s.ownTime || []).find((o) => !o.disabled && !alreadyToday.has(U.normalize(o.label)));
       reserved = energy === 'lag'
         ? { title: 'Återhämtning', detail: 'Ta det lugnt. Det räcker i dag.', start: biggest.start, minutes: Math.min(60, biggest.end - biggest.start) }
         : {

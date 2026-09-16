@@ -87,6 +87,46 @@
           : `Storlek för ${name(op.childId)}${op.brand ? ` hos ${op.brand}` : ''}: ${op.value}${op.preliminary ? ' (preliminär provstorlek)' : ''}`;
       case 'prep.done':
         return `Bocka av förberedelse: ${op.label}`;
+      case 'recurring.add':
+        return `Lägg till återkommande: ${op.title}${op.start ? ` ${op.start}` : ''}`;
+      case 'recurring.remove': {
+        const r = (state.recurring || []).find((x) => x.id === op.id);
+        return r ? `Ta bort återkommande: ${r.title}` : 'Ta bort återkommande åtagande';
+      }
+      case 'recurring.toggle': {
+        const r = (state.recurring || []).find((x) => x.id === op.id);
+        return r ? `${r.active ? 'Pausa' : 'Aktivera'}: ${r.title}` : 'Ändra återkommande åtagande';
+      }
+      case 'routine.add':
+        return `Lägg till rutin: ${op.name}`;
+      case 'routine.remove': {
+        const r = (state.routines || []).find((x) => x.id === op.id);
+        return r ? `Ta bort rutin: ${r.name}` : 'Ta bort rutin';
+      }
+      case 'routine.item':
+        return op.done ? 'Bocka av en punkt i rutinen' : 'Ångra en punkt i rutinen';
+      case 'routine.addItem': {
+        const r = (state.routines || []).find((x) => x.id === op.routineId);
+        return `Lägg till "${op.label}"${r ? ` i ${r.name}` : ''}`;
+      }
+      case 'routine.removeItem':
+        return 'Ta bort en punkt ur rutinen';
+      case 'pack.add':
+        return `Lägg till packlista: ${op.name}${op.childId ? ` för ${name(op.childId)}` : ''}`;
+      case 'pack.remove': {
+        const l = (state.packLists || []).find((x) => x.id === op.id);
+        return l ? `Ta bort packlista: ${l.name}` : 'Ta bort packlista';
+      }
+      case 'pack.item':
+        return op.done ? 'Bocka av en punkt i packlistan' : 'Ångra en punkt i packlistan';
+      case 'pack.addItem':
+        return `Lägg till "${op.label}" i packlistan`;
+      case 'pack.removeItem':
+        return 'Ta bort en punkt ur packlistan';
+      case 'pack.reset': {
+        const l = (state.packLists || []).find((x) => x.id === op.listId);
+        return l ? `Nollställ ${l.name}` : 'Nollställ packlistan';
+      }
       default:
         return 'Okänd ändring (hoppas över)';
     }
@@ -111,6 +151,22 @@
         return !!op.childId && !!op.title;
       case 'day.children':
         return !!M.childById(state, op.childId);
+      case 'recurring.remove': case 'recurring.toggle':
+        return (state.recurring || []).some((r) => r.id === op.id);
+      case 'routine.remove': case 'routine.addItem': case 'routine.removeItem':
+        return (state.routines || []).some((r) => r.id === (op.id || op.routineId));
+      case 'routine.item':
+        return (state.routines || []).some((r) => r.id === op.routineId);
+      case 'pack.remove': case 'pack.addItem': case 'pack.removeItem':
+        return (state.packLists || []).some((l) => l.id === (op.id || op.listId));
+      case 'pack.item': case 'pack.reset':
+        return (state.packLists || []).some((l) => l.id === op.listId);
+      case 'recurring.add':
+        return !!op.title && Array.isArray(op.weekdays) && op.weekdays.length > 0;
+      case 'routine.add':
+        return !!op.name;
+      case 'pack.add':
+        return !!op.name;
       case 'size.set':
         return !!M.childById(state, op.childId) && !!op.value;
       default:
@@ -292,6 +348,83 @@
           const day = next.days[op.date || dateKey] || M.dayDefaults();
           day.prepDone = (day.prepDone || []).filter((k) => k !== op.key);
           next.days[op.date || dateKey] = day;
+          break;
+        }
+
+        /* --- återkommande åtaganden --- */
+        case 'recurring.add': {
+          next.recurring.push(M.newRecurring(op));
+          break;
+        }
+        case 'recurring.remove': {
+          next.recurring = next.recurring.filter((r) => r.id !== op.id);
+          break;
+        }
+        case 'recurring.toggle': {
+          const r = next.recurring.find((x) => x.id === op.id);
+          if (r) r.active = !r.active;
+          break;
+        }
+
+        /* --- rutiner --- */
+        case 'routine.add': {
+          next.routines.push(M.newRoutine(op));
+          break;
+        }
+        case 'routine.remove': {
+          next.routines = next.routines.filter((r) => r.id !== op.id);
+          break;
+        }
+        case 'routine.item': {
+          const day = next.days[op.date || dateKey] || M.dayDefaults();
+          const done = new Set(day.routineDone[op.routineId] || []);
+          if (op.done) done.add(op.itemId); else done.delete(op.itemId);
+          day.routineDone = Object.assign({}, day.routineDone, { [op.routineId]: Array.from(done) });
+          next.days[op.date || dateKey] = day;
+          break;
+        }
+        case 'routine.addItem': {
+          const r = next.routines.find((x) => x.id === op.routineId);
+          if (r) r.items.push({ id: U.makeId('punkt'), label: String(op.label).trim() });
+          break;
+        }
+        case 'routine.removeItem': {
+          const r = next.routines.find((x) => x.id === op.routineId);
+          if (r) r.items = r.items.filter((i) => i.id !== op.itemId);
+          break;
+        }
+
+        /* --- packlistor --- */
+        case 'pack.add': {
+          next.packLists.push(M.newPackList(op));
+          break;
+        }
+        case 'pack.remove': {
+          next.packLists = next.packLists.filter((l) => l.id !== op.id);
+          break;
+        }
+        case 'pack.item': {
+          const day = next.days[op.date || dateKey] || M.dayDefaults();
+          const done = new Set(day.packDone[op.listId] || []);
+          if (op.done) done.add(op.itemId); else done.delete(op.itemId);
+          day.packDone = Object.assign({}, day.packDone, { [op.listId]: Array.from(done) });
+          next.days[op.date || dateKey] = day;
+          break;
+        }
+        case 'pack.reset': {
+          const day = next.days[op.date || dateKey] || M.dayDefaults();
+          day.packDone = Object.assign({}, day.packDone, { [op.listId]: [] });
+          next.days[op.date || dateKey] = day;
+          break;
+        }
+        case 'pack.addItem': {
+          const l = next.packLists.find((x) => x.id === op.listId);
+          if (l) l.items.push({ id: U.makeId('punkt'), label: String(op.label).trim() });
+          break;
+        }
+        case 'pack.removeItem': {
+          const l = next.packLists.find((x) => x.id === op.listId);
+          if (l) l.items = l.items.filter((i) => i.id !== op.itemId);
           break;
         }
         default:

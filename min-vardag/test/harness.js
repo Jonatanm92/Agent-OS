@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const ROOT = path.join(__dirname, '..');
-const CORE = ['util.js', 'model.js', 'planner.js', 'language.js', 'apply.js', 'evening.js'];
+const CORE = ['util.js', 'model.js', 'planner.js', 'recurring.js', 'routines.js', 'language.js', 'apply.js', 'evening.js'];
 
 function loadCore() {
   for (const file of CORE) {

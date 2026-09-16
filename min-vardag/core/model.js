@@ -67,6 +67,9 @@
       tasks: [],
       sizes: [],
       commitments: [],
+      recurring: [],    // återkommande åtaganden (träning, aktiviteter, arbetspass)
+      routines: [],     // morgon- och kvällsrutiner som återkommer av sig själva
+      packLists: [],    // packlistor per barn och tillfälle
       updatedAt: null,
     };
   }
@@ -80,7 +83,7 @@
     s.settings.meals = (raw.settings && raw.settings.meals) || defaultSettings().meals;
     s.settings.ownTime = (raw.settings && raw.settings.ownTime) || [];
     s.weekTemplate = Object.assign(defaultWeekTemplate(), raw.weekTemplate || {});
-    for (const key of ['children', 'needs', 'tasks', 'sizes', 'commitments']) {
+    for (const key of ['children', 'needs', 'tasks', 'sizes', 'commitments', 'recurring', 'routines', 'packLists']) {
       if (!Array.isArray(s[key])) s[key] = [];
     }
     if (!s.days || typeof s.days !== 'object') s.days = {};
@@ -150,7 +153,12 @@
   }
 
   function dayDefaults() {
-    return { energy: 'okand', work: null, children: {}, note: '', prepDone: [], skipped: [] };
+    return {
+      energy: 'okand', work: null, children: {}, note: '',
+      prepDone: [], skipped: [],
+      routineDone: {},   // { rutinId: [punktId, ...] } — nollställs av sig själv varje dag
+      packDone: {},      // { packlistId: [punktId, ...] }
+    };
   }
 
   /** Dagens kontext: dagsöverstyrning vinner över veckomall, annars okänt. */
@@ -160,6 +168,8 @@
       children: Object.assign({}, stored.children || {}),
       prepDone: (stored.prepDone || []).slice(),
       skipped: (stored.skipped || []).slice(),
+      routineDone: Object.assign({}, stored.routineDone || {}),
+      packDone: Object.assign({}, stored.packDone || {}),
     });
   }
 
@@ -218,8 +228,50 @@
     return state.tasks.filter((t) => t.status === 'oppen');
   }
 
+  /** Ett återkommande åtagande. Veckodagar: 0 = söndag ... 6 = lördag. */
+  function newRecurring(fields) {
+    return {
+      id: U.makeId('ater'),
+      title: String(fields.title || '').trim(),
+      kind: fields.kind || 'annat',          // arbete | barn | egen | annat
+      weekdays: (fields.weekdays || []).map(Number).filter((d) => d >= 0 && d <= 6),
+      start: fields.start || '',
+      end: fields.end || '',
+      childIds: fields.childIds || [],
+      travel: fields.travel !== false,
+      active: fields.active !== false,
+      note: fields.note || '',
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  /** En rutin: en kort lista som återkommer utan att skrivas in på nytt. */
+  function newRoutine(fields) {
+    return {
+      id: U.makeId('rutin'),
+      name: String(fields.name || '').trim(),
+      when: fields.when === 'kvall' ? 'kvall' : 'morgon',
+      items: (fields.items || []).map((label) => ({ id: U.makeId('punkt'), label: String(label).trim() })),
+      weekdays: Array.isArray(fields.weekdays) ? fields.weekdays.map(Number) : null,  // null = alla dagar
+      requiresChildren: !!fields.requiresChildren,
+      active: fields.active !== false,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  function newPackList(fields) {
+    return {
+      id: U.makeId('pack'),
+      name: String(fields.name || '').trim(),
+      childId: fields.childId || null,     // null = gäller alla barn
+      items: (fields.items || []).map((label) => ({ id: U.makeId('punkt'), label: String(label).trim() })),
+      createdAt: new Date().toISOString(),
+    };
+  }
+
   MV.model = {
     SCHEMA_VERSION, NEED_STATUS, ENERGY, TRISTATE,
+    newRecurring, newRoutine, newPackList,
     emptyState, migrate, defaultSettings, defaultWeekTemplate, dayDefaults,
     newChild, newNeed, newTask, newSize,
     getDay, workdayFor, childPresence, presenceSummary, energyFor,

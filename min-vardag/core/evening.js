@@ -100,7 +100,7 @@
       items: all, remaining: remaining.length, notes,
       isEvening: nowMinutes >= (U.toMinutes(s.eveningQuietFrom) ?? 1200),
       bedtimeHint: bedtime !== null
-        ? `Du går upp ${s.wakeTime}. Läggdags ${s.bedtime} ger ${sleepHours} timmars sömn.`
+        ? `Du går upp ${s.wakeTime}. Läggdags ${s.bedtime} ger ${String(sleepHours).replace('.', ',')} timmars sömn.`
         : '',
       tomorrowFixed: P.buildFixed(state, tomorrow, { nowMinutes: 0, isToday: false }).fixed
         .filter((f) => f.id !== 'morgon')

@@ -14,8 +14,9 @@ annat projekt.
 | **Min dag** | Startsidan: en tydlig nästa handling, högst tre prioriteringar, dagens fasta åtaganden och en diskret översikt över det som kommer senare. |
 | **Berätta** | Fritext eller diktering → konkreta, granskningsbara ändringar av planen. Ingenting sker utan godkännande. |
 | **Barn** | Behov, storlekar och förberedelser per barn, med tre åtskilda steg: behöver ordnas → planerat → bekräftat klart. |
+| **Vecka** | Sju dagar framåt med bekräftat läge per dag, plus återkommande åtaganden som skrivs in en gång. |
 | **Kan vänta** | Sådant som inte behöver göras i dag, utan att det försvinner. Tidsgränser lyfts fram. |
-| **Kväll** | Vad som behöver förberedas inför i morgon — härlett ur bekräftade fakta, aldrig påhittat. |
+| **Kväll** | Kvällsrutin, förberedelser och packlistor inför i morgon — härlett ur bekräftade fakta, aldrig påhittat. |
 
 ## Principer som koden håller
 
@@ -32,6 +33,8 @@ Dessa är inte ambitioner utan testade regler (`test/suite.js`):
 - **Missade förslag staplas inte** ovanpå morgondagens plan. Tidsgränser väger tyngre.
 - **Inga omdömen.** Ingen poängsättning av föräldraskap, inga sviter, inga skuldbeläggande påminnelser.
 - **En regelmotor kallas aldrig AI.** Saknas AI-anslutning står det i gränssnittet.
+- **Återkommande gör inga antaganden.** En träning på onsdagar gör inte onsdagen till arbetsdag eller barndag.
+- **Rutiner nollställs av sig själva.** Avbockningen sparas per datum, så listan är ny nästa dag.
 
 ## Struktur
 
@@ -40,16 +43,19 @@ core/      ren domänlogik, utan DOM — samma filer körs i test och i webbläs
   util.js      tid och datum i Europe/Stockholm, oberoende av enhetens tidszon
   model.js     datamodell och härledda frågor om dagen
   planner.js   dagsplanering: fasta åtaganden, marginaler, prioriteringar
+  recurring.js återkommande åtaganden och veckoöversikt
+  routines.js  rutiner och packlistor som återkommer av sig själva
   language.js  svensk regeltolkning av fritext → ändringsförslag
   apply.js     tillämpning av ändringar, med beskrivning i klartext
   evening.js   kväll och morgon
 app/
   storage.js   lagring (skyddad db, annars localStorage) och ångra
   ai.js        valfri AI-tolkning med strikt validering av svaret
+  icons.js     ikoner som infogad SVG — inga färgemoji
   ui.js        gränssnittet
 test/
-  suite.js     61 enhetstester av domänlogiken
-  browser.js   38 tester i riktig webbläsare, i mobilstorlek
+  suite.js     83 enhetstester av domänlogiken
+  browser.js   61 tester i riktig webbläsare, i mobilstorlek
 index.html   skal och formgivning
 ```
 
@@ -62,6 +68,20 @@ filer som webbläsaren, så det som testas är det som körs.
 node test/suite.js                                    # domänlogik
 NODE_PATH=/opt/node22/lib/node_modules node test/browser.js   # webbläsare, mobil
 ```
+
+## Formgivning
+
+Allt som styr utseendet ligger som CSS-variabler överst i `index.html`:
+färger för ljust och mörkt läge, typsnitt, rundningar, tryckytor och skuggor.
+Ändra en rad där och ändringen slår igenom i hela appen.
+
+- **Färg**: svalt papper och bläck med blå ton, petrol som struktur, och EN varm
+  signalfärg som bara nästa handling får använda. Salvia för egen tid och vila.
+- **Typsnitt**: Bricolage Grotesque för rubriker, IBM Plex Sans för text,
+  IBM Plex Mono för klockslag. Alla har riktiga reservtypsnitt om Google Fonts
+  inte går att nå.
+- **Dagsband**: en remsa som visar dygnet från uppgångstid till läggdags med
+  fasta åtaganden som block och en levande nu-markör.
 
 ## Lagring och integritet
 
