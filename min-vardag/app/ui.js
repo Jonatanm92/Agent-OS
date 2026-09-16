@@ -243,6 +243,14 @@
 
   /* ─────────────────── BERÄTTA ─────────────────── */
 
+  /** Exemplet bygger på dina egna barn — inga namn ligger i koden. */
+  function tellPlaceholder(state) {
+    const name = state.children.length ? state.children[0].name : '';
+    return name
+      ? `Skriv eller diktera. Till exempel: "${name} behöver fler byxor. Jag fixar det efter jobbet."`
+      : 'Skriv eller diktera vad som gäller just nu.';
+  }
+
   const EXAMPLES = [
     'Jag har låg ork i dag.',
     'Barnen kommer till mig i kväll.',
@@ -258,7 +266,7 @@
 
     <div class="card tell">
       <label class="sr" for="tell">Skriv vad som gäller</label>
-      <textarea id="tell" placeholder="Skriv eller diktera. Till exempel: &quot;Lo behöver fler byxor. Jag fixar det efter jobbet.&quot;">${esc(ui.draft)}</textarea>
+      <textarea id="tell" placeholder="${esc(tellPlaceholder(state))}">${esc(ui.draft)}</textarea>
       <div class="suggest">${EXAMPLES.map((e) => `<button class="chip" data-action="example" data-text="${esc(e)}">${esc(e)}</button>`).join('')}</div>
       <button class="btn primary wide" data-action="interpret" ${ui.busy ? 'disabled' : ''}>${
         ui.busy ? 'Tolkar …' : 'Föreslå ändringar'}</button>

@@ -451,7 +451,9 @@
     const t = U.normalize(text);
     if (/förbereda|förberedelse|inför i morgon|imorgon/.test(t)) return { kind: 'forberedelse' };
     if (/viktigast|vad ska jag göra|vad gör jag nu|härnäst/.test(t)) return { kind: 'nu' };
-    if (/behöver.*(barnen|lo|sam|malte)|vad saknas|vad fattas/.test(t)) return { kind: 'behov' };
+    // Barnens namn kommer ur användarens egna uppgifter — aldrig ur koden.
+    const mentionsChild = findChildren(state, t).length > 0 || /\bbarnen\b/.test(t);
+    if ((/behöver/.test(t) && mentionsChild) || /vad saknas|vad fattas/.test(t)) return { kind: 'behov' };
     return null;
   }
 

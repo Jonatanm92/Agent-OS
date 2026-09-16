@@ -9,6 +9,19 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css' };
 
+/* Samma skal som artefaktplattformen lägger runt sidan vid publicering:
+ * doctype, charset, viewport med viewport-fit=cover och en liten reset.
+ * Testet kör därför sidan i exakt den form den publiceras i. */
+function wrap(body) {
+  return `<!doctype html><html lang="sv"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,sans-serif;background:#fafafa}
+img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>${body}</body></html>`;
+}
+
 function serve() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
@@ -17,8 +30,9 @@ function serve() {
       if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
         res.writeHead(404); res.end('nope'); return;
       }
+      const isPage = path.extname(file) === '.html';
       res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
-      res.end(fs.readFileSync(file));
+      res.end(isPage ? wrap(fs.readFileSync(file, 'utf8')) : fs.readFileSync(file));
     });
     server.listen(0, '127.0.0.1', () => resolve({ server, port: server.address().port }));
   });
