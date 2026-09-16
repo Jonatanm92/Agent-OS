@@ -1,5 +1,38 @@
 # Revenue OS v1 — BidSprint 48
 
+## Runtime recovery — 16 September 2026
+
+The BidSprint mission below is a **legacy seeded template**, not evidence of an
+active customer or authorization to revive that offer. Review the persisted active
+mission before starting any local worker. The separate hosted Income Control pilot
+uses its own saved operating journal; it is not connected to this localhost API.
+
+The runtime now limits execution to the active mission, waits for explicitly listed
+`dependsOn` tasks to be verified done, and passes their outputs into the next prompt.
+Model replies enter `review`, not `done`. An internal QA/project-manager review must
+record a verification note before completion. This review is not an external-action
+approval and does not need to be assigned to the owner.
+
+Task attempts are reserved in persisted `runBudget` **before** the provider call.
+The daily task-attempt cap applies to manual and scheduled task runs, including
+failures. It is an attempt cap, not a monetary limit or a cap on the separate AI-grill
+endpoint. Transient HTTP failures get exponential backoff with at most three
+attempts. Credit/auth failures and ambiguous network outcomes require inspection.
+Interrupted work is quarantined after restart, never blindly replayed. Only one task
+may execute at a time in one server process; run one process per state directory.
+
+`node doctor.mjs` performs read-only service/state checks without initializing or
+rewriting state, calling a model, or printing secrets. A healthy HTTP endpoint does
+not prove that the model has credit, has tools, or has completed real work.
+
+The local task adapter is still **text-only** (`agentic: false`). It cannot perform
+fresh web research or customer actions. Its output must disclose missing access.
+Use a tool-enabled hosted worker for sourced research and internal work products;
+do not label text responses as browsing, deployed code, customer sends or income.
+
+Run `node --test test/*.test.mjs` for the baseline and runtime integration suite.
+Integration cases use a local fixture HTTP provider; they are not live model tests.
+
 Revenue OS is the commercial control plane in front of the existing Agent OS pipeline.
 It keeps one revenue mission active, blocks speculative product work and lets the AI team perform
 bounded internal work while Jonatan retains control over outreach, contracts, payments and other

@@ -95,8 +95,17 @@ contentEl.addEventListener('click', async (event) => {
   if (!button) return;
   const action = button.dataset.action;
   if (action === 'refresh') return loadState();
-  if (action === 'run-next') return withBusy(() => request('/api/tasks/run-next', { method: 'POST', body: '{}' }), 'Internal work product completed.');
-  if (action === 'run-task') return withBusy(() => request(`/api/tasks/${encodeURIComponent(button.dataset.taskId)}/run`, { method: 'POST', body: '{}' }), 'Task completed by the assigned AI employee.');
+  if (action === 'run-next') return withBusy(() => request('/api/tasks/run-next', { method: 'POST', body: '{}' }), 'Arbetsutkast skapat för intern QA.');
+  if (action === 'run-task') return withBusy(() => request(`/api/tasks/${encodeURIComponent(button.dataset.taskId)}/run`, { method: 'POST', body: '{}' }), 'Arbetsutkast skapat för intern QA.');
+  if (action === 'review-task' || action === 'requeue-task') {
+    const reviewNote = window.prompt(action === 'review-task'
+      ? 'Vilka källor och acceptanskriterier har faktiskt verifierats?'
+      : 'Vad har granskats eller rättats så att ett nytt försök är motiverat?');
+    if (!reviewNote?.trim()) return;
+    return withBusy(() => request(`/api/tasks/${encodeURIComponent(button.dataset.taskId)}`, {
+      method: 'PATCH', body: JSON.stringify({ status: action === 'review-task' ? 'done' : 'queued', reviewNote }),
+    }), 'Granskning sparad.');
+  }
   if (action === 'record-task') {
     const task = state.tasks.find((item) => item.id === button.dataset.taskId);
     const output = window.prompt(`Record what was actually completed for:\n${task?.title || ''}\n\nDo not mark it done unless the real-world action occurred.`);
