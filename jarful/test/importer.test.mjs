@@ -47,3 +47,8 @@ test('blocks private-network URLs (SSRF)', async () => {
 test('AI imports are refused once the free allowance is used', async () => {
   await assert.rejects(importRecipe({ text: 'Mix 2 cups flour with 1 cup water and bake for 20 minutes.' }, { allowAi: false }), (e) => e.status === 402);
 });
+
+test('strips per-line cost annotations', () => {
+  const n = normalizeRecipe({ title: 'x', ingredients: ['2 tsp smoked paprika ($0.20)', '1 lb chicken (£3.50*)', '1 cup rice'], steps: ['Cook.'] }, {});
+  assert.deepEqual(n.ingredients.map((i) => i.raw), ['2 tsp smoked paprika', '1 lb chicken', '1 cup rice']);
+});

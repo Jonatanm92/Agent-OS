@@ -17,6 +17,17 @@ Proof points, each backed by real 1–2★ reviews of the top-grossing competito
 
 ---
 
+## 1b. Ready-to-post videos (in `docs/videos/`)
+
+Recorded from the real app with a real import. Vertical 1080×1920 MP4, ready for TikTok, Reels and Shorts. Upload them natively, add a trending low-volume sound in the app, and put the link in your bio.
+
+| File | Length | Post as | Caption to paste |
+|---|---|---|---|
+| `jarful-import.mp4` | 25 s | Day 2 ("Stop screenshotting") | `I used to have 400 recipe screenshots. Now I paste the link and it's a real recipe + grocery list 🫙 free, no ads. Link in bio #recipes #mealprep #tiktokrecipes #mealplanning #groceryhaul` |
+| `jarful-honest.mp4` | 18 s | Day 3 ("$12 a week") | `Why are recipe apps charging by the WEEK?? I made one that doesn't. Free to use, $2.99/mo for extras or $39 once. #recipeapp #budgetmeals #mealprep #cookingtiktok` |
+
+The import video shows a real Budget Bytes recipe with its source credited. If you'd rather not feature a named blog in an ad, re-record with your own recipe: `node` script notes are in `docs/videos/README.md`.
+
 ## 2. 30-day short-video calendar (TikTok, Reels, Shorts)
 
 Format: 15–30 s vertical screen recording of the real app, with your voice or captions. Post the same video on all three platforms. Two a day is ideal and one is the minimum. The first 1.5 seconds are the hook.

@@ -68,7 +68,9 @@ export function qualityFlags(recipe) {
 }
 
 export function normalizeRecipe(r, meta = {}) {
-  const ingredients = (r.ingredients ?? []).map(decodeEntities).filter(Boolean).map(parseIngredient);
+  // Some blogs annotate cost per line, e.g. "2 tsp paprika ($0.20)".
+  const stripCost = (line) => line.replace(/\s*\(\s*[$£€]\s?\d+(?:[.,]\d{1,2})?\s*\*?\)/g, '').trim();
+  const ingredients = (r.ingredients ?? []).map(decodeEntities).map(stripCost).filter(Boolean).map(parseIngredient);
   const recipe = {
     title: decodeEntities(r.title) || 'Untitled recipe',
     sourceUrl: meta.sourceUrl ?? null,
