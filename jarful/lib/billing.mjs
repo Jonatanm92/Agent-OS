@@ -8,12 +8,12 @@ export const PRICES = {
   lifetime: { label: '$39 once — yours forever', env: 'STRIPE_LINK_LIFETIME' },
 };
 
-export const freeAiLimit = () => Number(process.env.FREE_AI_IMPORTS ?? 20);
+export const freeAiLimit = (h) => Number(process.env.FREE_AI_IMPORTS ?? 20) + (h?.bonusAiImports ?? 0);
 export const isPro = (h) => h.billing.plan === 'pro';
 
 export function aiImportsLeft(h) {
   if (isPro(h)) return Infinity;
-  return Math.max(0, freeAiLimit() - (h.usage[monthKey()] ?? 0));
+  return Math.max(0, freeAiLimit(h) - (h.usage[monthKey()] ?? 0));
 }
 
 export function recordAiImport(h) {

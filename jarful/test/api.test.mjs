@@ -101,3 +101,18 @@ test('built-in object keys are not treated as recipes or invite codes', async ()
   const list = await call('/api/recipes', { token: a.body.token });
   assert.deepEqual(list.body.recipes, []);
 });
+
+test('referral link gives both kitchens bonus AI imports, capped, no self-referral', async () => {
+  const a = await call('/api/household', { method: 'POST', body: { memberName: 'Ref' } });
+  const code = a.body.household.refCode;
+  assert.match(code, /^[A-Z2-9]{6}$/);
+  assert.notEqual(code, a.body.household.inviteCode);
+  const b = await call('/api/household', { method: 'POST', body: { ref: code.toLowerCase() } });
+  assert.equal(b.body.household.bonusAiImports, 10);
+  assert.equal(b.body.household.freeAiLimit, 30);
+  const me = await call('/api/me', { token: a.body.token });
+  assert.equal(me.body.household.referredCount, 1);
+  assert.equal(me.body.household.aiImportsLeft, 30);
+  const bogus = await call('/api/household', { method: 'POST', body: { ref: 'constructor' } });
+  assert.equal(bogus.body.household.bonusAiImports, 0);
+});

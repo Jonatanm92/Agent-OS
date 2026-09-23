@@ -25,6 +25,7 @@ export function computeMetrics(data, now = Date.now()) {
     recipes: { total: hs.reduce((s, h) => s + recipesOf(h).length, 0), byMethod: methods },
     aiImportsThisMonth: hs.reduce((s, h) => s + (h.usage[monthKey(new Date(now))] ?? 0), 0),
     freeUsersAtAiLimit: hs.filter((h) => h.billing.plan !== 'pro' && (h.usage[monthKey(new Date(now))] ?? 0) >= Number(process.env.FREE_AI_IMPORTS ?? 20)).length,
+    referrals: { referredHouseholds: hs.filter((h) => h.referredBy).length, referrers: hs.filter((h) => (h.referredCount ?? 0) > 0).length },
     revenue: { pro: pro.length, subscriptions: pro.filter((h) => h.billing.interval === 'subscription').length, lifetime: pro.filter((h) => h.billing.interval === 'lifetime').length, conversionRate: hs.length ? +(pro.length / hs.length).toFixed(4) : null },
     signupsByDay,
   };

@@ -52,6 +52,7 @@ async function boot() {
   state.config = await api('/api/config').catch(() => ({ aiAvailable: false, freeAiImports: 20, prices: {} }));
   const params = new URLSearchParams(location.search);
   state.pendingJoin = params.get('join');
+  if (params.get('ref')) safeSet('jarful.ref', params.get('ref'));
   const shared = params.get('url') || params.get('text') || params.get('title');
   if (shared) state.pendingShare = { url: (params.get('url') || (params.get('text') ?? '').match(/https?:\/\/\S+/)?.[0] || ''), text: [params.get('title'), params.get('text')].filter(Boolean).join('\n') };
   if (params.get('upgraded')) state.justUpgraded = true;
@@ -125,7 +126,7 @@ function renderLanding() {
   const nameVal = () => ($('#mname') ?? $('#jname'))?.value.trim();
   $('#create')?.addEventListener('click', async (e) => {
     e.target.disabled = true;
-    try { const r = await api('/api/household', { method: 'POST', body: { memberName: nameVal(), name: nameVal() ? `${nameVal()}'s kitchen` : undefined } }); await signedIn(r.token); }
+    try { const r = await api('/api/household', { method: 'POST', body: { memberName: nameVal(), name: nameVal() ? `${nameVal()}'s kitchen` : undefined, ref: safeGet('jarful.ref') ?? undefined } }); safeSet('jarful.ref', null); await signedIn(r.token); if (r.household.bonusAiImports) toast(`Welcome! Your friend's link gave you ${r.household.bonusAiImports} extra AI imports a month.`); }
     catch (err) { toast(err.message); e.target.disabled = false; }
   });
   $('#join')?.addEventListener('click', async (e) => {
@@ -438,6 +439,10 @@ async function renderKitchen() {
         ${NATIVE ? '' : Object.entries(billing.links).map(([k, l]) => l.url ? `<a class="btn ${k === 'yearly' ? '' : 'secondary'} block" style="text-align:center;text-decoration:none;display:block" href="${esc(l.url)}">${k === 'lifetime' ? 'Lifetime' : k === 'yearly' ? 'Yearly' : 'Monthly'} — ${esc(l.label)}</a>` : '').join('') || '<p class="muted small">Payments are not configured on this server yet.</p>'}
         <p class="muted small">No weekly plans. Cancel in one tap. 14-day refunds.</p>`}
     </div>
+    <div class="card stack"><h2>Give friends 10 extra AI imports</h2>
+      <p class="muted small">When a friend starts their own kitchen from your link, you both get +10 AI imports every month${me.referredCount ? ` — ${me.referredCount} friend${me.referredCount === 1 ? '' : 's'} so far, +${me.bonusAiImports} for you` : ''}.</p>
+      <button class="btn secondary" id="refer">Share my link</button>
+    </div>
     <div class="card stack"><h2>Your data</h2><p class="muted small">Download every recipe and your meal plan as a file, any time.</p><button class="btn secondary" id="export">Export everything</button></div>
     <button class="btn ghost" id="signout">Sign out on this device</button>
     <button class="btn danger" id="delete">Delete my kitchen and all its data</button>
@@ -449,6 +454,12 @@ async function renderKitchen() {
     const text = `Join our kitchen on Jarful: ${invite}`;
     if (navigator.share) navigator.share({ title: 'Jarful', text, url: invite }).catch(() => {});
     else { await navigator.clipboard?.writeText(invite).catch(() => {}); toast('Invite link copied'); }
+  };
+  $('#refer').onclick = async () => {
+    const link = `${WEB_ORIGIN}/?ref=${me.refCode}`;
+    const text = `I save all my recipes in Jarful — no ads, no weekly subscription. Start with 10 extra AI imports: ${link}`;
+    if (navigator.share) navigator.share({ title: 'Jarful', text, url: link }).catch(() => {});
+    else { await navigator.clipboard?.writeText(link).catch(() => {}); toast('Link copied'); }
   };
   $('#export').onclick = async () => {
     const res = await fetch(API_BASE + '/api/export', { headers: { authorization: `Bearer ${state.token}` } });

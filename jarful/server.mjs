@@ -65,8 +65,9 @@ function publicHousehold(store, h) {
   return {
     id: h.id, name: h.name, inviteCode: h.inviteCode, members: store.membersOf(h.id),
     plan: h.billing.plan, interval: h.billing.interval, pro: isPro(h),
-    aiImportsUsed: h.usage[monthKey()] ?? 0, aiImportsLeft: isPro(h) ? null : aiImportsLeft(h), freeAiLimit: freeAiLimit(),
+    aiImportsUsed: h.usage[monthKey()] ?? 0, aiImportsLeft: isPro(h) ? null : aiImportsLeft(h), freeAiLimit: freeAiLimit(h),
     recipeCount: Object.keys(h.recipes).length,
+    refCode: store.ensureRefCode(h), referredCount: h.referredCount ?? 0, bonusAiImports: h.bonusAiImports ?? 0,
   };
 }
 
@@ -116,6 +117,7 @@ export function createApp(store) {
       rateLimit(`create:${ip}`, 10, 3600e3);
       const b = JSON.parse(await readBody(req) || '{}');
       const { household, token } = store.createHousehold(b.name, b.memberName);
+      if (b.ref) store.applyReferral(household, b.ref);
       await store.save();
       return json(res, 201, { token, household: publicHousehold(store, household) });
     }

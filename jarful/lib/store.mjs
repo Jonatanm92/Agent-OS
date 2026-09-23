@@ -13,7 +13,7 @@ export const inviteCode = () => Array.from(randomBytes(6), (b) => INVITE_ALPHABE
 export class Store {
   constructor(file) {
     this.file = file;
-    this.data = { households: {}, members: {}, invites: {}, stripeCustomers: {}, processedEvents: {} };
+    this.data = { households: {}, members: {}, invites: {}, referrals: {}, stripeCustomers: {}, processedEvents: {} };
     this.saving = Promise.resolve();
     this.dirty = false;
   }
@@ -21,6 +21,8 @@ export class Store {
   async load() {
     if (existsSync(this.file)) this.data = { ...this.data, ...JSON.parse(await readFile(this.file, 'utf8')) };
     else await mkdir(dirname(this.file), { recursive: true });
+    this.data.referrals ??= {};
+    for (const h of Object.values(this.data.households)) this.ensureRefCode(h);
     return this;
   }
 
@@ -36,6 +38,29 @@ export class Store {
     return this.saving;
   }
 
+  // Referral codes are separate from invite codes: an invite joins YOUR kitchen, a referral starts a new one.
+  ensureRefCode(h) {
+    if (h.refCode && this.data.referrals[h.refCode] === h.id) return h.refCode;
+    let code = inviteCode();
+    while (this.data.referrals[code] || this.data.invites[code]) code = inviteCode();
+    h.refCode = code; this.data.referrals[code] = h.id;
+    h.bonusAiImports ??= 0; h.referredCount ??= 0;
+    return code;
+  }
+
+  // Both sides get +perReferral monthly AI imports; the referrer's bonus is capped.
+  applyReferral(newHousehold, refCode, { perReferral = 10, cap = 100 } = {}) {
+    const key = String(refCode || '').trim().toUpperCase();
+    const refId = Object.hasOwn(this.data.referrals, key) ? this.data.referrals[key] : null;
+    const referrer = refId && this.data.households[refId];
+    if (!referrer || referrer.id === newHousehold.id) return false;
+    newHousehold.referredBy = referrer.id;
+    newHousehold.bonusAiImports = (newHousehold.bonusAiImports ?? 0) + perReferral;
+    referrer.referredCount = (referrer.referredCount ?? 0) + 1;
+    referrer.bonusAiImports = Math.min(cap, (referrer.bonusAiImports ?? 0) + perReferral);
+    return true;
+  }
+
   createHousehold(name, memberName) {
     const id = newId();
     let code = inviteCode();
@@ -46,6 +71,7 @@ export class Store {
       usage: {}, recipes: {}, mealPlan: {}, grocery: { checked: {}, extras: [] },
     };
     this.data.invites[code] = id;
+    this.ensureRefCode(this.data.households[id]);
     const token = this.addMember(id, memberName);
     return { household: this.data.households[id], token };
   }
@@ -72,6 +98,7 @@ export class Store {
     const h = this.data.households[householdId];
     if (!h) return false;
     delete this.data.invites[h.inviteCode];
+    if (h.refCode) delete this.data.referrals[h.refCode];
     for (const [k, m] of Object.entries(this.data.members)) if (m.householdId === householdId) delete this.data.members[k];
     for (const [cus, id] of Object.entries(this.data.stripeCustomers)) if (id === householdId) delete this.data.stripeCustomers[cus];
     delete this.data.households[householdId];

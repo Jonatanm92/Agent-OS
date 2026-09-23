@@ -41,3 +41,12 @@ test('checkout links carry the household id', () => {
   assert.equal(checkoutLinks('hh1').lifetime.url, null);
   delete process.env.STRIPE_LINK_MONTHLY;
 });
+
+test('referrer bonus is capped', () => {
+  const store = new Store('/dev/null');
+  const { household: r } = store.createHousehold('R');
+  for (let i = 0; i < 15; i++) store.applyReferral(store.createHousehold(`n${i}`).household, r.refCode);
+  assert.equal(r.bonusAiImports, 100);
+  assert.equal(r.referredCount, 15);
+  assert.equal(store.applyReferral(r, r.refCode), false);
+});
