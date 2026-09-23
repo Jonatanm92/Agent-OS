@@ -1,0 +1,13 @@
+[
+  { "id": "tiktok-marry-me-chicken", "text": "the viral marry me chicken 😍🔥 sear 2 chicken breasts in olive oil til golden, set aside. same pan: 3 garlic cloves + 1/2 cup sun dried tomatoes, then 1 cup heavy cream, 1/2 cup parm, 1 tsp italian seasoning & red pepper flakes. chicken back in, simmer 10 min. top w basil 🌿 #marrymechicken #dinnerideas #easyrecipe follow for more!!",
+    "expect": ["chicken breast", "olive oil", "garlic", "sun dried tomato", "heavy cream", "parm", "italian seasoning", "red pepper flake", "basil"] },
+  { "id": "tiktok-cottage-cheese-flatbread", "text": "high protein flatbread 🫓 blend 1 cup cottage cheese + 2 eggs + garlic powder, spread thin on parchment, bake 350F 30-35 min. that's it!! #cottagecheese #highprotein",
+    "expect": ["cottage cheese", "egg", "garlic powder"] },
+  { "id": "ig-gochujang-salmon", "text": "Gochujang salmon bowls in 20 min 🍣\n\nSauce: 2 tbsp gochujang, 1 tbsp soy sauce, 1 tbsp honey, 1 tsp sesame oil\nBrush over 2 salmon fillets and air fry at 400F for 9 mins.\nServe over rice with cucumber, avocado, and sliced green onions. Sprinkle sesame seeds!\n\nSave this for later 📌",
+    "expect": ["gochujang", "soy sauce", "honey", "sesame oil", "salmon", "rice", "cucumber", "avocado", "green onion", "sesame seed"] },
+  { "id": "yt-description-banana-bread", "text": "My grandma's banana bread!\nINGREDIENTS\n3 very ripe bananas\n1/3 cup melted butter\n3/4 cup sugar\n1 egg, beaten\n1 tsp vanilla\n1 tsp baking soda\npinch of salt\n1 1/2 cups all-purpose flour\n\nMash the bananas, mix in the butter. Add sugar, egg, vanilla. Sprinkle baking soda and salt over and mix. Add flour. Bake at 350F for 1 hour.\n\n00:00 intro 01:12 mixing 04:30 baking\nMy kitchen gear: https://example.com/affiliate",
+    "expect": ["banana", "butter", "sugar", "egg", "vanilla", "baking soda", "salt", "flour"] },
+  { "id": "ingredients-only-in-steps", "text": "one pan lemon orzo!! toast 1.5 cups orzo in butter, pour in 3 cups veggie broth, simmer 12 min stirring. then stir in a couple big handfuls of spinach, the zest + juice of a lemon and lots of parmesan. black pepper to finish",
+    "expect": ["orzo", "butter", "broth", "spinach", "lemon", "parmesan", "black pepper"] },
+  { "id": "not-a-recipe", "text": "POV: it's sunday and you have nothing planned 😂 who else?? #relatable #sundayvibes", "expect": [], "notRecipe": true }
+]

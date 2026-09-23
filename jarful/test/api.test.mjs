@@ -90,3 +90,14 @@ test('CORS is granted to native app origins only', async () => {
   const evil = await fetch(`${base}/api/config`, { headers: { origin: 'https://evil.example' } });
   assert.equal(evil.headers.get('access-control-allow-origin'), null);
 });
+
+test('built-in object keys are not treated as recipes or invite codes', async () => {
+  const a = await call('/api/household', { method: 'POST', body: {} });
+  for (const id of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) {
+    assert.equal((await call(`/api/recipes/${id}`, { token: a.body.token })).status, 404, id);
+    assert.equal((await call(`/api/recipes/${id}`, { method: 'PUT', token: a.body.token, body: { title: 'x' } })).status, 404, id);
+  }
+  assert.equal((await call('/api/join', { method: 'POST', body: { code: 'constructor' } })).status, 404);
+  const list = await call('/api/recipes', { token: a.body.token });
+  assert.deepEqual(list.body.recipes, []);
+});

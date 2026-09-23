@@ -55,7 +55,7 @@ export function applyStripeEvent(store, event) {
   const obj = event.data?.object ?? {};
 
   if (event.type === 'checkout.session.completed') {
-    const h = d.households[obj.client_reference_id];
+    const h = Object.hasOwn(d.households, String(obj.client_reference_id)) ? d.households[obj.client_reference_id] : null;
     if (!h) return 'unknown household';
     const lifetime = obj.mode === 'payment';
     h.billing = { ...h.billing, plan: 'pro', interval: lifetime ? 'lifetime' : 'subscription', stripeCustomerId: obj.customer ?? h.billing.stripeCustomerId, subscriptionId: obj.subscription ?? null, since: new Date().toISOString() };

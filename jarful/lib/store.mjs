@@ -57,7 +57,8 @@ export class Store {
   }
 
   join(code, memberName) {
-    const id = this.data.invites[String(code || '').trim().toUpperCase()];
+    const key = String(code || '').trim().toUpperCase();
+    const id = Object.hasOwn(this.data.invites, key) ? this.data.invites[key] : null;
     if (!id) return null;
     return { household: this.data.households[id], token: this.addMember(id, memberName) };
   }

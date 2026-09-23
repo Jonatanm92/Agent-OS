@@ -25,6 +25,7 @@ npm install
 cp .env.example .env      # add ANTHROPIC_API_KEY for AI imports
 npm start                 # http://localhost:8787
 npm test                  # parsing, JSON-LD, grocery merge, SSRF guard, Stripe, metrics, API flow
+node eval/run.mjs claude-opus-5 claude-haiku-4-5   # AI import quality + cost per model (needs API key, costs cents)
 ```
 
 ## Stripe

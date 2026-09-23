@@ -33,9 +33,9 @@ async function readBody(req, limit = 12 * 1024 * 1024) {
   for await (const c of req) { size += c.length; if (size > limit) throw new HttpError(413, 'Request too large'); chunks.push(c); }
   return Buffer.concat(chunks).toString('utf8');
 }
-// Behind a proxy (Render, Fly, Cloudflare) the socket address is the proxy's; trust the
-// first X-Forwarded-For hop only when TRUST_PROXY=1.
-const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || '';
+// Behind one reverse proxy (Render, Fly) the socket address is the proxy's. With TRUST_PROXY=1 we
+// take the LAST X-Forwarded-For entry: the one our proxy appended. Earlier entries are client-supplied.
+const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',').pop().trim() : '') || req.socket.remoteAddress || '';
 
 const SECURITY_HEADERS = {
   'x-content-type-options': 'nosniff',
@@ -106,7 +106,7 @@ export function createApp(store) {
 
     if (path === '/api/admin/metrics' && method === 'GET') {
       const want = process.env.ADMIN_TOKEN ?? '';
-      const got = String(req.headers['x-admin-token'] ?? url.searchParams.get('token') ?? '');
+      const got = String(req.headers['x-admin-token'] ?? ''); // header only: URLs end up in logs
       if (want.length < 16 || got.length !== want.length || !timingSafeEqual(Buffer.from(got), Buffer.from(want))) throw new HttpError(404, 'Not found');
       return json(res, 200, computeMetrics(store.data));
     }
@@ -181,7 +181,7 @@ export function createApp(store) {
     }
     const rm = path.match(/^\/api\/recipes\/([\w-]+)$/);
     if (rm) {
-      const r = h.recipes[rm[1]];
+      const r = Object.hasOwn(h.recipes, rm[1]) ? h.recipes[rm[1]] : null;
       if (!r) throw new HttpError(404, 'Recipe not found');
       if (method === 'GET') return json(res, 200, { recipe: r });
       if (method === 'PUT') {
@@ -205,7 +205,7 @@ export function createApp(store) {
     if (path === '/api/plan' && method === 'PUT') {
       const b = JSON.parse(await readBody(req) || '{}');
       if (!isDate(b.date)) throw new HttpError(400, 'date must be YYYY-MM-DD');
-      const entries = (b.entries ?? []).filter((e) => h.recipes[e.recipeId]).slice(0, 10).map((e) => ({ recipeId: e.recipeId, servings: Number(e.servings) || h.recipes[e.recipeId].servings || null }));
+      const entries = (Array.isArray(b.entries) ? b.entries : []).filter((e) => Object.hasOwn(h.recipes, String(e?.recipeId))).slice(0, 10).map((e) => ({ recipeId: e.recipeId, servings: Number(e.servings) || h.recipes[e.recipeId].servings || null }));
       if (entries.length) h.mealPlan[b.date] = entries; else delete h.mealPlan[b.date];
       await store.save();
       return json(res, 200, { date: b.date, entries });

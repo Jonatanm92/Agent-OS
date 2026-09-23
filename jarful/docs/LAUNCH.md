@@ -32,6 +32,27 @@ Full table: `app-gap-radar/data/report-us.md`.
 | "Can't family share… my wife can't use it when buying groceries" / "tried to join the household, it deleted his work" | **Household sharing is free**: one invite code, and grocery ticks sync live between members. |
 | "Lost all my data" | **One-tap export** of everything, plus an offline cache. |
 
+### International check (same method, run the same day)
+
+| Market | Apps / reviews | Food & Drink gap rank | Recipe/meal-planning apps in the top 12 grossing |
+|---|---|---|---|
+| US | 192 / 25,313 | **#1 of 16** | ReciMe #1, TapCook #3, mise #5, Osta #9 |
+| UK | 192 / 53,258 | **#2 of 16** | ReciMe #1, mise #2, Mob #3, Herbi #4 (81% 1–2★), Mealia #5 |
+| Canada | 192 / 49,142 | **#2 of 16** | ReciMe #1, Mob #3 (75% 1–2★), Osta #4, MealPrepPro #5, mise #6 |
+| Australia | 192 / 48,164 | #5 of 16 | ReciMe #1, mise #2 (64% 1–2★), Mob #4, Osta #7 (60% 1–2★) |
+
+**ReciMe, the category leader, is the #1 top-grossing food app in all four markets.** The Canadian feed returned 500 of its recent reviews (the US feed returned none):
+- 53% are 1–2★, even though its lifetime average is 4.7 from 22k ratings. Recent users are much angrier than the lifetime average suggests.
+- In the 264 negative reviews, the most common words were "free" (109), "subscription" (46), "expensive" / "price" (34 each), "import" (25) and "limit" (13).
+- Newest complaints, September 2026:
+  - "tells you it's free to use but requires you to subscribe for their 7-day free trial before being able to use the 'free' features"
+  - "doesn't even let me use it once before purchasing"
+  - "so many issues with the recipe imports, missing items, incomplete recipes"
+  - "Along came the update and I lost them all… emailed for help 4 times with no response"
+  - "They refused the refund."
+
+Every one of these maps to a Jarful promise: a real free tier with no trial wall, a missing-ingredient check, one-tap export, and a 14-day refund. Launching in English-speaking markets first (US, UK, CA, AU) needs no product changes.
+
 ## 2. Customer base
 
 Who they are, inferred from review language and the competitors' positioning (this is an inference, not survey data):
@@ -45,7 +66,7 @@ Who they are, inferred from review language and the competitors' positioning (th
 - Free: unlimited recipes and website imports, meal plan, shared grocery list, 20 AI imports per month.
 - Pro: $2.99/mo · $19.99/yr · $39 lifetime. Web checkout via Stripe Payment Links, so there's no 15–30% app-store cut on the web.
 
-**AI cost per import (you should decide this):** the default model is `claude-opus-5` (best extraction quality). A typical page or caption import is ~3–8k input and ~0.5k output tokens, which works out to about **$0.02–0.05 per AI import**. A free user who uses all 20 AI imports costs about $1/month. Two levers, set in `.env`:
+**AI cost per import (you should decide this, with data):** run `ANTHROPIC_API_KEY=... node eval/run.mjs claude-opus-5 claude-haiku-4-5`. It extracts 6 realistic captions (including ingredients only mentioned in the steps, and a non-recipe) and prints ingredient recall and cost per import for each model. Estimates: the default model is `claude-opus-5` (best extraction quality). A typical page or caption import is ~3–8k input and ~0.5k output tokens, which works out to about **$0.02–0.05 per AI import**. A free user who uses all 20 AI imports costs about $1/month. Two levers, set in `.env`:
 - `FREE_AI_IMPORTS`: lower it if free usage gets expensive.
 - `JARFUL_MODEL=claude-haiku-4-5`: about 5× cheaper per import. Run it on 20–30 real captions first and compare accuracy before switching.
 
