@@ -70,10 +70,22 @@ export function parseIngredient(raw) {
   return { qty, unit, name, note, raw: line };
 }
 
+// Things you buy whole: scaled amounts round up (4.5 cloves -> 5), count items to the nearest half.
+export const DISCRETE_UNITS = new Set(['clove', 'can', 'slice', 'package', 'bunch', 'pinch']);
+export function roundScaled(qty, unit) {
+  if (qty === null) return null;
+  if (DISCRETE_UNITS.has(unit)) return Math.max(1, Math.ceil(qty - 0.05));
+  if (!unit) return Math.max(0.5, Math.round(qty * 2) / 2);
+  return qty;
+}
+
 export function scaleIngredient(ing, factor) {
   if (ing.qty === null || factor === 1) return { ...ing };
-  return { ...ing, qty: ing.qty * factor };
+  return { ...ing, qty: roundScaled(ing.qty * factor, ing.unit) };
 }
+
+const PLURAL = { cup: 'cups', clove: 'cloves', can: 'cans', slice: 'slices', bunch: 'bunches', package: 'packages', pinch: 'pinches' };
+export const unitLabel = (unit, qty) => (unit === 'floz' ? 'fl oz' : qty > 1 && PLURAL[unit] ? PLURAL[unit] : unit ?? '');
 
 const NICE = [[0.125, '⅛'], [0.25, '¼'], [1 / 3, '⅓'], [0.375, '⅜'], [0.5, '½'], [0.625, '⅝'], [2 / 3, '⅔'], [0.75, '¾'], [0.875, '⅞']];
 export function formatQty(q) {
@@ -89,14 +101,13 @@ export function formatQty(q) {
 
 export function formatIngredient(ing) {
   const q = formatQty(ing.qty);
-  const u = ing.unit ? (ing.qty && ing.qty > 1 && !['ml', 'g', 'kg', 'l', 'oz', 'lb', 'tsp', 'tbsp', 'floz'].includes(ing.unit) ? ing.unit + 's' : ing.unit) : '';
-  return [q, u === 'floz' ? 'fl oz' : u, ing.name].filter(Boolean).join(' ') + (ing.note ? `, ${ing.note}` : '');
+  return [q, unitLabel(ing.unit, ing.qty), ing.name].filter(Boolean).join(' ') + (ing.note ? `, ${ing.note}` : '');
 }
 
 // Grocery aisles, first match wins. Keeps the list walkable in a real store.
 const AISLES = [
   // Shelf-stable versions of produce words must win before Produce does.
-  ['Pantry', /\b(powder|dried|flakes|ground (cumin|coriander|cinnamon|ginger|nutmeg|cloves|black pepper)|black pepper|white pepper|cayenne|peppercorn|paprika|seasoning|bouillon|canned|diced tomatoes|crushed tomatoes|tomato (paste|sauce|puree)|sun-dried|broth|stock|salsa)\b/],
+  ['Pantry', /\b(salt|powder|dried|flakes|ground (cumin|coriander|cinnamon|ginger|nutmeg|cloves|black pepper)|black pepper|white pepper|cayenne|peppercorn|paprika|seasoning|bouillon|canned|diced tomatoes|crushed tomatoes|tomato (paste|sauce|puree)|sun-dried|broth|stock|salsa)\b/],
   ['Produce', /\b(onion|garlic|shallot|tomato|potato|carrot|celery|pepper(?!corn)|lettuce|spinach|kale|cabbage|broccoli|cauliflower|zucchini|squash|cucumber|mushroom|avocado|lemon|lime|orange|apple|banana|berr|grape|herb|cilantro|parsley|basil|mint|dill|thyme|rosemary|ginger|scallion|green onion|leek|corn|pea(s)?\b|bean sprout|jalape|chile|chili pepper|fruit|arugula|eggplant|sweet potato)/],
   ['Meat & Seafood', /\b(chicken|beef|pork|lamb|turkey|bacon|sausage|ham|steak|ground|shrimp|salmon|tuna|fish|cod|prawn|chorizo|prosciutto|meat)/],
   ['Dairy & Eggs', /\b(milk|butter|cream|cheese|yogurt|yoghurt|egg|parmesan|mozzarella|cheddar|feta|ricotta|sour cream|half-and-half|buttermilk)/],

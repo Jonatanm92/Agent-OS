@@ -4,7 +4,7 @@
 // Zero dependencies (Node >= 20, global fetch). Public Apple RSS endpoints only.
 //
 //   node radar.mjs collect   [--country us] [--per-category 15] [--pages 10]
-//   node radar.mjs analyze   -> data/report.json + data/report.md
+//   node radar.mjs analyze   -> data/report-<country>.json + data/report-<country>.md
 
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -171,7 +171,7 @@ async function analyze() {
   for (const [k, list] of Object.entries(quotes)) topQuotes[k] = list.sort((a, b) => b.votes - a.votes || b.text.length - a.text.length).slice(0, 6);
 
   const report = { country, collectedAt, analyzedAt: new Date().toISOString(), totals: { apps: apps.length, reviews: apps.reduce((s, a) => s + a.reviews.length, 0) }, genres, apps: appRows.sort((a, b) => b.negShare - a.negShare), quotes: topQuotes };
-  await writeFile(join(DATA, 'report.json'), JSON.stringify(report, null, 1));
+  await writeFile(join(DATA, `report-${country}.json`), JSON.stringify(report, null, 1));
 
   const md = [`# App Gap Radar — ${country.toUpperCase()} (${collectedAt.slice(0, 10)})`, '', `${report.totals.apps} top-grossing apps, ${report.totals.reviews} recent reviews.`, '', '## Categories by gap score', '', '| Category | Apps | Reviews | 1–2★ share | Switch/WTP rate | Top complaints | Gap score |', '|---|---|---|---|---|---|---|'];
   for (const g of genres) {
@@ -183,7 +183,7 @@ async function analyze() {
     const top = Object.entries(a.themes).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([t, c]) => `${t} (${c})`).join(', ');
     md.push(`| ${a.name} | ${a.genre} | ${a.grossingRank} | ${a.ratingCount ?? '?'} | ${(a.negShare * 100).toFixed(0)}% | ${top} |`);
   }
-  await writeFile(join(DATA, 'report.md'), md.join('\n') + '\n');
+  await writeFile(join(DATA, `report-${country}.md`), md.join('\n') + '\n');
   console.log(md.slice(0, 30).join('\n'));
 }
 

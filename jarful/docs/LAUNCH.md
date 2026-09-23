@@ -13,7 +13,7 @@ _Research run 2026-09-23 with `app-gap-radar` (US App Store, 16 non-game categor
 | Productivity | 41% | ads, billing trap, pricing, paywall | 33.7 |
 | Business | 49% | billing trap, pricing, bugs, paywall | 33.0 |
 
-Full table: `app-gap-radar/data/report.md`.
+Full table: `app-gap-radar/data/report-us.md`.
 
 **Why Food & Drink, and why recipe saving specifically:**
 

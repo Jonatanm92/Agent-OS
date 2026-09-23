@@ -54,9 +54,18 @@ test('assigns aisles', () => {
 function pick({ qty, unit, name, note }) { return { qty, unit, name, note }; }
 
 test('shelf-stable spices and cans go to Pantry, fresh stays in Produce', () => {
-  for (const n of ['black pepper', 'cayenne pepper', 'garlic powder', 'onion powder', 'fire roasted diced tomatoes', 'chicken broth']) assert.equal(aisleFor(n), 'Pantry', n);
+  for (const n of ['salt and pepper', 'kosher salt', 'black pepper', 'cayenne pepper', 'garlic powder', 'onion powder', 'fire roasted diced tomatoes', 'chicken broth']) assert.equal(aisleFor(n), 'Pantry', n);
   assert.equal(aisleFor('thyme', 'tsp'), 'Pantry');
   assert.equal(aisleFor('thyme', 'bunch'), 'Produce');
   assert.equal(aisleFor('bell peppers'), 'Produce');
   assert.equal(parseIngredient('3 green onions*, sliced').name, 'green onions');
+});
+
+test('scaling rounds whole-item units and pluralizes', async () => {
+  const { scaleIngredient, formatIngredient } = await import('../lib/ingredients.mjs');
+  assert.equal(formatIngredient(scaleIngredient(parseIngredient('3 cloves garlic'), 1.5)), '5 cloves garlic');
+  assert.equal(formatIngredient(scaleIngredient(parseIngredient('1 cup heavy cream'), 1.5)), '1 ½ cups heavy cream');
+  assert.equal(formatIngredient(scaleIngredient(parseIngredient('4 eggs'), 0.75)), '3 eggs');
+  assert.equal(formatIngredient(scaleIngredient(parseIngredient('1 onion'), 1.4)), '1 ½ onion');
+  assert.equal(formatIngredient(scaleIngredient(parseIngredient('1 can coconut milk'), 0.5)), '1 can coconut milk');
 });

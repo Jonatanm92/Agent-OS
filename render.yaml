@@ -1,0 +1,39 @@
+# Render Blueprint — deploys Jarful (jarful/) with a persistent disk.
+# Render dashboard → New → Blueprint → pick this repo/branch. Fill the secret env vars when prompted.
+services:
+  - type: web
+    name: jarful
+    runtime: docker
+    rootDir: jarful
+    dockerfilePath: ./Dockerfile
+    plan: starter            # persistent disks need a paid instance (~$7/mo)
+    healthCheckPath: /api/health
+    disk:
+      name: jarful-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: JARFUL_DB
+        value: /data/db.json
+      - key: TRUST_PROXY
+        value: "1"
+      - key: JARFUL_MODEL
+        value: claude-opus-5
+      - key: FREE_AI_IMPORTS
+        value: "20"
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PUBLIC_URL
+        sync: false
+      - key: STRIPE_LINK_MONTHLY
+        sync: false
+      - key: STRIPE_LINK_YEARLY
+        sync: false
+      - key: STRIPE_LINK_LIFETIME
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PORTAL_URL
+        sync: false

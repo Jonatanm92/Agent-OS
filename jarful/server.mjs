@@ -9,6 +9,8 @@ import { Store, newId, monthKey } from './lib/store.mjs';
 import { importRecipe, ImportError } from './lib/importer.mjs';
 import { aiAvailable } from './lib/ai.mjs';
 import { parseIngredient, buildGroceryList, scaleIngredient } from './lib/ingredients.mjs';
+import { computeMetrics } from './lib/metrics.mjs';
+import { timingSafeEqual } from 'node:crypto';
 import { aiImportsLeft, recordAiImport, checkoutLinks, freeAiLimit, isPro, verifyStripeSignature, applyStripeEvent, PRICES } from './lib/billing.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -22,7 +24,7 @@ if (existsSync(join(HERE, '.env'))) {
   }
 }
 
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.ico': 'image/x-icon' };
+const MIME = { '.xml': 'application/xml; charset=utf-8', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.ico': 'image/x-icon' };
 
 class HttpError extends Error { constructor(status, message) { super(message); this.status = status; } }
 
@@ -31,7 +33,18 @@ async function readBody(req, limit = 12 * 1024 * 1024) {
   for await (const c of req) { size += c.length; if (size > limit) throw new HttpError(413, 'Request too large'); chunks.push(c); }
   return Buffer.concat(chunks).toString('utf8');
 }
-const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); };
+// Behind a proxy (Render, Fly, Cloudflare) the socket address is the proxy's; trust the
+// first X-Forwarded-For hop only when TRUST_PROXY=1.
+const clientIp = (req) => (process.env.TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '') || req.socket.remoteAddress || '';
+
+const SECURITY_HEADERS = {
+  'x-content-type-options': 'nosniff',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'x-frame-options': 'DENY',
+  'permissions-policy': 'camera=(self), microphone=(), geolocation=()',
+  'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+};
+const json = (res, status, body) => { res.writeHead(status, { ...SECURITY_HEADERS, 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); };
 
 // naive in-memory rate limiter: key -> timestamps
 const hits = new Map();
@@ -91,7 +104,14 @@ export function createApp(store) {
       return json(res, 200, { received: true });
     }
 
-    const ip = req.socket.remoteAddress ?? '';
+    if (path === '/api/admin/metrics' && method === 'GET') {
+      const want = process.env.ADMIN_TOKEN ?? '';
+      const got = String(req.headers['x-admin-token'] ?? url.searchParams.get('token') ?? '');
+      if (want.length < 16 || got.length !== want.length || !timingSafeEqual(Buffer.from(got), Buffer.from(want))) throw new HttpError(404, 'Not found');
+      return json(res, 200, computeMetrics(store.data));
+    }
+
+    const ip = clientIp(req);
     if (path === '/api/household' && method === 'POST') {
       rateLimit(`create:${ip}`, 10, 3600e3);
       const b = JSON.parse(await readBody(req) || '{}');
@@ -120,6 +140,13 @@ export function createApp(store) {
       if (b.name) h.name = String(b.name).slice(0, 60);
       await store.save();
       return json(res, 200, { household: publicHousehold(store, h) });
+    }
+    if (path === '/api/me' && method === 'DELETE') {
+      const b = JSON.parse(await readBody(req) || '{}');
+      if (String(b.confirm ?? '').trim().toUpperCase() !== 'DELETE') throw new HttpError(400, 'Type DELETE to confirm.');
+      if (h.billing.plan === 'pro' && h.billing.interval === 'subscription') throw new HttpError(409, 'Cancel your subscription first (Kitchen → Manage or cancel), then delete.');
+      store.deleteHousehold(h.id); await store.save();
+      return json(res, 200, { deleted: true });
     }
     if (path === '/api/billing' && method === 'GET') return json(res, 200, { plan: h.billing.plan, interval: h.billing.interval, links: checkoutLinks(h.id), portalUrl: process.env.STRIPE_PORTAL_URL || null });
     if (path === '/api/export' && method === 'GET') {
@@ -218,14 +245,24 @@ export function createApp(store) {
     throw new HttpError(404, 'Not found');
   }
 
+  const SEO_PAGES = ['/', '/save-tiktok-recipes.html', '/save-instagram-recipes.html', '/meal-planner-with-grocery-list.html', '/recipe-app-without-subscription.html'];
   async function serveStatic(req, res, url) {
+    const origin = (process.env.PUBLIC_URL || `http://${req.headers.host}`).replace(/\/$/, '');
+    if (url.pathname === '/robots.txt') {
+      res.writeHead(200, { 'content-type': MIME['.txt'] });
+      return res.end(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n`);
+    }
+    if (url.pathname === '/sitemap.xml') {
+      res.writeHead(200, { 'content-type': MIME['.xml'] });
+      return res.end(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${SEO_PAGES.map((p) => `<url><loc>${origin}${p}</loc></url>`).join('')}</urlset>\n`);
+    }
     let p = normalize(decodeURIComponent(url.pathname)).replace(/^(\.\.[/\\])+/, '');
     if (p === '/' || p === '') p = '/index.html';
     let file = join(PUBLIC, p);
     if (!file.startsWith(PUBLIC)) throw new HttpError(403, 'Forbidden');
     if (!existsSync(file) || (await stat(file)).isDirectory()) file = join(PUBLIC, 'index.html');
     const body = await readFile(file);
-    res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream', 'cache-control': file.endsWith('sw.js') || file.endsWith('.html') ? 'no-cache' : 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
+    res.writeHead(200, { ...SECURITY_HEADERS, 'content-type': MIME[extname(file)] ?? 'application/octet-stream', 'cache-control': file.endsWith('sw.js') || file.endsWith('.html') ? 'no-cache' : 'public, max-age=3600' });
     res.end(body);
   }
 

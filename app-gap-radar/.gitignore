@@ -1,3 +1,5 @@
 data/raw-*.json
-data/report.json
+data/report-*.json
 data/collect.log
+data/collect*.log
+data/intl.done

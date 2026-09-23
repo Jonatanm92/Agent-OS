@@ -67,6 +67,16 @@ export class Store {
     return m ? { member: m, household: this.data.households[m.householdId] } : null;
   }
 
+  deleteHousehold(householdId) {
+    const h = this.data.households[householdId];
+    if (!h) return false;
+    delete this.data.invites[h.inviteCode];
+    for (const [k, m] of Object.entries(this.data.members)) if (m.householdId === householdId) delete this.data.members[k];
+    for (const [cus, id] of Object.entries(this.data.stripeCustomers)) if (id === householdId) delete this.data.stripeCustomers[cus];
+    delete this.data.households[householdId];
+    return true;
+  }
+
   membersOf(householdId) {
     return Object.values(this.data.members).filter((m) => m.householdId === householdId).map((m) => ({ name: m.name, since: m.createdAt }));
   }

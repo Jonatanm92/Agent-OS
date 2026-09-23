@@ -35,6 +35,9 @@ const ICON = {
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
 };
 
+// Broken recipe photos disappear instead of showing a broken-image icon (CSP forbids inline onerror).
+document.addEventListener('error', (e) => { if (e.target?.matches?.('img[data-hide-on-error]')) e.target.remove(); }, true);
+
 // ---------- routing ----------
 window.addEventListener('hashchange', render);
 function route() { const [, view = 'recipes', id] = location.hash.split('/'); return { view, id }; }
@@ -112,7 +115,8 @@ function renderLanding() {
       <div class="price best"><div class="muted small">Pro</div><div class="amt">${esc((p.monthly ?? '$2.99 / month').split(' ')[0])}<span class="small muted"> /mo</span></div><div class="small muted">Unlimited AI imports from TikTok, Instagram, YouTube, photos & handwritten cards. Or ${esc(p.yearly ?? '$19.99 / year')}.</div></div>
       <div class="price"><div class="muted small">Lifetime</div><div class="amt">${esc((p.lifetime ?? '$39').split(' ')[0])}</div><div class="small muted">Pay once, Pro forever. No renewals to remember.</div></div>
     </div>
-    <p class="muted small" style="margin-top:24px">Cancel in one tap from the Kitchen tab. We email before any yearly renewal. Refunds within 14 days, no questions asked.</p>
+    <p class="muted small" style="margin-top:24px">Cancel in one tap from the Kitchen tab. Stripe emails you before any yearly renewal. Refunds within 14 days, no questions asked.</p>
+    <p class="muted small"><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/save-tiktok-recipes.html">Save TikTok recipes</a> · <a href="/recipe-app-without-subscription.html">Recipe app without a weekly subscription</a></p>
   </div>`;
   const nameVal = () => ($('#mname') ?? $('#jname'))?.value.trim();
   $('#create')?.addEventListener('click', async (e) => {
@@ -136,6 +140,16 @@ async function signedIn(token) {
 }
 
 // ---------- recipes ----------
+// Placeholder art for recipes without a photo: an emoji guessed from the title/tags and a stable tint.
+const FOOD = [[/chicken|turkey|wing/, '🍗'], [/salmon|fish|tuna|cod|shrimp|prawn/, '🐟'], [/pasta|orzo|spaghetti|noodle|lasagna|mac/, '🍝'], [/bread|loaf|flatbread|toast|bun/, '🍞'], [/cake|cookie|brownie|muffin|dessert|pie/, '🍰'], [/potato|fries/, '🥔'], [/salad|bowl|veg/, '🥗'], [/soup|stew|chili|curry/, '🍛'], [/pizza/, '🍕'], [/taco|burrito|quesadilla/, '🌮'], [/egg|omelet|frittata|breakfast/, '🍳'], [/beef|steak|burger/, '🥩'], [/rice/, '🍚']];
+const TINTS = ['#f6e3c9', '#e3efe2', '#f7dcd3', '#e6e4f3', '#f3ecc4', '#dcebf0'];
+function placeholder(r) {
+  const text = `${r.title} ${(r.tags ?? []).join(' ')}`.toLowerCase();
+  const emoji = FOOD.find(([rx]) => rx.test(text))?.[1] ?? '🍲';
+  let h = 0; for (const c of r.title) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return { emoji, tint: TINTS[h % TINTS.length] };
+}
+
 function allTags() { const c = {}; for (const r of state.recipes) for (const t of r.tags ?? []) c[t] = (c[t] ?? 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([t]) => t); }
 
 function renderRecipes() {
@@ -144,18 +158,20 @@ function renderRecipes() {
   const left = state.me?.household.aiImportsLeft;
   app.innerHTML = `<div class="wrap">
     <div class="row"><h1>Recipes</h1><span class="spacer"></span>${state.me?.household.pro ? '<span class="pill pro">Pro</span>' : left !== null && left !== undefined ? `<span class="pill">${left} AI imports left</span>` : ''}</div>
+    ${state.recipes.length >= 3 && !safeGet('jarful.keySaved') ? `<div class="flags" id="keynudge" style="margin:8px 0">🔑 <b>Save your kitchen code: ${esc(state.me?.household.inviteCode ?? '')}</b><br>It's how you get your recipes back on a new phone. <button class="btn ghost" id="keysaved">I saved it</button></div>` : ''}
     <input class="search" type="text" id="q" placeholder="Search recipes or ingredients…" value="${esc(state.query)}" aria-label="Search">
     <div class="chips">${['★', ...allTags()].map((t) => `<button class="chip" data-tag="${esc(t)}" aria-pressed="${state.tag === t}">${t === '★' ? '★ Favorites' : esc(t)}</button>`).join('')}</div>
     <div style="height:10px"></div>
     ${state.recipes.length === 0 ? `<div class="empty"><div class="big">🫙</div><h2>Your jar is empty</h2><p class="muted">Tap <b>+ Add recipe</b> and paste any recipe link — a TikTok, an Instagram post, a YouTube video or a food blog.</p></div>`
       : list.length === 0 ? '<p class="muted">No recipes match.</p>'
-      : `<div class="grid">${list.map((r) => `<button class="tile" data-id="${r.id}"><div class="img">🍲${r.image ? `<img src="${esc(r.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</div><div class="t">${r.favorite ? '★ ' : ''}${esc(r.title)}</div><div class="m">${[r.totalMinutes ? `${r.totalMinutes} min` : '', `${r.ingredients.length} ingredients`, r.sourceName ?? ''].filter(Boolean).map(esc).join(' · ')}</div></button>`).join('')}</div>`}
+      : `<div class="grid">${list.map((r) => `<button class="tile" data-id="${r.id}"><div class="img" style="background:${placeholder(r).tint}">${placeholder(r).emoji}${r.image ? `<img src="${esc(r.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-hide-on-error>` : ''}</div><div class="t">${r.favorite ? '★ ' : ''}${esc(r.title)}</div><div class="m">${[r.totalMinutes ? `${r.totalMinutes} min` : '', `${r.ingredients.length} ingredients`, r.sourceName ?? ''].filter(Boolean).map(esc).join(' · ')}</div></button>`).join('')}</div>`}
   </div>
   <button class="btn fab" id="add">+ Add recipe</button>`;
   const qi = $('#q');
   qi.addEventListener('input', () => { state.query = qi.value; const pos = qi.selectionStart; renderRecipes(); renderTabs('recipes'); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); });
   app.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => { state.tag = state.tag === b.dataset.tag ? null : b.dataset.tag; render(); }));
   app.querySelectorAll('.tile').forEach((t) => t.addEventListener('click', () => go(`#/recipe/${t.dataset.id}`)));
+  $('#keysaved')?.addEventListener('click', () => { safeSet('jarful.keySaved', '1'); $('#keynudge').remove(); });
   $('#add').addEventListener('click', () => openAddSheet());
 }
 
@@ -242,10 +258,16 @@ function fmtQty(q) {
   const [, s] = NICE.reduce((b, c) => (Math.abs(c[0] - f) < Math.abs(b[0] - f) ? c : b));
   return w ? `${w} ${s}` : s;
 }
+// Mirrors lib/ingredients.mjs roundScaled/unitLabel so the recipe card matches the grocery list.
+const DISCRETE = new Set(['clove', 'can', 'slice', 'package', 'bunch', 'pinch']);
+const PLURAL = { cup: 'cups', clove: 'cloves', can: 'cans', slice: 'slices', bunch: 'bunches', package: 'packages', pinch: 'pinches' };
 function fmtIng(i, factor) {
   if (i.qty == null || factor === 1) return esc(i.raw);
-  const unit = i.unit === 'floz' ? 'fl oz' : i.unit ?? '';
-  return `<b>${fmtQty(i.qty * factor)}</b> ${esc(unit)} ${esc(i.name)}${i.note ? `, ${esc(i.note)}` : ''}`;
+  let q = i.qty * factor;
+  if (DISCRETE.has(i.unit)) q = Math.max(1, Math.ceil(q - 0.05));
+  else if (!i.unit) q = Math.max(0.5, Math.round(q * 2) / 2);
+  const unit = i.unit === 'floz' ? 'fl oz' : q > 1 && PLURAL[i.unit] ? PLURAL[i.unit] : i.unit ?? '';
+  return `<b>${fmtQty(q)}</b> ${esc(unit)} ${esc(i.name)}${i.note ? `, ${esc(i.note)}` : ''}`;
 }
 
 function renderRecipe(id) {
@@ -256,7 +278,7 @@ function renderRecipe(id) {
   const factor = base && want ? want / base : 1;
   app.innerHTML = `<div class="wrap stack">
     <div class="row"><button class="btn ghost" data-go="#/recipes">← Recipes</button><span class="spacer"></span><button class="btn ghost" id="fav" aria-label="Favorite">${r.favorite ? '★' : '☆'}</button><button class="btn ghost" id="edit">Edit</button></div>
-    ${r.image ? `<img class="detail-img" src="${esc(r.image)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+    ${r.image ? `<img class="detail-img" src="${esc(r.image)}" alt="" referrerpolicy="no-referrer" data-hide-on-error>` : ''}
     <div><h1>${esc(r.title)}</h1><div class="muted small">${[r.totalMinutes ? `${r.totalMinutes} min` : '', r.sourceName, r.method?.startsWith('ai') ? 'AI import' : ''].filter(Boolean).map(esc).join(' · ')}${r.sourceUrl ? ` · <a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">Original</a>` : ''}</div></div>
     ${r.flags?.length ? `<div class="flags"><b>Worth a quick check</b><ul>${r.flags.map((f) => `<li>${esc(f)}</li>`).join('')}</ul></div>` : ''}
     <div class="row wrap-row"><button class="btn" id="cook">Start cooking</button><button class="btn secondary" id="plan">Add to plan</button></div>
@@ -413,6 +435,8 @@ async function renderKitchen() {
     </div>
     <div class="card stack"><h2>Your data</h2><p class="muted small">Download every recipe and your meal plan as a file, any time.</p><button class="btn secondary" id="export">Export everything</button></div>
     <button class="btn ghost" id="signout">Sign out on this device</button>
+    <button class="btn danger" id="delete">Delete my kitchen and all its data</button>
+    <p class="muted small"><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></p>
     <p class="muted small">Signing out forgets this device. To get back in, ask a household member for the invite code — keep it somewhere safe.</p>
   </div>`;
   renderTabs('kitchen');
@@ -425,6 +449,12 @@ async function renderKitchen() {
     const res = await fetch('/api/export', { headers: { authorization: `Bearer ${state.token}` } });
     const blob = await res.blob(); const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = `jarful-export-${todayIso()}.json`; a.click(); URL.revokeObjectURL(a.href);
+  };
+  $('#delete').onclick = async () => {
+    const typed = prompt('This permanently deletes every recipe, plan and list in this kitchen for all members. Type DELETE to confirm.');
+    if (typed === null) return;
+    try { await api('/api/me', { method: 'DELETE', body: { confirm: typed } }); safeSet(TOKEN_KEY, null); state.token = null; state.me = null; location.hash = ''; render(); toast('Your kitchen was deleted.'); }
+    catch (err) { toast(err.message); }
   };
   $('#signout').onclick = () => { if (confirm('Sign out on this device? You will need your invite code to get back in.')) signOut(); };
 }

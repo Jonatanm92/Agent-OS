@@ -71,3 +71,14 @@ test('stripe webhook rejects unsigned requests and serves the app shell', async 
   const traversal = await fetch(`${base}/..%2f..%2fpackage.json`);
   assert.doesNotMatch(await traversal.text(), /"dependencies"/);
 });
+
+test('admin metrics are hidden without the admin token', async () => {
+  process.env.ADMIN_TOKEN = 'x'.repeat(32);
+  assert.equal((await fetch(`${base}/api/admin/metrics`)).status, 404);
+  assert.equal((await fetch(`${base}/api/admin/metrics`, { headers: { 'x-admin-token': 'y'.repeat(32) } })).status, 404);
+  const ok = await fetch(`${base}/api/admin/metrics`, { headers: { 'x-admin-token': 'x'.repeat(32) } });
+  assert.equal(ok.status, 200);
+  assert.ok((await ok.json()).households.total >= 1);
+  assert.match(ok.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  delete process.env.ADMIN_TOKEN;
+});

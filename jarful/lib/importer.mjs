@@ -1,6 +1,9 @@
 // Turns a URL, pasted text or a photo into a normalized recipe.
 // Order of preference (cheapest first): schema.org JSON-LD (free, exact) -> Claude.
-import { lookup } from 'node:dns/promises';
+import { lookup as lookupAll } from 'node:dns/promises';
+import http from 'node:http';
+import https from 'node:https';
+import { createGunzip, createBrotliDecompress, createInflate } from 'node:zlib';
 import { isIP } from 'node:net';
 import { extractRecipeWithClaude, aiAvailable, ImportError } from './ai.mjs';
 import { parseIngredient } from './ingredients.mjs';
@@ -148,30 +151,50 @@ export async function assertPublicUrl(raw) {
   try { url = new URL(raw); } catch { throw new ImportError('That doesn\'t look like a link.'); }
   if (!['http:', 'https:'].includes(url.protocol)) throw new ImportError('Only http(s) links are supported.');
   const host = url.hostname.replace(/^\[|\]$/g, '');
-  const addrs = isIP(host) ? [{ address: host }] : await lookup(host, { all: true }).catch(() => { throw new ImportError('Could not reach that website.'); });
+  const addrs = isIP(host) ? [{ address: host }] : await lookupAll(host, { all: true }).catch(() => { throw new ImportError('Could not reach that website.'); });
   if (addrs.some((a) => isPrivateAddress(a.address))) throw new ImportError('That address is not allowed.');
   return url;
+}
+
+// The address is validated inside the socket's DNS lookup, so the IP we check is the IP
+// we connect to (no DNS-rebinding window between check and fetch).
+function guardedLookup(hostname, options, cb) {
+  lookupAll(hostname, { all: true }).then((addrs) => {
+    const bad = addrs.find((a) => isPrivateAddress(a.address));
+    if (bad) return cb(new ImportError('That address is not allowed.'));
+    if (options?.all) return cb(null, addrs);
+    cb(null, addrs[0].address, addrs[0].family);
+  }, (err) => cb(err));
+}
+
+function requestOnce(url, accept) {
+  const mod = url.protocol === 'https:' ? https : http;
+  return new Promise((resolve, reject) => {
+    const req = mod.request(url, {
+      method: 'GET', lookup: guardedLookup, timeout: 12000,
+      headers: { 'user-agent': UA, accept, 'accept-language': 'en-US,en;q=0.8', 'accept-encoding': 'gzip, deflate, br' },
+    }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) { res.resume(); return resolve({ redirect: res.headers.location }); }
+      if (res.statusCode < 200 || res.statusCode >= 300) { res.resume(); return reject(new ImportError(`The website answered ${res.statusCode}. Paste the recipe text instead.`, 424)); }
+      const enc = String(res.headers['content-encoding'] ?? '').toLowerCase();
+      const stream = enc === 'gzip' ? res.pipe(createGunzip()) : enc === 'br' ? res.pipe(createBrotliDecompress()) : enc === 'deflate' ? res.pipe(createInflate()) : res;
+      const chunks = []; let size = 0;
+      stream.on('data', (c) => { size += c.length; if (size > MAX_BYTES) { req.destroy(); stream.destroy(); resolve({ body: Buffer.concat(chunks).toString('utf8') }); } else chunks.push(c); });
+      stream.on('end', () => resolve({ body: Buffer.concat(chunks).toString('utf8') }));
+      stream.on('error', (e) => reject(new ImportError(`Could not read that page (${e.message}).`, 424)));
+    });
+    req.on('timeout', () => req.destroy(new ImportError('That website took too long to answer.', 504)));
+    req.on('error', (e) => reject(e instanceof ImportError ? e : new ImportError('Could not reach that website.', 424)));
+    req.end();
+  });
 }
 
 export async function safeFetch(raw, { accept = 'text/html,application/json' } = {}) {
   let url = await assertPublicUrl(raw);
   for (let hop = 0; hop < 4; hop++) {
-    const res = await fetch(url, { redirect: 'manual', headers: { 'user-agent': UA, accept, 'accept-language': 'en-US,en;q=0.8' }, signal: AbortSignal.timeout(12000) });
-    if (res.status >= 300 && res.status < 400 && res.headers.get('location')) {
-      url = await assertPublicUrl(new URL(res.headers.get('location'), url).href);
-      continue;
-    }
-    if (!res.ok) throw new ImportError(`The website answered ${res.status}. Paste the recipe text instead.`, 424);
-    const reader = res.body.getReader();
-    const chunks = []; let size = 0;
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.length;
-      if (size > MAX_BYTES) { reader.cancel(); break; }
-      chunks.push(value);
-    }
-    return { url: url.href, body: Buffer.concat(chunks).toString('utf8') };
+    const r = await requestOnce(url, accept);
+    if (r.redirect) { url = await assertPublicUrl(new URL(r.redirect, url).href); continue; }
+    return { url: url.href, body: r.body };
   }
   throw new ImportError('Too many redirects.');
 }
