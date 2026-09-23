@@ -1,0 +1,8 @@
+{
+  "appId": "app.jarful.recipes",
+  "appName": "Jarful",
+  "webDir": "www",
+  "backgroundColor": "#fdf6ec",
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "always" }
+}

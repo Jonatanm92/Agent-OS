@@ -266,8 +266,18 @@ export function createApp(store) {
     res.end(body);
   }
 
+  // CORS only for the native app shells (Capacitor serves from these origins).
+  const NATIVE_ORIGINS = new Set(['capacitor://localhost', 'https://localhost', 'http://localhost', 'ionic://localhost']);
   return async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
+    const origin = req.headers.origin;
+    if (origin && NATIVE_ORIGINS.has(origin) && url.pathname.startsWith('/api/') && url.pathname !== '/api/stripe/webhook') {
+      res.setHeader('access-control-allow-origin', origin);
+      res.setHeader('vary', 'Origin');
+      res.setHeader('access-control-allow-headers', 'authorization, content-type');
+      res.setHeader('access-control-allow-methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+    }
     try {
       if (url.pathname.startsWith('/api/')) await api(req, res, url);
       else await serveStatic(req, res, url);

@@ -1,7 +1,7 @@
 // Offline shell + last-known API data so saved recipes open without signal.
-const SHELL = 'jarful-shell-v1';
+const SHELL = 'jarful-shell-v2';
 const DATA = 'jarful-data-v1';
-const ASSETS = ['/', '/index.html', '/app.js', '/styles.css', '/icon.svg', '/manifest.webmanifest'];
+const ASSETS = ['/', '/index.html', '/app.js', '/config.js', '/styles.css', '/icon.svg', '/manifest.webmanifest'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(SHELL).then((c) => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => ![SHELL, DATA].includes(k)).map((k) => caches.delete(k))))); self.clients.claim(); });
 self.addEventListener('fetch', (e) => {

@@ -3,6 +3,10 @@ const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const app = $('#app');
 const TOKEN_KEY = 'jarful.token';
+// Native (Capacitor) builds bundle these files and call the hosted API; see native/README.md.
+const API_BASE = (window.JARFUL_CONFIG?.apiBase ?? '').replace(/\/$/, '');
+const NATIVE = Boolean(window.JARFUL_CONFIG?.native);
+const WEB_ORIGIN = API_BASE || location.origin;
 
 const state = {
   token: safeGet(TOKEN_KEY), me: null, config: null, recipes: [], query: '', tag: null,
@@ -18,7 +22,7 @@ const todayIso = () => { const d = new Date(); return new Date(Date.UTC(d.getFul
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 3200); }
 
 async function api(path, opts = {}) {
-  const res = await fetch(path, { ...opts, headers: { 'content-type': 'application/json', ...(state.token ? { authorization: `Bearer ${state.token}` } : {}), ...(opts.headers ?? {}) }, body: opts.body && typeof opts.body !== 'string' ? JSON.stringify(opts.body) : opts.body });
+  const res = await fetch(API_BASE + path, { ...opts, headers: { 'content-type': 'application/json', ...(state.token ? { authorization: `Bearer ${state.token}` } : {}), ...(opts.headers ?? {}) }, body: opts.body && typeof opts.body !== 'string' ? JSON.stringify(opts.body) : opts.body });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && state.token) { signOut(); throw new Error('Please sign in again.'); }
   if (!res.ok) throw Object.assign(new Error(data.error || `Error ${res.status}`), { status: res.status });
@@ -44,7 +48,7 @@ function route() { const [, view = 'recipes', id] = location.hash.split('/'); re
 function go(hash) { if (location.hash === hash) render(); else location.hash = hash; }
 
 async function boot() {
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  if (!NATIVE && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   state.config = await api('/api/config').catch(() => ({ aiAvailable: false, freeAiImports: 20, prices: {} }));
   const params = new URLSearchParams(location.search);
   state.pendingJoin = params.get('join');
@@ -419,7 +423,7 @@ async function renderGrocery(silent = false) {
 async function renderKitchen() {
   const me = (state.me = await api('/api/me')).household;
   const billing = await api('/api/billing');
-  const invite = `${location.origin}/?join=${me.inviteCode}`;
+  const invite = `${WEB_ORIGIN}/?join=${me.inviteCode}`;
   app.innerHTML = `<div class="wrap stack">
     <h1>${esc(me.name)}</h1>
     <div class="card stack"><h2>Share with your household</h2>
@@ -430,7 +434,8 @@ async function renderKitchen() {
     <div class="card stack"><div class="row"><h2 style="margin:0">Your plan</h2><span class="spacer"></span><span class="pill ${me.pro ? 'pro' : ''}">${me.pro ? `Pro${me.interval === 'lifetime' ? ' · lifetime' : ''}` : 'Free'}</span></div>
       ${me.pro ? `<p>Unlimited AI imports. Thank you for supporting an honest app.</p>${billing.portalUrl && me.interval !== 'lifetime' ? `<a class="btn secondary block" href="${esc(billing.portalUrl)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Manage or cancel subscription</a>` : ''}`
       : `<p class="muted small">${me.aiImportsUsed} of ${me.freeAiLimit} AI imports used this month. Website imports are always unlimited.</p>
-        ${Object.entries(billing.links).map(([k, l]) => l.url ? `<a class="btn ${k === 'yearly' ? '' : 'secondary'} block" style="text-align:center;text-decoration:none;display:block" href="${esc(l.url)}">${k === 'lifetime' ? 'Lifetime' : k === 'yearly' ? 'Yearly' : 'Monthly'} — ${esc(l.label)}</a>` : '').join('') || '<p class="muted small">Payments are not configured on this server yet.</p>'}
+        ${NATIVE ? '<p class="muted small">Pro is available on our website. Your purchase applies to every device in your kitchen.</p>' : ''}
+        ${NATIVE ? '' : Object.entries(billing.links).map(([k, l]) => l.url ? `<a class="btn ${k === 'yearly' ? '' : 'secondary'} block" style="text-align:center;text-decoration:none;display:block" href="${esc(l.url)}">${k === 'lifetime' ? 'Lifetime' : k === 'yearly' ? 'Yearly' : 'Monthly'} — ${esc(l.label)}</a>` : '').join('') || '<p class="muted small">Payments are not configured on this server yet.</p>'}
         <p class="muted small">No weekly plans. Cancel in one tap. 14-day refunds.</p>`}
     </div>
     <div class="card stack"><h2>Your data</h2><p class="muted small">Download every recipe and your meal plan as a file, any time.</p><button class="btn secondary" id="export">Export everything</button></div>
@@ -446,7 +451,7 @@ async function renderKitchen() {
     else { await navigator.clipboard?.writeText(invite).catch(() => {}); toast('Invite link copied'); }
   };
   $('#export').onclick = async () => {
-    const res = await fetch('/api/export', { headers: { authorization: `Bearer ${state.token}` } });
+    const res = await fetch(API_BASE + '/api/export', { headers: { authorization: `Bearer ${state.token}` } });
     const blob = await res.blob(); const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = `jarful-export-${todayIso()}.json`; a.click(); URL.revokeObjectURL(a.href);
   };

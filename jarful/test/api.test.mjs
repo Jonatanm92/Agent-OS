@@ -82,3 +82,11 @@ test('admin metrics are hidden without the admin token', async () => {
   assert.match(ok.headers.get('content-security-policy'), /frame-ancestors 'none'/);
   delete process.env.ADMIN_TOKEN;
 });
+
+test('CORS is granted to native app origins only', async () => {
+  const pre = await fetch(`${base}/api/me`, { method: 'OPTIONS', headers: { origin: 'capacitor://localhost', 'access-control-request-method': 'GET' } });
+  assert.equal(pre.status, 204);
+  assert.equal(pre.headers.get('access-control-allow-origin'), 'capacitor://localhost');
+  const evil = await fetch(`${base}/api/config`, { headers: { origin: 'https://evil.example' } });
+  assert.equal(evil.headers.get('access-control-allow-origin'), null);
+});
