@@ -71,7 +71,7 @@
     return `<div class="row item${done ? ' is-done' : ''}" data-row="${esc(item.id)}">
       ${tick}
       <button class="row-main" data-action="item-open" data-id="${esc(item.id)}">
-        <span class="title">${o.showKind ? `${kindTag(item.kind)} ` : ''}${esc(item.title)}</span>
+        <span class="title">${o.showKind || (!o.noKindTag && ['shopping', 'reminder'].includes(item.kind)) ? `${kindTag(item.kind)} ` : ''}${esc(item.title)}</span>
         ${meta ? `<span class="sub">${esc(meta)}</span>` : ''}
       </button>
       ${o.trailing || ''}
@@ -181,6 +181,7 @@
 
   function renderSheet(fresh) {
     if (ui.confirm) { renderConfirm(); return; }
+    doc.body.classList.toggle('sheet-open', !!ui.sheet);
     if (!ui.sheet) { $sheet.innerHTML = ''; return; }
     const def = sheets[ui.sheet.name];
     const spec = def.render(ui.sheet.data, S.state);
@@ -215,6 +216,7 @@
 
   function renderConfirm() {
     const c = ui.confirm;
+    doc.body.classList.add('sheet-open');
     $sheet.innerHTML = `<div class="scrim" data-action="confirm-no"><div class="sheet confirm rise" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
       <h2 id="confirm-title">${esc(c.title)}</h2>
       ${c.body ? `<p class="lead">${esc(c.body)}</p>` : ''}
@@ -301,7 +303,15 @@
       if (!state.prefs.onboarded && name !== 'onboarding' && S.ready) name = ui.view = 'onboarding';
       const def = views[name] || views.home;
       const keep = focusSnapshot($app);
-      $app.innerHTML = def.render(state, ui.params);
+      let html;
+      try {
+        html = def.render(state, ui.params);
+      } catch (e) {
+        // A broken view must never blank the app: show a way back instead.
+        html = `<div class="calm-card pad-top"><h2>${esc(t('err.viewTitle'))}</h2><p class="lead">${esc(t('err.viewBody'))}</p>
+          <div class="btnrow"><button class="btn primary" data-action="go" data-view="home">${esc(t('err.home'))}</button></div></div>`;
+      }
+      $app.innerHTML = html;
       $app.dataset.view = name;
       if (o.animate) { $app.classList.remove('enter'); void $app.offsetWidth; $app.classList.add('enter'); }
       if (o.scrollTop) root.scrollTo(0, 0);

@@ -164,6 +164,34 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     equal(Array.from(db.docs.keys()).filter((k) => k.includes('u_erase')).length, 0);
     equal(S.state.items.length, 0);
   });
+  await testAsync('items are stored compactly and round-trip exactly', async () => {
+    const it = A.model.newItem({ title: 'Plain thing' });
+    const packed = A.model.packItem(it);
+    assert(Object.keys(packed).length <= 8, `packed keys: ${Object.keys(packed).join(',')}`);
+    deepEqual(A.model.fillItem(packed), it);
+    const rich = A.model.newItem({ title: 'Rich', kind: 'admin', adminStatus: 'waiting', dueDate: '2026-10-01', recur: { unit: 'week', every: 2 }, forPerson: 'Robin' });
+    deepEqual(A.model.fillItem(A.model.packItem(rich)), rich);
+  });
+  await testAsync('a large list is split over several documents and restored in full', async () => {
+    const shared = new Map();
+    installRuntime({ uid: 'u_big', db: fakeDb(shared) });
+    await S.init();
+    const ops = [];
+    for (let i = 0; i < 1200; i += 1) ops.push({ op: 'item.add', item: { title: `Item number ${i} with a reasonably long title to take space`, note: `Note ${i} `.repeat(4), dueDate: '2026-10-01' } });
+    S.commit(ops);
+    await S.flush();
+    const docs = Array.from(shared.keys()).filter((k) => k.startsWith('data/users/u_big/items'));
+    assert(docs.length >= 2, `docs: ${docs.join(', ')}`);
+    assert(docs.every((k) => JSON.stringify(shared.get(k)).length < 256 * 1024), 'every document under 256 KiB');
+    globalThis.localStorage = fakeLocalStorage();
+    installRuntime({ uid: 'u_big', db: fakeDb(shared) });
+    await S.init();
+    equal(S.state.items.length, 1200);
+    equal(S.state.items[1199].title, 'Item number 1199 with a reasonably long title to take space');
+    S.commit(S.state.items.slice(100).map((i) => ({ op: 'item.delete', id: i.id })));
+    await S.flush();
+    equal(Array.from(shared.keys()).filter((k) => k.startsWith('data/users/u_big/items')).length, 1, 'extra shards are removed when the list shrinks');
+  });
   await testAsync('import: a Min vardag export is read, previewed and merged', async () => {
     delete globalThis.claude;
     await S.init();

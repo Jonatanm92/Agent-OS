@@ -84,8 +84,9 @@
     if (has(/(postpon|put off|moved|pushed|skjutit upp|skjuter upp|skjuta upp|flyttat|flyttar)/u)) {
       const week = has(/(this week|den här veckan|i veckan)/u);
       const from = week ? U.startOfWeek(today) : U.addDays(today, -30);
-      const ids = U.uniq(state.log.filter((l) => l.ev === 'postpone' && l.d >= from && l.id).map((l) => l.id));
-      const items = ids.map((id) => M.itemById(state, id)).filter((i) => i && i.status === 'open');
+      const logged = state.log.filter((l) => l.ev === 'postpone' && l.d >= from && l.id).map((l) => l.id);
+      const counted = week ? [] : state.items.filter((i) => i.status === 'open' && i.postponed > 0).sort((a, b) => b.postponed - a.postponed).map((i) => i.id);
+      const items = U.uniq([...logged, ...counted]).map((id) => M.itemById(state, id)).filter((i) => i && i.status === 'open');
       return res('postponed', week ? 'ask.postponedWeek' : 'ask.postponed', items, 'ask.postponedEmpty');
     }
     if (has(/(waiting|wait for|waiting for|väntar)/u)) {

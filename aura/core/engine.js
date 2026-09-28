@@ -105,8 +105,9 @@
   function reasonFor(entry, ctx, following) {
     const { item, bucket } = entry;
     const m = effort(item);
-    if (item.dueDate && item.dueDate < ctx.key) return { key: 'why.overdue', params: { when: I.relativeDay(item.dueDate, ctx.key) } };
-    if (item.dueDate === ctx.key) return { key: 'why.dueToday' };
+    if (item.recur && item.dueDate && item.dueDate <= ctx.key && !item.background) return { key: 'why.chore', params: { every: It.describeRecur(item.recur) } };
+    if (item.dueDate && item.dueDate < ctx.key && !item.recur) return { key: 'why.overdue', params: { when: I.relativeDay(item.dueDate, ctx.key) } };
+    if (item.dueDate === ctx.key && !item.recur) return { key: 'why.dueToday' };
     if (item.kind === 'reminder') return { key: 'why.reminder' };
     if (item.background) {
       if (following) return { key: 'why.backgroundBefore', params: { min: I.duration(m), next: lowerFirst(following.title) } };

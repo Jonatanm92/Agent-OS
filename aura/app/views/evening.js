@@ -69,8 +69,10 @@
               <button class="row-main" data-action="item-open" data-id="${esc(item.id)}"><span class="title">${esc(item.title)}</span><span class="sub">${esc(UI.itemMeta(item))}</span></button>
               <div class="btnrow tight">
                 <button class="btn tiny ghost" data-action="eve-move" data-id="${esc(item.id)}" data-to="tomorrow">${esc(t('eve.tomorrow'))}</button>
-                <button class="btn tiny ghost" data-action="eve-move" data-id="${esc(item.id)}" data-to="later">${esc(t('eve.later'))}</button>
-                <button class="btn tiny quiet" data-action="eve-drop" data-id="${esc(item.id)}">${esc(t('eve.drop'))}</button>
+                ${item.recur
+                  ? `<button class="btn tiny ghost" data-action="item-skip" data-id="${esc(item.id)}">${esc(t('item.skip'))}</button>`
+                  : `<button class="btn tiny ghost" data-action="eve-move" data-id="${esc(item.id)}" data-to="later">${esc(t('eve.later'))}</button>
+                     <button class="btn tiny quiet" data-action="eve-drop" data-id="${esc(item.id)}">${esc(t('eve.drop'))}</button>`}
                 <button class="btn tiny quiet" data-action="item-done" data-id="${esc(item.id)}">${esc(t('a.done'))}</button>
               </div></div>`).join('')}</div>` : `<p class="calm-line">${esc(t('eve.openNone'))}</p>`}
         </section>

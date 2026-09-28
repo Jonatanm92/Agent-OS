@@ -54,6 +54,7 @@
       case 'item.reopen': return I.t('op.itemReopen', { title });
       case 'item.drop': return I.t('op.itemDrop', { title });
       case 'item.delete': return I.t('op.itemDelete', { title });
+      case 'item.skip': return I.t('op.itemSkip', { title, when: item && item.recur ? I.relativeDay(It.recurNext(item, today), today) : '' });
       case 'item.postpone':
         return op.to === 'later' ? I.t('op.itemLater', { title }) : I.t('op.itemPostpone', { title, when: whenLabel(op.to, today) });
       case 'item.schedule': return I.t('op.itemSchedule', { title, when: op.date ? I.relativeDay(op.date, today) : I.t('when.later') });
@@ -117,6 +118,7 @@
       case 'item.postpone': case 'item.schedule': case 'item.bucket': case 'item.process': case 'item.admin':
       case 'item.split':
         return !!findItem(state, op.id);
+      case 'item.skip': { const it = findItem(state, op.id); return !!(it && it.recur); }
       case 'item.reorder': return Array.isArray(op.ids);
       case 'event.add': return !!(op.event && String(op.event.title || '').trim());
       case 'event.update': case 'event.delete': return !!M.eventById(state, op.id);
@@ -231,9 +233,21 @@
         next.items = next.items.filter((i) => i.id !== op.id);
         return op.id;
       }
+      case 'item.skip': {
+        // A recurring thing skipped this time: the series continues from the next occurrence.
+        const item = findItem(next, op.id);
+        item.dueDate = It.recurNext(item, today);
+        item.date = '';
+        item.updatedAt = stamp;
+        pushLog(next, logEntry('skip', now, { id: item.id, k: item.kind }));
+        return item.id;
+      }
       case 'item.postpone': {
         const item = findItem(next, op.id);
-        if (op.to === 'later') {
+        if (op.to === 'later' && item.recur) {
+          item.dueDate = It.recurNext(item, today);
+          item.date = '';
+        } else if (op.to === 'later') {
           item.priority = 'later';
           item.date = '';
         } else {

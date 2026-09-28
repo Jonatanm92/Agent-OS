@@ -136,6 +136,47 @@
     return item;
   }
 
+  /* Stored compactly: fields at their default value are left out and restored on load.
+   * This roughly halves the size of the items document. */
+  const ITEM_KEEP = ['id', 'kind', 'title', 'status', 'createdAt', 'minutes'];
+  function itemDefaults(kind) {
+    return {
+      note: '', status: 'open', priority: '', date: '', dueDate: '', time: '',
+      minutes: DEFAULT_MINUTES[kind] != null ? DEFAULT_MINUTES[kind] : 20,
+      energy: 'medium', context: 'anywhere', background: false, recur: null, projectId: '', category: '',
+      adminStatus: kind === 'admin' ? 'action' : '', waitingOn: '', followUp: '', forPerson: '', staple: false,
+      avoidWeekdays: [], order: 0, postponed: 0, lastPostponed: '', lastDone: '', source: 'manual', doneAt: '',
+    };
+  }
+
+  function packItem(item) {
+    const d = itemDefaults(item.kind);
+    const out = {};
+    for (const [k, v] of Object.entries(item)) {
+      if (ITEM_KEEP.includes(k)) { out[k] = v; continue; }
+      if (k === 'updatedAt' && v === item.createdAt) continue;
+      if (Object.prototype.hasOwnProperty.call(d, k) && JSON.stringify(d[k]) === JSON.stringify(v)) continue;
+      out[k] = v;
+    }
+    return out;
+  }
+
+  /* The field order newItem() produces; restored so stored and live items compare equal. */
+  const ITEM_ORDER = ['id', 'kind', 'title', 'note', 'status', 'priority', 'date', 'dueDate', 'time', 'minutes', 'energy',
+    'context', 'background', 'recur', 'projectId', 'category', 'adminStatus', 'waitingOn', 'followUp', 'forPerson', 'staple',
+    'avoidWeekdays', 'order', 'postponed', 'lastPostponed', 'lastDone', 'source', 'createdAt', 'updatedAt', 'doneAt'];
+
+  function fillItem(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const merged = Object.assign(itemDefaults(raw.kind), raw);
+    if (!merged.updatedAt) merged.updatedAt = merged.createdAt || '';
+    if (!Array.isArray(merged.avoidWeekdays)) merged.avoidWeekdays = [];
+    const item = {};
+    for (const k of ITEM_ORDER) if (k in merged) item[k] = merged[k];
+    for (const k of Object.keys(merged)) if (!(k in item)) item[k] = merged[k];
+    return item;
+  }
+
   function newEvent(fields) {
     const f = fields || {};
     const now = f.now || new Date().toISOString();
@@ -260,6 +301,7 @@
     for (const key of ['items', 'events', 'routines', 'projects', 'people', 'log', 'journal']) {
       if (!Array.isArray(s[key])) s[key] = [];
     }
+    s.items = s.items.map(fillItem).filter((i) => i && i.id && i.title);
     if (!s.days || typeof s.days !== 'object') s.days = {};
     if (!s.cycle || typeof s.cycle !== 'object' || !Array.isArray(s.cycle.entries)) s.cycle = { entries: [] };
     s.meta = Object.assign(emptyState().meta, raw.meta || {});
@@ -384,6 +426,6 @@
     defaultPrefs, emptyState, newItem, newEvent, newRoutine, newStep, newProject, newPerson,
     dayDefaults, getDay, pulseFor, migrate, fromMinVardag,
     itemById, eventById, routineById, projectById, isOpen, isWorkday, hasWorkHours, moduleOn, densityCaps,
-    normRecur,
+    normRecur, itemDefaults, packItem, fillItem,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

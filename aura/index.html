@@ -13,9 +13,9 @@
 :root{
   --paper:#eef1f0; --surface:#fbfcfc; --raised:#ffffff; --sunk:#e3e8e7;
   --line:#d2dad9; --line-soft:#e2e8e7;
-  --ink:#141a1b; --muted:#56656a; --faint:#869499;
+  --ink:#141a1b; --muted:#4e5c61; --faint:#616f75;
   --deep:#12474d; --deep-soft:#d8e7e7; --deep-ink:#0b3439; --on-deep:#ffffff;
-  --signal:#cf5b28; --signal-soft:#fbe4d7; --signal-ink:#833111; --signal-glow:rgba(233,116,58,.34); --on-signal:#ffffff;
+  --signal:#bf5122; --signal-soft:#fbe4d7; --signal-ink:#833111; --signal-glow:rgba(233,116,58,.34); --on-signal:#ffffff;
   --sage:#4a755f; --sage-soft:#dde9e1; --sage-ink:#2a4d3b;
   --warn:#86561b; --warn-soft:#f6ead4;
   --danger:#a03828; --danger-soft:#f5dfdb;
@@ -34,7 +34,7 @@
     color-scheme:dark;
     --paper:#0e1213; --surface:#161c1d; --raised:#1b2223; --sunk:#212a2b;
     --line:#2c3638; --line-soft:#232c2d;
-    --ink:#e5ebeb; --muted:#9aa8ab; --faint:#6b797c;
+    --ink:#e5ebeb; --muted:#a3b0b3; --faint:#7d8b8e;
     --deep:#6ab5bc; --deep-soft:#143539; --deep-ink:#9dd4d9; --on-deep:#06191b;
     --signal:#ef8753; --signal-soft:#3a2016; --signal-ink:#ffc3a1; --signal-glow:rgba(239,135,83,.26); --on-signal:#1c0a02;
     --sage:#84b99a; --sage-soft:#1a2f26; --sage-ink:#b0dac1;
@@ -50,7 +50,7 @@
   color-scheme:dark;
   --paper:#0e1213; --surface:#161c1d; --raised:#1b2223; --sunk:#212a2b;
   --line:#2c3638; --line-soft:#232c2d;
-  --ink:#e5ebeb; --muted:#9aa8ab; --faint:#6b797c;
+  --ink:#e5ebeb; --muted:#a3b0b3; --faint:#7d8b8e;
   --deep:#6ab5bc; --deep-soft:#143539; --deep-ink:#9dd4d9; --on-deep:#06191b;
   --signal:#ef8753; --signal-soft:#3a2016; --signal-ink:#ffc3a1; --signal-glow:rgba(239,135,83,.26); --on-signal:#1c0a02;
   --sage:#84b99a; --sage-soft:#1a2f26; --sage-ink:#b0dac1;
@@ -298,16 +298,17 @@ select.input{appearance:auto}
 .cands{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
 .cand{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow-1);padding:8px 8px 10px 10px;display:flex;flex-direction:column;gap:6px}
 .cand.review{box-shadow:inset 3px 0 0 var(--warn),var(--shadow-1)}
-.cand-top{display:flex;align-items:center;gap:6px}
+.cand-top{display:flex;align-items:center;gap:4px}
 .cand-title{flex:1;min-width:0;border:none;background:transparent;font-weight:500;font-size:16px;min-height:44px;padding:0 4px;border-radius:8px}
 .cand-title:focus{background:var(--sunk);outline:none}
 .cand-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-left:2px}
 .kind-select,.when-select,.time-input{min-height:36px;border-radius:999px;border:1px solid var(--line);background:var(--raised);font-size:13px;padding:0 10px;color:var(--muted)}
-.kind-select{font-weight:600;color:var(--ink);flex:none;max-width:124px}
+.kind-select{font-weight:600;color:var(--ink);flex:none}
 .kind-select.k-shopping{background:var(--sage-soft);color:var(--sage-ink);border-color:transparent}
 .kind-select.k-admin{background:var(--deep-soft);color:var(--deep-ink);border-color:transparent}
 .kind-select.k-reminder,.kind-select.k-event{background:var(--warn-soft);color:var(--warn);border-color:transparent}
 .hint{font-size:13px;color:var(--warn);padding-left:2px}
+.kbd-mic{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding-left:6px}
 .sticky-actions{position:sticky;bottom:calc(var(--dock) + 12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--paper) 30%);padding-top:18px}
 
 /* ── progress ──────────────────────────────────────── */
@@ -380,6 +381,7 @@ select.input{appearance:auto}
 /* ── toast ─────────────────────────────────────────── */
 #toast{position:fixed;left:0;right:0;bottom:calc(var(--dock) + 14px + env(safe-area-inset-bottom,0px));z-index:80;padding-inline:var(--gutter);pointer-events:none}
 body.no-dock #toast{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+body.sheet-open #toast{bottom:auto;top:calc(10px + env(safe-area-inset-top,0px))}
 .toast{pointer-events:auto;max-width:568px;margin:0 auto;background:var(--ink);color:var(--paper);border-radius:var(--r);padding:6px 6px 6px 16px;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow-3);font-size:14.5px;animation:rise .2s ease-out}
 .toast-btn{background:none;border:none;color:inherit;font-weight:700;min-height:44px;padding:0 12px;text-decoration:underline;text-underline-offset:3px}
 .toast-x{background:none;border:none;color:inherit;width:44px;height:44px;display:grid;place-items:center;opacity:.7}

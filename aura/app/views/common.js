@@ -318,6 +318,7 @@
   const voice = { ctl: null, key: null };
 
   function voiceButton(draftKey) {
+    if (!A.voice.supported()) return `<span class="kbd-mic faint" title="${esc(t('voice.keyboard'))}">${icon('mic', 16)}<span>${esc(t('voice.keyboardShort'))}</span></span>`;
     const listening = voice.key === draftKey;
     return `<button class="icon-btn mic${listening ? ' live' : ''}" data-action="voice" data-key="${esc(draftKey)}" aria-label="${esc(listening ? t('a.listening') : t('a.dictate'))}" aria-pressed="${listening}">${icon('mic', 22)}</button>`;
   }

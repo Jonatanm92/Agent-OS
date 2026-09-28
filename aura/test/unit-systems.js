@@ -290,6 +290,12 @@ suite('16. Ask Aura (no AI needed)', () => {
     equal(r.intent, 'before');
     assert(r.items.some((i) => i.title === 'Pay invoice'));
   });
+  test('what have I been postponing? includes items moved before the log window', () => {
+    let s = world();
+    s.items.find((i) => i.title === 'Buy bedroom curtains').postponed = 4;
+    const r = A.search.ask(s, 'What have I been postponing?', at(TODAY, '10:00'));
+    assert(r.items.some((i) => i.title === 'Buy bedroom curtains'), r.items.map((i) => i.title).join(','));
+  });
   test('which things am I waiting for? (Swedish too)', () => {
     equal(A.search.ask(world(), 'Which things am I waiting for?', at(TODAY, '10:00')).items[0].title, 'Insurance claim');
     equal(A.search.ask(world(), 'Vad väntar jag på?', at(TODAY, '10:00')).intent, 'waiting');

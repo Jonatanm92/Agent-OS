@@ -60,12 +60,12 @@
         c.kind === 'shopping' && c.category ? t(`shop.cat.${c.category}`) : ''].filter(Boolean).join(' · ');
       return `<div class="cand${c.review ? ' review' : ''}" data-cand="${esc(c.tempId)}">
         <div class="cand-top">
-          <select class="kind-select k-${esc(c.kind)}" data-change="cand-kind" data-ns="${ns}" data-temp="${esc(c.tempId)}" aria-label="${esc(t('cap.kindLabel', { title: c.title }))}">
-            ${KIND_OPTIONS.map((k) => `<option value="${k}"${k === c.kind ? ' selected' : ''}>${esc(t(`kind.${k}`))}</option>`).join('')}</select>
           <input class="cand-title" id="${esc(`${ns}-${c.tempId}`)}" data-model="${esc(tk)}" value="${esc(UI.draft(tk, c.title))}" maxlength="140" aria-label="${esc(t('item.title'))}">
           <button class="icon-btn small" data-action="cand-remove" data-ns="${ns}" data-temp="${esc(c.tempId)}" aria-label="${esc(t('cap.remove', { title: c.title }))}">${icon('close', 18)}</button>
         </div>
         <div class="cand-bottom">
+          <select class="kind-select k-${esc(c.kind)}" data-change="cand-kind" data-ns="${ns}" data-temp="${esc(c.tempId)}" aria-label="${esc(t('cap.kindLabel', { title: c.title }))}">
+            ${KIND_OPTIONS.map((k) => `<option value="${k}"${k === c.kind ? ' selected' : ''}>${esc(t(`kind.${k}`))}</option>`).join('')}</select>
           ${c.kind === 'note' || c.kind === 'idea' ? '' : `<select class="when-select" data-change="cand-when" data-ns="${ns}" data-temp="${esc(c.tempId)}" aria-label="${esc(t('cap.whenLabel', { title: c.title }))}">${whenOptions(c)}</select>`}
           ${c.kind === 'event' ? `<input class="time-input" type="time" value="${esc(c.time)}" data-change="cand-time" data-ns="${ns}" data-temp="${esc(c.tempId)}" aria-label="${esc(t('ev.start'))}">` : ''}
           ${extra ? `<span class="sub">${esc(extra)}</span>` : ''}

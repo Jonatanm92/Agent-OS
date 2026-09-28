@@ -42,10 +42,13 @@
     'toast.error': ['Något gick fel. Inget ändrades.', 'Something went wrong. Nothing was changed.'],
     'toast.remote': ['Uppdaterat från en annan enhet.', 'Updated from another device.'],
     'toast.copied': ['Kopierat.', 'Copied.'],
+    'err.viewTitle': ['Den här vyn gick inte att visa', "This screen couldn't be shown"],
+    'err.viewBody': ['Dina uppgifter är orörda. Gå till Nu och fortsätt därifrån.', 'Your data is untouched. Go to Now and carry on from there.'],
+    'err.home': ['Till Nu', 'Go to Now'],
 
     'meta.overdue': ['skulle varit klart {when}', 'was due {when}'],
-    'meta.dueToday': ['klart i dag', 'due today'],
-    'meta.due': ['klart {when}', 'due {when}'],
+    'meta.dueToday': ['senast i dag', 'due today'],
+    'meta.due': ['senast {when}', 'due {when}'],
     'meta.carried': ['från tidigare', 'carried over'],
     'meta.for': ['till {name}', 'for {name}'],
     'meta.background': ['sköter sig själv', 'runs by itself'],
@@ -60,6 +63,8 @@
 
     'voice.denied': ['Mikrofonen är inte tillgänglig här. Använd tangentbordets mikrofonknapp i stället — Aura förstår dikterad text på samma sätt.', "The microphone isn't available here. Use your keyboard's microphone button instead — Aura understands dictated text the same way."],
     'voice.none': ['Röstinmatning finns inte i den här webbläsaren. Tangentbordets mikrofon fungerar lika bra.', "Voice input isn't available in this browser. Your keyboard's microphone works just as well."],
+    'voice.keyboard': ['Tala in med tangentbordets mikrofon — Aura förstår dikterad text på samma sätt.', "Speak using your keyboard's microphone — Aura understands dictated text the same way."],
+    'voice.keyboardShort': ['Tala via tangentbordet', 'Speak via keyboard mic'],
     'voice.silence': ['Hörde inget. Försök igen, eller skriv.', "Didn't hear anything. Try again, or type."],
   });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

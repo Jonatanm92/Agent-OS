@@ -172,6 +172,23 @@ suite('5. Recurring chores', () => {
     equal(it.lastDone, TODAY);
     equal(It.dayBuckets(s, TODAY).done.length, 1, 'shows as done today');
   });
+  test('skipping a recurring chore keeps the series and moves to the next time', () => {
+    let s = st();
+    s = add(s, [{ title: 'Change bedding', kind: 'chore', recur: { unit: 'day', every: 14 }, dueDate: TODAY }]);
+    const id = byTitle(s, 'Change bedding').id;
+    s = ops(s, [{ op: 'item.skip', id }]);
+    equal(byTitle(s, 'Change bedding').status, 'open', 'never dropped');
+    equal(byTitle(s, 'Change bedding').dueDate, '2026-10-13');
+    equal(It.dayBuckets(s, TODAY).good.length, 0, 'gone from today');
+    equal(It.dayBuckets(s, TODAY).done.length, 0, 'and not counted as done');
+  });
+  test('"later" on a recurring chore means skip this time, not a silent no-op', () => {
+    let s = st();
+    s = add(s, [{ title: 'Water plants', kind: 'chore', recur: { unit: 'day', every: 4 }, dueDate: TODAY }]);
+    s = ops(s, [{ op: 'item.postpone', id: byTitle(s, 'Water plants').id, to: 'later' }]);
+    equal(byTitle(s, 'Water plants').dueDate, '2026-10-03');
+    equal(It.dayBuckets(s, TODAY).good.length, 0);
+  });
   test('weekly on a weekday lands on the next such day', () => {
     const item = M.newItem({ title: 'Recycling', recur: { unit: 'week', every: 1, weekdays: [4] } });
     equal(It.recurNext(item, TODAY), '2026-10-01');
@@ -231,6 +248,13 @@ suite('6. Planner', () => {
     s = ops(s, o);
     equal(It.dayBuckets(s, TODAY).good.length, 2);
     equal(s.items.length, 4, 'nothing new was created');
+  });
+  test('auto-plan does not pull office calls into a day after offices close', () => {
+    let s = st();
+    s = add(s, [{ title: 'Call the dentist', kind: 'admin', category: 'call', context: 'phone' }]);
+    equal(P.autoPlan(s, at(TODAY, '17:30')).picked.length, 0, 'not at 17:30');
+    equal(P.autoPlan(s, at('2026-10-03', '09:00')).picked.length, 0, 'not on a Saturday');
+    equal(P.autoPlan(s, at(TODAY, '09:00')).picked.length, 1, 'yes on a weekday morning');
   });
   test('auto-plan skips days an item should avoid', () => {
     let s = st();

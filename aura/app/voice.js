@@ -15,7 +15,17 @@
 
   function Ctor() { return root.SpeechRecognition || root.webkitSpeechRecognition || null; }
 
-  function supported() { return !!Ctor(); }
+  /** Only where it can really work: the API exists and the page may use the microphone.
+   *  Inside a claude.ai Artifact the frame refuses the microphone, so this is false there
+   *  and the interface points to the keyboard's microphone instead. */
+  function supported() {
+    if (!Ctor()) return false;
+    const doc = root.document;
+    const policy = doc && (doc.permissionsPolicy || doc.featurePolicy);
+    if (policy && typeof policy.allowsFeature === 'function' && !policy.allowsFeature('microphone')) return false;
+    if (A.platform && A.platform.hasRuntime() && root.self !== root.top) return false;
+    return true;
+  }
 
   /**
    * Start listening. Returns a controller with stop(), or null if unsupported.

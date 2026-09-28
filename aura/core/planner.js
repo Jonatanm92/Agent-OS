@@ -168,14 +168,23 @@
     return true;
   }
 
+  /** Calls to offices only fit a weekday before about half past four. */
+  function officeClosedForToday(item, key, nowMin) {
+    const officeCall = item.kind === 'admin' && (item.context === 'phone' || item.category === 'call');
+    if (!officeCall) return false;
+    const wd = U.weekday(key);
+    return wd === 0 || wd === 6 || (nowMin != null && nowMin >= 16 * 60 + 30);
+  }
+
   /** Items from "can wait" that Aura may pull into today when there is room. */
-  function promotable(state, key) {
+  function promotable(state, key, nowMin) {
     const wd = U.weekday(key);
     const buckets = It.dayBuckets(state, key);
     const firstActions = new Set(state.projects.filter((p) => p.status === 'active')
       .map((p) => { const n = It.nextAction(state, p.id); return n && n.id; }).filter(Boolean));
     return buckets.later.filter((i) => isActionableKind(i)
       && !(i.avoidWeekdays || []).includes(wd)
+      && !officeClosedForToday(i, key, nowMin)
       && i.priority !== 'later'
       && (!i.projectId || firstActions.has(i.id)));
   }
@@ -193,7 +202,7 @@
     if (room < 15 || plan.buckets.good.length >= caps.good) return { ops, picked, plan };
     let used = 0;
     let count = plan.buckets.good.length;
-    for (const item of promotable(state, plan.dateKey)) {
+    for (const item of promotable(state, plan.dateKey, plan.nowMin)) {
       if (count >= caps.good) break;
       if (!energyOk(item, plan.energy)) continue;
       const minutes = item.background ? 5 : item.minutes;
@@ -237,7 +246,7 @@
     }
 
     if (!moved.length && used < plan.budget) {
-      for (const item of promotable(state, key)) {
+      for (const item of promotable(state, key, plan.nowMin)) {
         if (kept.length + added.length >= caps.good) break;
         if (!energyOk(item, level)) continue;
         const minutes = item.background ? 5 : item.minutes;
@@ -258,7 +267,7 @@
 
   A.planner = {
     subtract, total, eventsOn, fixedFor, capacity, energyLevel, planDay,
-    plannedCount, nextGoodDay, isActionableKind, energyOk, promotable, autoPlan, rebuild,
+    plannedCount, nextGoodDay, isActionableKind, energyOk, promotable, officeClosedForToday, autoPlan, rebuild,
     MARGIN_SHARE,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

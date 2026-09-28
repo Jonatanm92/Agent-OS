@@ -173,10 +173,10 @@
           <button class="icon-btn solid" data-action="shop-add" aria-label="${esc(t('a.add'))}">${icon('plus', 22)}</button>
         </div>
         ${list.count ? list.groups.map((g) => `<section class="section">${UI.sectionHead(t(`shop.cat.${g.category}`), `<span class="count mono">${g.items.length}</span>`)}
-          <div class="panel">${g.items.map((i) => UI.itemRow(i, { meta: [i.forPerson ? t('meta.for', { name: i.forPerson }) : '', i.date ? I.relativeDay(i.date, key) : ''].filter(Boolean).join(' · ') })).join('')}</div></section>`).join('')
+          <div class="panel">${g.items.map((i) => UI.itemRow(i, { noKindTag: true, meta: [i.forPerson ? t('meta.for', { name: i.forPerson }) : '', i.date ? I.relativeDay(i.date, key) : ''].filter(Boolean).join(' · ') })).join('')}</div></section>`).join('')
           : `<p class="calm-line pad">${esc(t('shop.empty'))}</p>`}
         ${list.usuals.length ? `<section class="section">${UI.sectionHead(t('shop.usuals'))}<div class="chips">${list.usuals.map((u) => `<button class="chip" data-action="shop-usual" data-id="${esc(u.id)}">${icon('plus', 14)}${esc(u.title)}</button>`).join('')}</div></section>` : ''}
-        ${recent.length ? `<section class="section">${UI.sectionHead(t('shop.bought'))}<div class="panel soft">${recent.map((i) => UI.itemRow(i, { meta: '' })).join('')}</div></section>` : ''}`;
+        ${recent.length ? `<section class="section">${UI.sectionHead(t('shop.bought'))}<div class="panel soft">${recent.map((i) => UI.itemRow(i, { meta: '', noKindTag: true })).join('')}</div></section>` : ''}`;
     },
   });
 

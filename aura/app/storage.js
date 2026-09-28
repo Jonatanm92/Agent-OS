@@ -29,20 +29,21 @@
   const SESSION = U.makeId('ses');
   const UNDO_LIMIT = 20;
   const DEBOUNCE_MS = 400;
-  const DOC_LIMIT = 230000;   // stay well under the platform's 256 KiB per document
+  const SHARD_TARGET = 170000;   // bytes per document, well under the platform's 256 KiB
+  const SHARDED = { items: 'items', log: 'log', journal: 'journal' };   // slices that are one growing list
 
   const store = {
     state: null, mode: 'memory', ready: false, uid: null, db: null,
     undo: [], redo: [], listeners: [], lastError: null,
     lastSaved: {}, lastRemote: {}, pending: new Set(), timer: null, chains: {}, unsubs: [],
-    remoteNote: false,
+    remoteNote: false, shards: {},
   };
 
   function slice(state, name) {
     switch (name) {
       // meta.updatedAt ticks on every change; leaving it out keeps core from being rewritten each time.
       case 'core': return { schema: state.schema, app: state.app, prefs: state.prefs, events: state.events, routines: state.routines, projects: state.projects, people: state.people, meta: Object.assign({}, state.meta, { updatedAt: undefined }) };
-      case 'items': return { items: state.items };
+      case 'items': return { items: state.items.map(M.packItem) };
       case 'days': return { days: state.days };
       case 'log': return { log: state.log };
       case 'cycle': return { cycle: state.cycle };
@@ -70,6 +71,36 @@
   function cacheKey() { return store.uid ? CACHE_PREFIX + U.hash(store.uid).toString(36) : LOCAL_KEY; }
 
   function docPath(name) { return `data/users/${store.uid}/${name}`; }
+  function shardName(name, k) { return k === 1 ? name : `${name}-${k}`; }
+
+  /** A slice's data, with any extra shard documents joined back on. */
+  async function withShards(name, body) {
+    const data = Object.assign({}, body.data || {});
+    const n = Math.max(1, Number(body.shards) || 1);
+    store.shards[name] = n;
+    const key = SHARDED[name];
+    if (n > 1 && key) {
+      const extra = await Promise.all(Array.from({ length: n - 1 }, (_, i) => store.db.doc(docPath(shardName(name, i + 2))).get()));
+      data[key] = (data[key] || []).concat(...extra.map((snap) => (snap && snap.exists ? ((snap.data() || {}).data || {})[key] || [] : [])));
+    }
+    return data;
+  }
+
+  /** Split a list slice into chunks that each fit a document. */
+  function chunk(name, body) {
+    const key = SHARDED[name];
+    const json = JSON.stringify(body);
+    if (!key || json.length <= SHARD_TARGET) return [body];
+    const out = [];
+    let cur = [], size = 0;
+    for (const entry of body[key]) {
+      const len = JSON.stringify(entry).length + 1;
+      if (cur.length && size + len > SHARD_TARGET) { out.push({ [key]: cur }); cur = []; size = 0; }
+      cur.push(entry); size += len;
+    }
+    out.push({ [key]: cur });
+    return out;
+  }
 
   function hasContent(s) {
     return !!(s && (s.prefs.onboarded || s.items.length || s.events.length || s.routines.length));
@@ -92,14 +123,15 @@
         const parts = {};
         let found = 0;
         const snaps = await Promise.all(SLICES.map((name) => db.doc(docPath(name)).get()));
-        snaps.forEach((snap, i) => {
-          if (snap && snap.exists) {
-            const body = snap.data() || {};
-            parts[SLICES[i]] = body.data || {};
-            store.lastRemote[SLICES[i]] = body.savedAt || '';
-            found += 1;
-          }
-        });
+        for (let i = 0; i < snaps.length; i += 1) {
+          const snap = snaps[i];
+          if (!snap || !snap.exists) continue;
+          const name = SLICES[i];
+          const body = snap.data() || {};
+          parts[name] = await withShards(name, body);
+          store.lastRemote[name] = body.savedAt || '';
+          found += 1;
+        }
         if (found) {
           store.state = assemble(parts);
           for (const name of SLICES) store.lastSaved[name] = JSON.stringify(slice(store.state, name));
@@ -148,17 +180,19 @@
     store.unsubs = [];
     for (const name of SLICES) {
       try {
-        const off = store.db.doc(docPath(name)).onSnapshot((snap) => {
+        const off = store.db.doc(docPath(name)).onSnapshot(async (snap) => {
           if (!snap || !snap.exists || snap.metadata && snap.metadata.hasPendingWrites) return;
           const body = snap.data() || {};
           if (body.writer === SESSION) return;
           if (body.savedAt && store.lastRemote[name] && body.savedAt <= store.lastRemote[name]) return;
-          const incoming = JSON.stringify(body.data || {});
           store.lastRemote[name] = body.savedAt || '';
+          let data;
+          try { data = await withShards(name, body); } catch (e) { return; }
+          const incoming = JSON.stringify(data);
           if (incoming === JSON.stringify(slice(store.state, name))) { store.lastSaved[name] = incoming; return; }
           const parts = {};
           for (const n of SLICES) parts[n] = slice(store.state, n);
-          parts[name] = body.data || {};
+          parts[name] = data;
           store.state = assemble(parts);
           store.lastSaved[name] = JSON.stringify(slice(store.state, name));
           store.undo = []; store.redo = [];   // undo must never jump over another device's change
@@ -189,22 +223,29 @@
     const writes = [];
     for (const name of SLICES) {
       const body = slice(store.state, name);
-      let json = JSON.stringify(body);
+      const json = JSON.stringify(body);
       if (json === store.lastSaved[name]) continue;
-      if (json.length > DOC_LIMIT) {
-        store.lastError = 'too_large';
-        continue;
-      }
+      const parts = chunk(name, body);
+      if (parts.some((p) => JSON.stringify(p).length > 250000)) { store.lastError = 'too_large'; continue; }
       store.lastSaved[name] = json;
-      writes.push(write(name, body));
+      writes.push(write(name, parts));
     }
     return Promise.all(writes);
   }
 
-  function write(name, body) {
+  /** Write a slice: extra shards first, the primary document last (it carries the shard count). */
+  function write(name, parts) {
     const savedAt = new Date().toISOString();
+    const previous = store.shards[name] || 1;
     store.pending.add(name);
-    const run = () => store.db.doc(docPath(name)).set({ v: 1, app: 'aura', data: body, savedAt, writer: SESSION });
+    const run = async () => {
+      for (let k = 2; k <= parts.length; k += 1) {
+        await store.db.doc(docPath(shardName(name, k))).set({ v: 1, app: 'aura', data: parts[k - 1], savedAt, writer: SESSION, shard: k });
+      }
+      await store.db.doc(docPath(name)).set({ v: 1, app: 'aura', data: parts[0], savedAt, writer: SESSION, shards: parts.length });
+      for (let k = parts.length + 1; k <= previous; k += 1) await store.db.doc(docPath(shardName(name, k))).delete();
+      store.shards[name] = parts.length;
+    };
     store.chains[name] = (store.chains[name] || Promise.resolve())
       .then(run)
       .catch((error) => {
@@ -302,7 +343,10 @@
     PF.removeLocal(LOCAL_KEY);
     if (store.db) {
       await Promise.all(Object.values(store.chains)).catch(() => {});
-      await Promise.all(SLICES.map((name) => store.db.doc(docPath(name)).delete().catch((e) => { store.lastError = (e && e.code) || 'unavailable'; })));
+      const docs = [];
+      for (const name of SLICES) for (let k = 1; k <= (store.shards[name] || 1); k += 1) docs.push(shardName(name, k));
+      await Promise.all(docs.map((d) => store.db.doc(docPath(d)).delete().catch((e) => { store.lastError = (e && e.code) || 'unavailable'; })));
+      store.shards = {};
       store.lastSaved = {};
     }
     emit();

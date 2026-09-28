@@ -121,7 +121,8 @@
       }
 
       parts.push(`<div class="btnrow danger-row">
-        ${item.status === 'open' && actionable(item) ? `<button class="btn quiet small" data-action="item-drop" data-id="${esc(id)}">${esc(t('item.drop'))}</button>` : ''}
+        ${item.recur && item.status === 'open' ? `<button class="btn quiet small" data-action="item-skip" data-id="${esc(id)}">${esc(t('item.skip'))}</button>` : ''}
+        ${item.status === 'open' && actionable(item) ? `<button class="btn quiet small" data-action="item-drop" data-id="${esc(id)}">${esc(item.recur ? t('item.stopRepeat') : t('item.drop'))}</button>` : ''}
         <button class="btn quiet small danger" data-action="item-delete" data-id="${esc(id)}">${icon('trash', 16)}${esc(t('a.delete'))}</button></div>`);
 
       const created = String(item.createdAt || '').slice(0, 10);
@@ -135,6 +136,8 @@
   I.add({
     'item.postponedN': ['flyttad {n} gång|flyttad {n} gånger', 'moved {n} time|moved {n} times'],
     'item.recurDone': ['Klar för den här gången — nästa gång {when}.', 'Done for this time — next due {when}.'],
+    'item.skip': ['Hoppa över den här gången', 'Skip this time'],
+    'item.stopRepeat': ['Sluta upprepa', 'Stop repeating'],
   });
 
   function saveText(id, silent) {
@@ -248,6 +251,7 @@
     UI.commit([{ op: 'item.reorder', ids }], { silent: true });
     return rerender();
   });
+  UI.action('item-skip', (el) => { if (UI.ui.sheet) UI.closeSheet(); UI.commit([{ op: 'item.skip', id: el.dataset.id }]); return true; });
   UI.action('item-drop', (el) => { UI.closeSheet(); UI.commit([{ op: 'item.drop', id: el.dataset.id }]); return true; });
   UI.action('item-delete', (el) => { UI.closeSheet(); UI.commit([{ op: 'item.delete', id: el.dataset.id }]); return true; });
 
