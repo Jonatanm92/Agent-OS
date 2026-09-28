@@ -1,6 +1,6 @@
 {
   "name": "aura",
-  "version": "0.36.0",
+  "version": "0.37.0",
   "private": true,
   "description": "Aura — a calm, adaptive assistant for everyday life, in a forest world with Klara, Liv, Maja and Astrid. No build step: the page, its modules and core/ are served as they are.",
   "scripts": {

@@ -11,7 +11,7 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/assets/app-icon-180.png" />
-    <link rel="stylesheet" href="/styles.css?v=36" />
+    <link rel="stylesheet" href="/styles.css?v=37" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Hoppa till innehållet</a>
@@ -42,37 +42,7 @@
       </nav>
     </div>
 
-    <dialog id="onboarding-dialog" class="modal onboarding-modal" aria-labelledby="onboarding-title">
-      <form method="dialog" id="onboarding-form" class="modal-card">
-        <div class="onboarding-art"><img src="/assets/forest-companions-mobile-deploy.jpg" alt="Tre av vännerna i Auras levande skog" /></div>
-        <div class="modal-copy">
-          <p class="eyebrow">En liten present till dig</p>
-          <h1 id="onboarding-title">Välkommen till <em>Aura</em></h1>
-          <p>Fyra vänner följer dagens skiften och har varsin tydlig roll: Klara håller i dagen, Liv i kroppen, Maja i listor och minnen, Astrid i stjärnorna. Planer, listor, dagbok, cykel och tarot stannar i den här webbläsaren.</p>
-        </div>
-        <div class="onboarding-team" aria-label="Ditt peppteam"><div><img src="/assets/companions/klara-coach.webp" alt="" /><span><strong>Klara</strong><small>coach i stunden</small></span></div><div><img src="/assets/companions/klara-cycle-v11.webp" alt="" /><span><strong>Liv</strong><small>PMS & cykel</small></span></div><div><img src="/assets/companions/maja-journal.webp" alt="" /><span><strong>Maja</strong><small>mönster & minnen</small></span></div><div><img src="/assets/companions/astrid-mystic.webp" alt="" /><span><strong>Astrid</strong><small>stjärnor & tarot</small></span></div></div>
-        <label class="field"><span>Vad vill du bli kallad?</span><input name="name" id="onboarding-name" autocomplete="given-name" placeholder="Ditt namn" maxlength="40" /></label>
-        <details class="disclosure">
-          <summary>Din vardag <span>frivilligt</span></summary>
-          <div class="field-grid">
-            <label class="field"><span>Brukar vakna</span><input name="wake" type="time" value="07:00" /></label>
-            <label class="field"><span>Brukar somna</span><input name="sleep" type="time" value="23:00" /></label>
-            <label class="field"><span>Jobbar från <small>om fasta tider</small></span><input name="workStart" type="time" /></label>
-            <label class="field"><span>Jobbar till</span><input name="workEnd" type="time" /></label>
-          </div>
-          <p class="field-note">Aura planerar aldrig in något utanför dina vakna timmar och lämnar alltid luft. Okänt är helt okej — lämna tomt.</p>
-        </details>
-        <details class="disclosure">
-          <summary>Cykelinställningar <span>frivilligt</span></summary>
-          <div class="field-grid">
-            <label class="field"><span>Genomsnittlig cykel</span><input name="cycleLength" type="number" min="21" max="45" value="28" inputmode="numeric" /></label>
-            <label class="field"><span>Menslängd</span><input name="periodLength" type="number" min="2" max="10" value="5" inputmode="numeric" /></label>
-          </div>
-        </details>
-        <details class="privacy-note"><summary>Så skyddar Aura dina uppgifter</summary><p><strong>Planer, listor, dagbok, cykelhistorik och tarot stannar i den här webbläsaren.</strong> Dagens plan och Töm huvudet sorteras med Auras egna regler direkt i telefonen. När du ber Klara eller Liv om ett AI-svar skickas bara den aktuella incheckningen och relevant samtalskontext via Auras skyddade server. API-nyckeln finns aldrig i appen.</p></details>
-        <button class="button button-primary button-wide" value="start" type="submit">Nu börjar vi <img class="button-icon" src="/assets/icons/nav-arrow-right.svg" alt="" /></button>
-      </form>
-    </dialog>
+    <dialog id="onboarding-dialog" class="modal onboarding-modal" aria-labelledby="onboarding-title"></dialog>
 
     <dialog id="breathing-dialog" class="modal calm-modal" aria-labelledby="breathing-title">
       <div class="modal-card calm-card">
@@ -118,10 +88,21 @@
             <label class="toggle-line"><input type="checkbox" name="module" value="routines" /> <span>Rutiner</span></label>
           </div></fieldset>
           <p class="field-note">Avstängda delar försvinner ur menyn. Inget raderas — slå på igen när du vill.</p>
+          <fieldset class="chip-field"><legend>Hur mycket ryms i en dag</legend><div class="chip-row">
+            <label class="chip"><input type="radio" name="density" value="light" /><span>Lite</span></label>
+            <label class="chip"><input type="radio" name="density" value="balanced" /><span>Lagom</span></label>
+            <label class="chip"><input type="radio" name="density" value="full" /><span>Mycket</span></label>
+          </div></fieldset>
+          <fieldset class="chip-field"><legend>Puffar från Aura</legend><div class="chip-row">
+            <label class="chip"><input type="radio" name="notifications" value="off" /><span>Inga</span></label>
+            <label class="chip"><input type="radio" name="notifications" value="minimal" /><span>Bara när det behövs ett beslut</span></label>
+            <label class="chip"><input type="radio" name="notifications" value="helpful" /><span>Lite oftare</span></label>
+          </div></fieldset>
+          <p class="field-note">Puffar visas i Aura medan appen är öppen — aldrig för att du ska öppna den oftare.</p>
         </details>
         <div class="modal-actions"><button class="button button-primary" value="save" type="submit">Spara</button><button class="button button-ghost" value="cancel" type="button" data-action="close-settings">Avbryt</button></div>
         <hr />
-        <details class="settings-section"><summary>Dina data & AI</summary><p>Planer, listor, dagbok, cykelhistorik och tarot ligger lokalt i den här webbläsaren. Dagens plan, Töm huvudet och Fråga Aura använder ingen AI och skickar inget. När du ber Klara eller Liv om AI-stöd skickas den aktuella incheckningen via Auras skyddade server. Du kan exportera en kopia eller radera allt här.</p><div class="button-row"><button class="button button-secondary" type="button" data-action="export-data">Exportera</button><button class="button button-danger" type="button" data-action="request-reset">Radera allt</button></div></details>
+        <details class="settings-section"><summary>Dina data & AI</summary><p>Planer, listor, dagbok, cykelhistorik och tarot ligger lokalt i den här webbläsaren. Dagens plan, Töm huvudet, Aura Pulse och Prata med Aura använder ingen AI och skickar inget. När du ber Klara eller Liv om AI-stöd skickas den aktuella incheckningen via Auras skyddade server. Du kan exportera en kopia eller radera allt här.</p><div class="button-row"><button class="button button-secondary" type="button" data-action="export-data">Exportera</button><button class="button button-danger" type="button" data-action="request-reset">Radera allt</button></div></details>
         <section class="settings-section sound-settings" aria-labelledby="sound-settings-title">
           <div class="sound-settings-heading"><div><p class="eyebrow">Ljudlandskap</p><h3 id="sound-settings-title">Naturens ljud</h3></div><output id="ambient-volume-value" for="ambient-volume">78%</output></div>
           <label class="sound-volume" for="ambient-volume"><span>Ljudstyrka</span><input id="ambient-volume" name="audioVolume" type="range" min="20" max="100" step="1" value="78" /><span class="range-labels"><small>Mjuk</small><small>Tydlig</small></span></label>
@@ -170,6 +151,6 @@
     <script src="/core/search.js?v=1"></script>
     <script src="/core/notify.js?v=1"></script>
     <script src="/core/compact.js?v=1"></script>
-    <script type="module" src="/app.js?v=36"></script>
+    <script type="module" src="/app.js?v=37"></script>
   </body>
 </html>

@@ -21,12 +21,11 @@ import { experimentProgress, getActiveExperiment, markExperimentDay, personalIns
 import { clientSafetyResponse, renderSafetyCard } from "./client-safety.js?v=16";
 import { buildCoachPriorTurns, coachTranscriptPatch, coachTranscriptView } from "./coach-transcript.js?v=15";
 import { PANTRY_GOALS, PANTRY_ITEMS, buildPantrySuggestion, collectDueReminders, createAuraReminder, minutesUntilReminder, nextPendingReminder, saveHelpfulTool } from "./care-tools.js?v=27.5";
-import { commitLife, energyToday, ensureLife, housekeepLife, moduleOn, resetHistory } from "./life.js?v=1";
-import * as everyday from "./everyday.js?v=1";
+import { commitLife, ensureLife, housekeepLife, moduleOn, resetHistory } from "./life.js?v=2";
+import * as everyday from "./everyday.js?v=2";
 
 const main = document.querySelector("#main-content");
 const toastElement = document.querySelector("#toast");
-const onboardingDialog = document.querySelector("#onboarding-dialog");
 const breathingDialog = document.querySelector("#breathing-dialog");
 const settingsDialog = document.querySelector("#settings-dialog");
 const resetDialog = document.querySelector("#reset-dialog");
@@ -240,7 +239,7 @@ function renderForestTrail(moments = []) {
   </section>`;
 }
 
-function renderWorldHero({ world, eyebrow, title, body, guide, guideName, actions = "" }) {
+function renderWorldHero({ world, eyebrow, title, body, guide, guideName, actions = "", compact = false }) {
   const character = world === "ritual"
     ? COMPANION_ASSETS.owl
     : world === "insights"
@@ -254,7 +253,7 @@ function renderWorldHero({ world, eyebrow, title, body, guide, guideName, action
     ? `<div class="world-guide-portraits is-team"><img class="team-character team-klara" src="${COMPANION_ASSETS.bunny}" alt="Klara" /><img class="team-character team-liv" src="${COMPANION_ASSETS.cycle}" alt="Liv" /><img class="team-character team-astrid" src="${COMPANION_ASSETS.owl}" alt="Astrid" /><img class="team-character team-maja" src="${COMPANION_ASSETS.hamster}" alt="Maja" /></div>`
     : `<div class="world-guide-portraits"><img class="guide-primary" src="${character}" alt="${guideName}" />${world === "ritual" ? `<img class="guide-motion" src="${COMPANION_ASSETS.owlMotion}" alt="" aria-hidden="true" />` : ""}</div>`;
   const sceneLabel = getAmbientLabel(world);
-  return `<section class="world-hero world-${world}">
+  return `<section class="world-hero world-${world}${compact ? " is-compact" : ""}">
     <div class="world-scrim" aria-hidden="true"></div>
     <div class="world-copy"><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><p>${body}</p>${actions ? `<div class="world-actions">${actions}</div>` : ""}<button class="world-sound-invite" type="button" data-action="toggle-audio" aria-pressed="${audioActive}">${icon(audioActive ? "sound-high" : "sound-off")}<span><strong>${audioActive ? `${sceneLabel} är på` : `Slå på ${sceneLabel.toLocaleLowerCase("sv-SE")}`}</strong><small>${audioActive ? "Tryck för att stänga av" : "Lugn bakgrund · du styr själv"}</small></span></button></div>
     <div class="world-guide"><div class="world-speech"><strong>${guideName}</strong><span>${guide}</span></div>${portraits}</div>
@@ -574,6 +573,7 @@ function renderMomentResponse(log) {
   if (safetyResponse) return renderCrisisResponse(safetyResponse, latest);
   const personaName = latest.persona === "liv" ? "Liv" : "Klara";
   const personaAsset = latest.persona === "liv" ? "cycle" : "bunny";
+  const bridge = latest.persona === "liv" ? "" : everyday.renderCoachBridge(latest.need);
   const failedQuestion = aiCoachErrorId === latest.id && lastFailedAIRequest?.entryId === latest.id
     ? String(lastFailedAIRequest.question || "")
     : "";
@@ -584,7 +584,7 @@ function renderMomentResponse(log) {
     return `<section class="moment-result ai-result" id="moment-result" tabindex="-1" aria-live="polite"><div class="result-meta"><span class="soft-badge">AI uppdaterar nu</span><span>${escapeHTML(coachNeedLabel(latest.need))}</span></div>${companion(personaAsset, "", `${personaName} tänker`, "Jag läser det du skrev och väljer ett svar som passar just den här stunden.")}${renderAILoading(personaName)}</section>`;
   }
   if (latest.aiCoach) {
-    return `<section class="moment-result ai-result" id="moment-result" tabindex="-1" aria-live="polite" data-level="${escapeHTML(latest.aiCoach.level || "everyday")}"><div class="result-meta"><span class="soft-badge">${aiCoachErrorId === latest.id ? "Tidigare AI-svar" : `AI-svar ${formatCheckInTime(latest.aiUpdatedAt || latest.createdAt)}`}</span><span>${escapeHTML(coachNeedLabel(latest.need))}</span></div>${aiError}${companion(personaAsset, "", `${personaName} svarar`, escapeHTML(latest.aiCoach.animalLine || "Här är ditt personliga nästa steg."))}${renderAICoachResponse(latest, { personaName })}${renderCheckInFeedback(latest, latest.aiCoach.checkBack)}</section>`;
+    return `<section class="moment-result ai-result" id="moment-result" tabindex="-1" aria-live="polite" data-level="${escapeHTML(latest.aiCoach.level || "everyday")}"><div class="result-meta"><span class="soft-badge">${aiCoachErrorId === latest.id ? "Tidigare AI-svar" : `AI-svar ${formatCheckInTime(latest.aiUpdatedAt || latest.createdAt)}`}</span><span>${escapeHTML(coachNeedLabel(latest.need))}</span></div>${aiError}${companion(personaAsset, "", `${personaName} svarar`, escapeHTML(latest.aiCoach.animalLine || "Här är ditt personliga nästa steg."))}${renderAICoachResponse(latest, { personaName })}${bridge}${renderCheckInFeedback(latest, latest.aiCoach.checkBack)}</section>`;
   }
   const actions = response.actions.length ? response.actions : [];
   const currentIndex = actions.length ? coachStepIndex % actions.length : 0;
@@ -598,6 +598,7 @@ function renderMomentResponse(log) {
     ${companion("bunny", "", "Klara speglar", escapeHTML(response.reflection))}
     <div class="moment-encouragement" data-tone="${response.encouragement.tone}"><strong>${escapeHTML(response.encouragement.label)}</strong><p>${escapeHTML(response.encouragement.text)}</p></div>
     ${task}
+    ${bridge}
     ${wantsFoodSupport(latest) ? renderFoodSupport(response.foodSupport) : ""}
     ${coachSequenceDone ? renderGuidance(response.guidance) : ""}
     ${renderCheckInFeedback(latest, response.followUp)}
@@ -621,41 +622,27 @@ function companionNames() {
 }
 
 function renderToday() {
+  const name = String(state.profile.name || "").trim();
+  const phase = dayPhase();
   const log = getTodayLog(state);
   const forestMoments = forestMomentsForDate(state);
-  const name = String(state.profile.name || "").trim();
   const latestCheckIn = Array.isArray(log.checkIns) ? log.checkIns[0] : null;
-  const latestResponse = latestCheckIn ? momentCoach(latestCheckIn, log.checkIns[1] || null) : null;
-  const bestNow = latestResponse?.actions?.[0] || null;
-  const phase = dayPhase();
-  const energy = energyToday(state);
-  const quickNeeds = COACH_NEEDS.filter((need) => need.value !== "cycle" || moduleOn(state, "cycle")).map((need) => `<button class="today-need" type="button" data-action="start-coach-need" data-need="${need.value}">${icon(need.icon)}<span><strong>${need.label}</strong><small>${need.detail}</small></span>${icon("nav-arrow-right")}</button>`).join("");
   return `
     <div class="page today-page world-page" data-forest-state="${forestGrowthState(forestMoments)}" style="--world-path:url('${WORLD_PATH_ASSETS.today}')">
       ${renderWorldHero({
         world: "today",
+        compact: true,
         eyebrow: `${formattedToday()} · ${dayPhaseLabel(phase)}`,
         title: name ? `${greeting()}, <em>${escapeHTML(name)}</em>.` : `${greeting()}.`,
-        body: "Här är det som spelar roll just nu. Resten håller vi åt dig — dagen får ändra riktning hur många gånger den behöver.",
+        body: "Det som spelar roll just nu. Resten håller Aura åt dig.",
         guideName: companionNames(),
-        guide: "En sak i taget. Säg till om orken tryter, så gör vi dagen mindre.",
-        actions: `<button class="button button-primary" type="button" data-action="life-capture">Töm huvudet ${icon("nav-arrow-right", "button-icon")}</button><button class="button button-frost" type="button" data-route="coach">Vad behöver jag nu?</button>`
+        guide: "En sak i taget. Säg till om orken tryter, så gör vi dagen mindre."
       })}
-
-      ${everyday.renderNowPanel(new Date(), { energy })}
+      ${everyday.renderNowCard()}
       ${renderReminderBanner()}
-      ${everyday.renderTodayGlance()}
-      ${everyday.renderQuickActions()}
-      ${renderForestVisit(latestCheckIn, forestMoments)}
-      ${renderTodayExperiment()}
-      <section class="section forest-panel today-start" aria-labelledby="today-start-title">
-        <div class="section-heading"><div><p class="eyebrow">Hjälp som passar stunden</p><h2 id="today-start-title">Vad behöver du i dag?</h2></div><p>Välj en väg. Klara frågar bara det som behövs.</p></div>
-        <div class="today-need-grid">${quickNeeds}</div>
-      </section>
-
-      ${latestCheckIn ? `<section class="section forest-panel best-now" aria-labelledby="best-now-title"><div class="section-heading"><div><p class="eyebrow">Senaste stunden · ${formatCheckInTime(latestCheckIn.createdAt)}</p><h2 id="best-now-title">${escapeHTML(latestCheckIn.aiCoach?.headline || latestResponse?.title || "Ditt nästa steg")}</h2></div><button class="text-button" type="button" data-route="coach">Uppdatera hur det känns ${icon("nav-arrow-right")}</button></div>${bestNow ? `<article class="light-clearing featured-tip" data-tone="${bestNow.tone || "rose"}"><div class="featured-tip-icon">${actionIcon(bestNow.id)}</div><div><p class="eyebrow">Gör nu</p><h3>${escapeHTML(bestNow.title)}</h3><p>${escapeHTML(bestNow.body)}</p>${bestNow.why ? `<p class="tip-why"><strong>Varför:</strong> ${escapeHTML(bestNow.why)}</p>` : ""}</div><span class="time">${escapeHTML(bestNow.minutes)}</span></article>` : ""}</section>` : ""}
-
-      ${renderToolbox(log)}
+      ${everyday.renderShortcuts()}
+      ${everyday.renderToday()}
+      ${latestCheckIn || forestMoments.length ? renderForestVisit(latestCheckIn, forestMoments) : ""}
     </div>`;
 }
 
@@ -702,7 +689,7 @@ function renderCoach() {
       guide: "Vi börjar med det du vill ha hjälp med. Mat är ett spår bland flera — aldrig ett standardsvar.",
       actions: `<button class="button button-primary" type="button" data-action="focus-coach-form">${showForm ? "Gå till frågorna" : "Checka in igen"} ${icon("nav-arrow-right", "button-icon")}</button>`
     })}
-    ${everyday.renderAskPanel()}
+    ${everyday.renderTalkPanel()}
     ${showForm ? `<section class="coach-conversation-stage forest-panel" id="coach-form-stage">
       ${characterDialogue("klara", stepCopy[1], `Klara · ${stepCopy[0]}`)}
       <form class="moment-form guided-checkin" id="coach-form">
@@ -732,6 +719,7 @@ function renderCoach() {
       </form>
     </section>` : ""}
     ${coachCheckIns.length && !showForm ? `<section class="coach-response-stage forest-panel"><div class="coach-response-intro"><div><p class="eyebrow">Ditt stöd just nu · ${escapeHTML(coachNeedLabel(coachCheckIns[0].need))}</p><h2>Klara har knutit ihop dina svar</h2></div><button class="button button-secondary" type="button" data-action="new-coach-checkin">Checka in igen</button></div>${renderMomentResponse(coachLog)}</section>` : ""}
+    ${renderToolbox(log)}
     <section class="coach-tools forest-panel"><details><summary><span><strong>Fler verktyg när du själv vill</strong><small>Andning, matidéer och tre steg när huvudet är fullt</small></span><span aria-hidden="true">+</span></summary><div class="coach-tool-grid"><button class="button button-secondary" type="button" data-action="open-breathing">Två minuters andning</button><button class="button button-secondary" type="button" data-action="start-overwhelm">Tre tydliga steg</button>${renderPantryCompass()}${renderSourceDisclosure()}</div></details></section>
   </div>`;
 }
@@ -972,6 +960,8 @@ function renderInsights() {
       actions: `<button class="button button-frost" type="button" data-route="coach">Gör en ny incheckning ${icon("nav-arrow-right", "button-icon")}</button>`
     })}
     <section class="pattern-intro forest-panel">${characterDialogue("maja", patternState.body, patternState.eyebrow)}<div><h2>${patternState.title}</h2><div class="pattern-counts"><span><strong>${insight.moments}</strong> stunder</span><span><strong>${insight.feedback.better}</strong> råd hjälpte</span><span><strong>${insight.sampleDays}</strong> loggade dagar</span></div></div></section>
+    ${everyday.renderObservations()}
+    ${renderTodayExperiment()}
     ${renderForestTrail(forestMoments)}
     <section class="insight-story-grid forest-panel">
       <article class="light-clearing insight-experiment"><p class="eyebrow">Prova härnäst · bara en sak</p><h2>${escapeHTML(displayedExperiment.title)}</h2><p>${escapeHTML(displayedExperiment.body)}</p><strong>Följ upp så här: ${escapeHTML(displayedExperiment.measure)}</strong>${activeExperiment ? `<span class="experiment-active">${icon("check-circle")} Pågår · ${activeExperiment.completedDates.length} av ${activeExperiment.days} försök</span>` : `<button class="button button-primary" type="button" data-action="start-insight-experiment">Jag provar detta</button>`}${latestExperimentResult ? `<p class="experiment-memory">Senast avslutat: ${escapeHTML(latestExperimentResult.title)} · ${latestExperimentResult.outcome === "helped" ? "hjälpte lite" : "ingen tydlig skillnad"}.</p>` : ""}</article>
@@ -1118,15 +1108,18 @@ function fillLifeSettings(form) {
   for (const field of ["wake", "sleep", "workStart", "workEnd"]) if (form.elements[field]) form.elements[field].value = prefs[field] || "";
   form.querySelectorAll('input[name="workDay"]').forEach((input) => { input.checked = prefs.workDays.includes(Number(input.value)); });
   form.querySelectorAll('input[name="module"]').forEach((input) => { input.checked = prefs.modules[input.value] !== false; });
+  form.querySelectorAll('input[name="density"], input[name="notifications"]').forEach((input) => { input.checked = prefs[input.name] === input.value; });
 }
 
-/** Rhythm and modules from a form (onboarding or settings) → one prefs op. */
+/** Rhythm, density, nudges and modules from the settings form → one prefs op. */
 function lifePrefsFrom(data, { withModules = false } = {}) {
   const clockOrEmpty = (value) => /^\d{2}:\d{2}$/.test(String(value || "")) ? String(value) : "";
   const patch = {};
   for (const field of ["wake", "sleep"]) if (data.has(field) && clockOrEmpty(data.get(field))) patch[field] = clockOrEmpty(data.get(field));
   for (const field of ["workStart", "workEnd"]) if (data.has(field)) patch[field] = clockOrEmpty(data.get(field));
   if (data.has("workDayMarker")) patch.workDays = data.getAll("workDay").map(Number).filter((day) => day >= 0 && day <= 6);
+  if (["light", "balanced", "full"].includes(data.get("density"))) patch.density = data.get("density");
+  if (["off", "minimal", "helpful"].includes(data.get("notifications"))) patch.notifications = data.get("notifications");
   if (withModules) {
     const chosen = new Set(data.getAll("module"));
     patch.modules = Object.fromEntries(["cycle", "reflection", "shopping", "admin", "home", "projects", "routines"].map((name) => [name, chosen.has(name)]));
@@ -1340,16 +1333,6 @@ document.addEventListener("click", (event) => {
   if (!target) return;
   const action = target.dataset.action;
   if (everyday.handleClick(target)) return;
-  if (action === "set-energy") {
-    const value = clamp(target.dataset.energy, 1, 5);
-    const now = new Date();
-    setTodayLog(state, { energy: value * 2, pulse: { energy: value, at: now.toISOString() } });
-    persist();
-    render();
-    if (value <= 2) showAnimalResponse("Tack för att du sa det. Vill du att vi gör dagen mindre? Tryck på Låg energi, så säger jag exakt vad som flyttas.", "Klara");
-    else toast(value >= 4 ? "Fint — Aura föreslår gärna något som kräver lite mer" : "Sparat. Aura väljer lagom stora saker");
-    return;
-  }
   if (action === "toggle-audio") {
     const requested = !audioActive;
     setAmbientEnabled(requested, route).then((actual) => {
@@ -1670,7 +1653,7 @@ document.addEventListener("click", (event) => {
   if (action === "export-data") exportData();
   if (action === "request-reset") { dismissSettings(); resetDialog.showModal(); }
   if (action === "cancel-reset") resetDialog.close();
-  if (action === "confirm-reset") { clearAll(); state = createInitialState(); ensureLife(state); resetHistory(); route = "today"; currentSpread = null; spreadRevealCount = 0; resetDialog.close(); render({ scroll: "top" }); onboardingDialog.showModal(); toast("All lokal data är raderad"); }
+  if (action === "confirm-reset") { clearAll(); state = createInitialState(); ensureLife(state); resetHistory(); route = "today"; currentSpread = null; spreadRevealCount = 0; resetDialog.close(); render({ scroll: "top" }); everyday.openOnboarding(); toast("All lokal data är raderad"); }
 });
 
 document.addEventListener("input", (event) => {
@@ -1748,19 +1731,6 @@ document.addEventListener("submit", (event) => {
       toastElement.classList.remove("show");
     }
     return;
-  }
-  if (form.id === "onboarding-form") {
-    state.profile.name = String(data.get("name") || "").trim().slice(0, 40);
-    state.profile.cycleLength = clamp(data.get("cycleLength") || 28, 21, 45);
-    state.profile.periodLength = clamp(data.get("periodLength") || 5, 2, 10);
-    state.profile.onboarded = true;
-    ensureLife(state);
-    const rhythm = lifePrefsFrom(data);
-    if (Object.keys(rhythm).length) commitLife(state, [{ op: "prefs.set", patch: rhythm }], { system: true });
-    persist();
-    onboardingDialog.close();
-    render({ scroll: "top" });
-    toast(state.profile.name ? `Välkommen, ${state.profile.name}` : "Välkommen till Aura");
   }
   if (form.id === "gratitude-form") {
     const text = String(data.get("gratitude") || "").trim().slice(0, 120);
@@ -1887,8 +1857,19 @@ everyday.configure({
   characterDialogue,
   renderWorldHero,
   characters: CHARACTERS,
-  worlds: { ...WORLD_PATH_ASSETS, ritual: WORLD_ASSETS.ritual }
+  worlds: { ...WORLD_PATH_ASSETS, ritual: WORLD_ASSETS.ritual },
+  finishOnboarding({ name, cycleLength, periodLength }) {
+    state.profile.name = String(name || "").trim().slice(0, 40);
+    state.profile.cycleLength = clamp(cycleLength || 28, 21, 45);
+    state.profile.periodLength = clamp(periodLength || 5, 2, 10);
+    state.profile.onboarded = true;
+    persist();
+    render({ scroll: "top" });
+    toast(state.profile.name ? `Välkommen, ${state.profile.name}` : "Välkommen till Aura");
+  }
 });
+
+document.addEventListener("pointerdown", (event) => { everyday.handlePointerDown(event); });
 
 // The NOW card follows the clock. Refresh quietly while nobody is typing or in a dialog.
 function calmRefresh() {
@@ -1902,5 +1883,5 @@ setInterval(calmRefresh, 60000);
 document.addEventListener("visibilitychange", calmRefresh);
 
 render();
-if (!state.profile.onboarded) onboardingDialog.showModal();
+if (!state.profile.onboarded) everyday.openOnboarding();
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("/sw.js").catch(() => {});

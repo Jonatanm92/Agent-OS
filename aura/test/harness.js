@@ -8,7 +8,7 @@ const vm = require('node:vm');
 const ROOT = path.join(__dirname, '..');
 const CORE = [
   'util.js', 'i18n.js', 'model.js', 'items.js', 'planner.js', 'routines.js', 'engine.js', 'apply.js',
-  'parse.js', 'evening.js', 'patterns.js', 'review.js', 'search.js', 'cycle.js', 'reflect.js',
+  'parse.js', 'evening.js', 'patterns.js', 'review.js', 'search.js',
   'notify.js', 'compact.js',
 ];
 

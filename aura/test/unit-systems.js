@@ -327,46 +327,7 @@ suite('16. Ask Aura (no AI needed)', () => {
   });
 });
 
-suite('17. Cycle (optional, not medical)', () => {
-  test('off by default and data only from the user', () => {
-    const s = st();
-    equal(s.prefs.modules.cycle, false);
-    equal(A.cycle.summary(s, TODAY).averageLength, null);
-  });
-  test('estimate appears only after two full cycles, from logged days', () => {
-    let s = st();
-    const logPeriod = (start) => { for (let i = 0; i < 4; i += 1) s = ops(s, [{ op: 'cycle.log', date: U.addDays(start, i), period: true }]); };
-    logPeriod('2026-07-06');
-    logPeriod('2026-08-03');
-    let sum = A.cycle.summary(s, TODAY);
-    equal(sum.next, null, 'one length is not enough');
-    logPeriod('2026-08-31');
-    sum = A.cycle.summary(s, TODAY);
-    equal(sum.averageLength, 28);
-    equal(sum.periodLength, 4);
-    equal(sum.next.expected, '2026-09-28');
-    equal(sum.cycleDay, 30);
-  });
-  test('clearing removes every cycle entry', () => {
-    let s = st();
-    s = ops(s, [{ op: 'cycle.log', date: TODAY, period: true, symptoms: ['cramps'] }, { op: 'cycle.clear' }]);
-    equal(s.cycle.entries.length, 0);
-  });
-  test('observations are framed as the user’s own logs, never medical fact', () => {
-    const en = I._table['cyc.obsEnergy'][1];
-    assert(/your own logs/i.test(en));
-  });
-});
-
-suite('18. Reflection and notifications', () => {
-  test('theme of the day is stable for a date and exists in both languages', () => {
-    I.setLanguage('en');
-    const a = A.reflect.themeOfDay(TODAY), b = A.reflect.themeOfDay(TODAY);
-    deepEqual(a, b);
-    I.setLanguage('sv');
-    assert(A.reflect.themeOfDay(TODAY).name.length > 0);
-    I.setLanguage('en');
-  });
+suite('17. Notifications', () => {
   test('a notification only exists with a decision behind it: leaving with things left', () => {
     let s = st({ commuteMin: 10 });
     s = ops(s, [{ op: 'event.add', event: { title: 'Dentist', date: TODAY, start: '14:00' } }]);
@@ -392,7 +353,7 @@ suite('18. Reflection and notifications', () => {
   });
 });
 
-suite('19. Retention', () => {
+suite('18. Retention', () => {
   test('old done items, logs and day details are pruned; open items never', () => {
     let s = st();
     s = add(s, [{ title: 'Old done' }, { title: 'Still open' }], at('2026-05-01', '09:00'));

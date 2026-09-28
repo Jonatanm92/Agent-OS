@@ -82,7 +82,9 @@ function liveV8State() {
     const s = storage.createInitialState();
     equal(s.profile.name, '');
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-    assert(!/id="onboarding-name"[^>]*value="/.test(html), 'the name field has no pre-filled name');
+    assert(!/id="onboarding-name"[^>]*value="[^"]/.test(html), 'the page has no pre-filled name');
+    const everyday = fs.readFileSync(path.join(ROOT, 'everyday.js'), 'utf8');
+    assert(/onboarding = \{ step: 0, data: \{ name: "",/.test(everyday), 'onboarding starts with an empty name');
   });
   await testAsync('this edition starts with Liv and Astrid switched on, and the engine speaks Swedish', async () => {
     const s = storage.createInitialState();
@@ -113,6 +115,28 @@ function liveV8State() {
     const pulses = life.pulsesFromLog({ checkIns: [], pulse: { energy: 4, at: '2026-09-29T09:00:00.000Z' } });
     equal(pulses.length, 1);
     equal(pulses[0].energy, 4);
+  });
+  test('Aura Pulse entries count, several a day, with mood, stress and sleep', () => {
+    const pulses = life.pulsesFromLog({ checkIns: [], pulses: [
+      { energy: 2, mood: 4, note: 'privat rad', at: '2026-09-29T08:00:00.000Z' },
+      { energy: 3, stress: 5, sleep: 1, at: '2026-09-29T12:00:00.000Z' },
+      { note: 'bara en rad', at: '2026-09-29T13:00:00.000Z' },
+    ] });
+    equal(pulses.length, 2, 'a note without any value is not a pulse');
+    deepEqual(pulses.map((p) => p.energy), [2, 3]);
+    equal(pulses[1].stress, 5);
+    equal(pulses[1].sleep, 1);
+    assert(!pulses.some((p) => 'note' in p), 'the free-text note stays in the log, not in the engine');
+  });
+  test('Idag reads today’s pulse as one merged picture', () => {
+    const s = liveV8State();
+    s.logs['2026-09-29'] = { checkIns: [], pulses: [{ energy: 2, mood: 4, at: '2026-09-29T08:00:00.000Z' }, { energy: 4, stress: 2, at: '2026-09-29T12:00:00.000Z' }] };
+    life.ensureLife(s, at('2026-09-29', '13:00'));
+    const pulse = life.pulseToday(s, at('2026-09-29', '13:00'));
+    equal(pulse.energy, 4, 'the latest energy wins');
+    equal(pulse.mood, 4, 'an earlier value is kept when not given again');
+    equal(pulse.stress, 2);
+    equal(life.pulseToday(s, at('2026-09-30', '09:00')), null, 'a new day starts without a pulse');
   });
   test('the engine sees today’s pulse without it being copied into stored data', () => {
     const s = liveV8State();

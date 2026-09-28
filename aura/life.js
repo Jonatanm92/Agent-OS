@@ -6,7 +6,7 @@
  * as the journal, the cycle and the check-ins — nothing new leaves the device.
  *
  * How the two halves meet:
- *  - Body state has one source: the check-ins and the one-tap energy on Idag
+ *  - Body state has one source: Klara's check-ins and Aura Pulse
  *    (state.logs). The engine reads them as its Pulse, so Klara's coach and the
  *    planner never disagree about how much energy there is today.
  *  - Every change is an op (core/apply.js): described before it happens,
@@ -82,11 +82,24 @@ export function pulsesFromLog(log) {
     if (sleep) pulse.sleep = sleep;
     pulses.push(pulse);
   }
-  if (log.pulse && typeof log.pulse === "object") {
-    const energy = toFive(log.pulse.energy);
-    if (energy) pulses.push({ at: String(log.pulse.at || ""), energy });
+  // Aura Pulse (and the older one-tap energy) — already on the 1–5 scale.
+  const quick = Array.isArray(log.pulses) ? log.pulses : log.pulse && typeof log.pulse === "object" ? [log.pulse] : [];
+  for (const entry of quick) {
+    if (!entry || typeof entry !== "object") continue;
+    const pulse = { at: String(entry.at || "") };
+    for (const field of ["energy", "mood", "stress", "sleep"]) {
+      const value = toFive(entry[field]);
+      if (value) pulse[field] = value;
+    }
+    if (Object.keys(pulse).length > 1) pulses.push(pulse);
   }
   return pulses.sort((a, b) => String(a.at).localeCompare(String(b.at)));
+}
+
+/** Today's merged pulse (latest value per field), for display. */
+export function pulseToday(state, now = new Date()) {
+  const view = engineView(state, now);
+  return view ? A.model.pulseFor(view, A.util.dateKey(now)) : null;
 }
 
 /**
