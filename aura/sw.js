@@ -1,4 +1,6 @@
-const CACHE = "aura-v35-enchanted-worlds-r1";
+const CACHE = "aura-v36-everyday-r1";
+const ENGINE = ["util", "i18n", "model", "items", "planner", "routines", "engine", "apply", "parse", "evening", "patterns", "review", "search", "notify", "compact"].map((name) => `/core/${name}.js?v=1`);
+const NEW_ICONS = ["list", "plus", "cart", "undo", "refresh-double", "clock", "battery", "wind", "trash", "nav-arrow-up", "nav-arrow-down", "search", "inbox", "folder", "repeat", "edit-pencil", "sun-light"].map((name) => `/assets/icons/${name}.svg`);
 const TAROT_CORE = Array.from({ length: 22 }, (_, index) => `/assets/tarot/major-${String(index).padStart(2, "0")}-card.jpg`);
 const CORE = [
   "/",
@@ -6,17 +8,19 @@ const CORE = [
   "/install.html",
   "/install.css?v=2",
   "/install.js?v=1",
-  "/styles.css?v=35",
-  "/app.js?v=35",
+  "/styles.css?v=36",
+  "/app.js?v=36",
+  "/life.js?v=1",
+  "/everyday.js?v=1",
   "/logic.js?v=31",
-  "/storage.js?v=33",
+  "/storage.js?v=34",
   "/mystic-data.js?v=15",
   "/audio-scapes.js?v=33",
   "/care-tools.js?v=27.5",
   "/wellness-data.js?v=30.1",
   "/tarot-data.js?v=15",
   "/insights-engine.js?v=33",
-  "/client-safety.js?v=15",
+  "/client-safety.js?v=16",
   "/coach-transcript.js?v=15",
   "/manifest.webmanifest",
   "/icon.svg",
@@ -53,7 +57,9 @@ const CORE = [
   "/assets/icons/check-circle.svg",
   "/assets/icons/journal-page.svg",
   "/assets/icons/calendar.svg",
-  ...TAROT_CORE
+  ...TAROT_CORE,
+  ...ENGINE,
+  ...NEW_ICONS
 ];
 
 self.addEventListener("install", (event) => {

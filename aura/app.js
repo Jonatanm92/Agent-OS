@@ -14,13 +14,15 @@ import {
 } from "./logic.js?v=31";
 import { TAROT_CARDS, SPREAD_LABELS } from "./tarot-data.js?v=15";
 import { JOURNAL_PROMPTS, MOODS, SOURCES, SYMPTOMS } from "./wellness-data.js?v=30.1";
-import { appendCheckIn, clearAll, createInitialState, forestMomentsForDate, getTodayLog, loadState, rememberForestMoment, saveState, setCheckInAI, setCheckInFeedback, setTodayLog } from "./storage.js?v=33";
+import { appendCheckIn, clearAll, createInitialState, forestMomentsForDate, getTodayLog, loadState, rememberForestMoment, saveState, setCheckInAI, setCheckInFeedback, setTodayLog } from "./storage.js?v=34";
 import { dailyStarReading, moonPhase, zodiacSign } from "./mystic-data.js?v=15";
 import { getAmbientLabel, setAmbientEnabled, setAmbientRoute, setAmbientVolume } from "./audio-scapes.js?v=33";
 import { experimentProgress, getActiveExperiment, markExperimentDay, personalInsights } from "./insights-engine.js?v=33";
-import { clientSafetyResponse, renderSafetyCard } from "./client-safety.js?v=15";
+import { clientSafetyResponse, renderSafetyCard } from "./client-safety.js?v=16";
 import { buildCoachPriorTurns, coachTranscriptPatch, coachTranscriptView } from "./coach-transcript.js?v=15";
 import { PANTRY_GOALS, PANTRY_ITEMS, buildPantrySuggestion, collectDueReminders, createAuraReminder, minutesUntilReminder, nextPendingReminder, saveHelpfulTool } from "./care-tools.js?v=27.5";
+import { commitLife, energyToday, ensureLife, housekeepLife, moduleOn, resetHistory } from "./life.js?v=1";
+import * as everyday from "./everyday.js?v=1";
 
 const main = document.querySelector("#main-content");
 const toastElement = document.querySelector("#toast");
@@ -33,8 +35,13 @@ const reminderDraftCopy = document.querySelector("#reminder-draft-copy");
 const routePill = document.querySelector("#route-pill");
 const animalResponse = document.querySelector("#animal-response");
 const soundButton = document.querySelector('[data-action="toggle-audio"]');
+const lifeSheet = document.querySelector("#life-sheet");
 
 let state = loadState();
+ensureLife(state);
+if (housekeepLife(state)) {
+  try { saveState(state); } catch { /* persist() reports storage problems on the first real change */ }
+}
 setAmbientVolume(state.preferences.audioVolume);
 let route = "today";
 let lastRenderedRoute = null;
@@ -66,7 +73,12 @@ let reminderDraft = null;
 let reminderTimer = null;
 let settingsVolumeBeforeOpen = null;
 
-const ROUTE_LABELS = { today: "Idag", coach: "Coach", cycle: "Cykel", ritual: "Mystik", insights: "Mönster" };
+const ROUTE_LABELS = { today: "Idag", coach: "Coach", cycle: "Cykel", ritual: "Mystik", insights: "Mönster", life: "Livet", day: "Min dag", low: "Låg energi", chaos: "Kaos", evening: "Kvällen", week: "Veckan" };
+const ROUTES = Object.keys(ROUTE_LABELS);
+// Everyday pages borrow the palette, light and sound of the world they belong to…
+const ROUTE_THEME = { day: "today", low: "coach", chaos: "coach", life: "insights", evening: "insights", week: "insights" };
+// …and light up the tab of the companion who holds them.
+const ROUTE_TAB = { day: "today", low: "today", chaos: "today", insights: "life", evening: "life", week: "life" };
 
 const COACH_NEEDS = [
   { value: "food", label: "Mat & energi", detail: "Jag behöver äta eller få jämnare ork", icon: "heart" },
@@ -139,8 +151,16 @@ function wantsFoodSupport(entry = {}) {
     || /\b(?:mat|äta|äter|ätit|hungr|frukost|lunch|middag|mellanmål|knäckebröd|ägg)\w*/u.test(text);
 }
 
+let storageFailing = false;
 function persist() {
-  saveState(state);
+  try {
+    saveState(state);
+    storageFailing = false;
+  } catch {
+    // Private windows and full storage refuse writes. Never let a toast suggest it was saved.
+    storageFailing = true;
+    toast("Kunde inte spara i webbläsaren — ändringen finns bara tills sidan stängs");
+  }
 }
 
 function greeting() {
@@ -595,39 +615,47 @@ function renderMoodPicker(log) {
   return `<div class="mood-picker" role="group" aria-label="Välj hur dagen känns">${MOODS.map((mood, index) => `<button class="mood-option" type="button" data-action="set-mood" data-mood="${mood.value}" aria-pressed="${Number(log.mood) === mood.value}" aria-label="${mood.label}"><strong aria-hidden="true">${icon(moodIcons[index])}</strong><small>${mood.label}</small></button>`).join("")}</div>`;
 }
 
+function companionNames() {
+  const names = ["Klara", moduleOn(state, "cycle") ? "Liv" : "", "Maja", moduleOn(state, "reflection") ? "Astrid" : ""].filter(Boolean);
+  return `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}`;
+}
+
 function renderToday() {
   const log = getTodayLog(state);
   const forestMoments = forestMomentsForDate(state);
-  const name = escapeHTML(state.profile.name || "du");
+  const name = String(state.profile.name || "").trim();
   const latestCheckIn = Array.isArray(log.checkIns) ? log.checkIns[0] : null;
   const latestResponse = latestCheckIn ? momentCoach(latestCheckIn, log.checkIns[1] || null) : null;
   const bestNow = latestResponse?.actions?.[0] || null;
   const phase = dayPhase();
-  const quickNeeds = COACH_NEEDS.map((need) => `<button class="today-need" type="button" data-action="start-coach-need" data-need="${need.value}">${icon(need.icon)}<span><strong>${need.label}</strong><small>${need.detail}</small></span>${icon("nav-arrow-right")}</button>`).join("");
+  const energy = energyToday(state);
+  const quickNeeds = COACH_NEEDS.filter((need) => need.value !== "cycle" || moduleOn(state, "cycle")).map((need) => `<button class="today-need" type="button" data-action="start-coach-need" data-need="${need.value}">${icon(need.icon)}<span><strong>${need.label}</strong><small>${need.detail}</small></span>${icon("nav-arrow-right")}</button>`).join("");
   return `
     <div class="page today-page world-page" data-forest-state="${forestGrowthState(forestMoments)}" style="--world-path:url('${WORLD_PATH_ASSETS.today}')">
       ${renderWorldHero({
         world: "today",
         eyebrow: `${formattedToday()} · ${dayPhaseLabel(phase)}`,
-        title: `${greeting()}, <em>${name}</em>.`,
-        body: "Hur känns det just nu? Dagen får ändra riktning hur många gånger den behöver — ditt peppteam följer med.",
-        guideName: "Klara, Liv, Maja & Astrid",
-        guide: "Ett ärligt svar räcker. Sedan tar vi ett konkret steg tillsammans.",
-        actions: `<button class="button button-primary" type="button" data-route="coach">Vad behöver jag nu? ${icon("nav-arrow-right", "button-icon")}</button><button class="button button-frost" type="button" data-route="cycle">PMS- eller mensstöd</button>`
+        title: name ? `${greeting()}, <em>${escapeHTML(name)}</em>.` : `${greeting()}.`,
+        body: "Här är det som spelar roll just nu. Resten håller vi åt dig — dagen får ändra riktning hur många gånger den behöver.",
+        guideName: companionNames(),
+        guide: "En sak i taget. Säg till om orken tryter, så gör vi dagen mindre.",
+        actions: `<button class="button button-primary" type="button" data-action="life-capture">Töm huvudet ${icon("nav-arrow-right", "button-icon")}</button><button class="button button-frost" type="button" data-route="coach">Vad behöver jag nu?</button>`
       })}
 
-      ${renderForestVisit(latestCheckIn, forestMoments)}
+      ${everyday.renderNowPanel(new Date(), { energy })}
       ${renderReminderBanner()}
+      ${everyday.renderTodayGlance()}
+      ${everyday.renderQuickActions()}
+      ${renderForestVisit(latestCheckIn, forestMoments)}
       ${renderTodayExperiment()}
       <section class="section forest-panel today-start" aria-labelledby="today-start-title">
         <div class="section-heading"><div><p class="eyebrow">Hjälp som passar stunden</p><h2 id="today-start-title">Vad behöver du i dag?</h2></div><p>Välj en väg. Klara frågar bara det som behövs.</p></div>
         <div class="today-need-grid">${quickNeeds}</div>
       </section>
 
-      ${latestCheckIn ? `<section class="section forest-panel best-now" aria-labelledby="best-now-title"><div class="section-heading"><div><p class="eyebrow">Senaste stunden · ${formatCheckInTime(latestCheckIn.createdAt)}</p><h2 id="best-now-title">${escapeHTML(latestCheckIn.aiCoach?.headline || latestResponse?.title || "Ditt nästa steg")}</h2></div><button class="text-button" type="button" data-route="coach">Uppdatera hur det känns ${icon("nav-arrow-right")}</button></div>${bestNow ? `<article class="light-clearing featured-tip" data-tone="${bestNow.tone || "rose"}"><div class="featured-tip-icon">${actionIcon(bestNow.id)}</div><div><p class="eyebrow">Gör nu</p><h3>${escapeHTML(bestNow.title)}</h3><p>${escapeHTML(bestNow.body)}</p>${bestNow.why ? `<p class="tip-why"><strong>Varför:</strong> ${escapeHTML(bestNow.why)}</p>` : ""}</div><span class="time">${escapeHTML(bestNow.minutes)}</span></article>` : ""}</section>` : `<section class="section forest-panel first-checkin">${characterDialogue("klara", "Välj det du behöver ovan. Jag ställer två eller tre relevanta frågor och ger dig en tydlig början, ett varför och en plan B.", "Klara · redo för första stunden")}</section>`}
+      ${latestCheckIn ? `<section class="section forest-panel best-now" aria-labelledby="best-now-title"><div class="section-heading"><div><p class="eyebrow">Senaste stunden · ${formatCheckInTime(latestCheckIn.createdAt)}</p><h2 id="best-now-title">${escapeHTML(latestCheckIn.aiCoach?.headline || latestResponse?.title || "Ditt nästa steg")}</h2></div><button class="text-button" type="button" data-route="coach">Uppdatera hur det känns ${icon("nav-arrow-right")}</button></div>${bestNow ? `<article class="light-clearing featured-tip" data-tone="${bestNow.tone || "rose"}"><div class="featured-tip-icon">${actionIcon(bestNow.id)}</div><div><p class="eyebrow">Gör nu</p><h3>${escapeHTML(bestNow.title)}</h3><p>${escapeHTML(bestNow.body)}</p>${bestNow.why ? `<p class="tip-why"><strong>Varför:</strong> ${escapeHTML(bestNow.why)}</p>` : ""}</div><span class="time">${escapeHTML(bestNow.minutes)}</span></article>` : ""}</section>` : ""}
 
       ${renderToolbox(log)}
-      <section class="section forest-panel reflection-invite">${companion("hamster", "", "Maja hittar det som hjälper", "I Mönster kan du följa vad som fungerade, spara små vinster och se nästa sak värd att prova.")}<button class="button button-secondary" type="button" data-route="insights">Öppna mina mönster ${icon("nav-arrow-right", "button-icon")}</button></section>
     </div>`;
 }
 
@@ -674,6 +702,7 @@ function renderCoach() {
       guide: "Vi börjar med det du vill ha hjälp med. Mat är ett spår bland flera — aldrig ett standardsvar.",
       actions: `<button class="button button-primary" type="button" data-action="focus-coach-form">${showForm ? "Gå till frågorna" : "Checka in igen"} ${icon("nav-arrow-right", "button-icon")}</button>`
     })}
+    ${everyday.renderAskPanel()}
     ${showForm ? `<section class="coach-conversation-stage forest-panel" id="coach-form-stage">
       ${characterDialogue("klara", stepCopy[1], `Klara · ${stepCopy[0]}`)}
       <form class="moment-form guided-checkin" id="coach-form">
@@ -954,22 +983,48 @@ function renderInsights() {
   </div>`;
 }
 
+function routeAvailable(name) {
+  if (name === "cycle") return moduleOn(state, "cycle");
+  if (name === "ritual") return moduleOn(state, "reflection");
+  return ROUTES.includes(name);
+}
+
+function renderPageSafely(renderer) {
+  try {
+    return renderer();
+  } catch {
+    // Never leave a blank forest: the rest of Aura keeps working.
+    return `<div class="page world-page" style="--world-path:url('${WORLD_PATH_ASSETS.today}')"><section class="forest-panel render-error">${characterDialogue("maja", "Den här sidan kunde inte visas just nu. Dina anteckningar är kvar. Prova att gå till Idag.", "Maja · något gick snett")}<button class="button button-primary" type="button" data-route="today">Till Idag</button></section></div>`;
+  }
+}
+
 function render({ scroll = "preserve" } = {}) {
   const previousScroll = window.scrollY;
+  if (!routeAvailable(route)) route = "today";
   const routeChanged = lastRenderedRoute !== route;
-  const views = { today: renderToday, coach: renderCoach, cycle: renderCycle, ritual: renderRitual, insights: renderInsights };
-  document.body.dataset.route = route;
+  const views = {
+    today: renderToday, coach: renderCoach, cycle: renderCycle, ritual: renderRitual, insights: renderInsights,
+    life: everyday.renderLifePage, day: everyday.renderDayPage, low: everyday.renderLowPage, chaos: everyday.renderChaosPage,
+    evening: everyday.renderEveningPage, week: everyday.renderWeekPage
+  };
+  const theme = ROUTE_THEME[route] || route;
+  document.body.dataset.route = theme;
+  document.body.dataset.page = route;
   document.body.dataset.dayPhase = dayPhase();
   document.body.dataset.forestState = forestGrowthState(forestMomentsForDate(state));
-  setAmbientRoute(route);
+  setAmbientRoute(theme);
   if (routePill) routePill.textContent = ROUTE_LABELS[route] || ROUTE_LABELS.today;
-  main.innerHTML = (views[route] || renderToday)();
+  main.innerHTML = renderPageSafely(() => (views[route] || renderToday)());
   main.firstElementChild?.classList.toggle("page-enter", routeChanged);
   lastRenderedRoute = route;
+  const tab = ROUTE_TAB[route] || route;
   document.querySelectorAll(".bottom-nav [data-route]").forEach((button) => {
-    if (button.dataset.route === route) button.setAttribute("aria-current", "page");
+    button.hidden = !routeAvailable(button.dataset.route);
+    if (button.dataset.route === tab) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   });
+  const nav = document.querySelector(".bottom-nav");
+  if (nav) nav.style.setProperty("--nav-count", String(nav.querySelectorAll("button:not([hidden])").length));
   updateSoundButton();
   if (scroll === "top") window.scrollTo({ top: 0, behavior: "auto" });
   else {
@@ -1006,11 +1061,23 @@ function updateSoundButton() {
   if (previewButton) previewButton.textContent = audioActive ? "Stäng av" : `Provlyssna på ${scene.toLocaleLowerCase("sv-SE")}`;
 }
 
-function toast(message) {
+function toast(message, { undo = false } = {}) {
   clearTimeout(toastTimer);
-  toastElement.textContent = message;
+  toastElement.textContent = "";
+  const text = document.createElement("span");
+  text.textContent = storageFailing && !message.startsWith("Kunde inte spara") ? `${message} · sparas inte` : message;
+  toastElement.append(text);
+  if (undo) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "toast-undo";
+    button.dataset.action = "life-undo";
+    button.textContent = "Ångra";
+    toastElement.append(button);
+  }
+  toastElement.classList.toggle("has-action", undo);
   toastElement.classList.add("show");
-  toastTimer = setTimeout(() => toastElement.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => toastElement.classList.remove("show"), undo ? 6000 : 2600);
 }
 
 function showAnimalResponse(message, name = "Klara") {
@@ -1045,9 +1112,32 @@ function randomGenerator() {
   return mulberry32(seed);
 }
 
+function fillLifeSettings(form) {
+  const prefs = ensureLife(state)?.prefs;
+  if (!prefs) return;
+  for (const field of ["wake", "sleep", "workStart", "workEnd"]) if (form.elements[field]) form.elements[field].value = prefs[field] || "";
+  form.querySelectorAll('input[name="workDay"]').forEach((input) => { input.checked = prefs.workDays.includes(Number(input.value)); });
+  form.querySelectorAll('input[name="module"]').forEach((input) => { input.checked = prefs.modules[input.value] !== false; });
+}
+
+/** Rhythm and modules from a form (onboarding or settings) → one prefs op. */
+function lifePrefsFrom(data, { withModules = false } = {}) {
+  const clockOrEmpty = (value) => /^\d{2}:\d{2}$/.test(String(value || "")) ? String(value) : "";
+  const patch = {};
+  for (const field of ["wake", "sleep"]) if (data.has(field) && clockOrEmpty(data.get(field))) patch[field] = clockOrEmpty(data.get(field));
+  for (const field of ["workStart", "workEnd"]) if (data.has(field)) patch[field] = clockOrEmpty(data.get(field));
+  if (data.has("workDayMarker")) patch.workDays = data.getAll("workDay").map(Number).filter((day) => day >= 0 && day <= 6);
+  if (withModules) {
+    const chosen = new Set(data.getAll("module"));
+    patch.modules = Object.fromEntries(["cycle", "reflection", "shopping", "admin", "home", "projects", "routines"].map((name) => [name, chosen.has(name)]));
+  }
+  return patch;
+}
+
 function openSettings() {
   const form = settingsDialog.querySelector("form");
   form.elements.name.value = state.profile.name;
+  fillLifeSettings(form);
   settingsVolumeBeforeOpen = state.preferences.audioVolume;
   const volume = setAmbientVolume(state.preferences.audioVolume);
   form.elements.audioVolume.value = String(volume);
@@ -1238,9 +1328,10 @@ document.addEventListener("click", (event) => {
   const routeButton = event.target.closest("button[data-route]");
   if (routeButton) {
     hideAnimalResponse();
+    if (lifeSheet?.open) { lifeSheet.close(); everyday.onSheetClosed(); }
     if (routeButton.dataset.route === "coach") { coachPrefill = null; coachCheckinStep = 0; coachEditing = false; }
-    route = routeButton.dataset.route;
-    setAmbientRoute(route);
+    route = routeAvailable(routeButton.dataset.route) ? routeButton.dataset.route : "today";
+    setAmbientRoute(ROUTE_THEME[route] || route);
     render({ scroll: "top" });
     main.focus({ preventScroll: true });
     return;
@@ -1248,6 +1339,17 @@ document.addEventListener("click", (event) => {
   const target = event.target.closest("[data-action]");
   if (!target) return;
   const action = target.dataset.action;
+  if (everyday.handleClick(target)) return;
+  if (action === "set-energy") {
+    const value = clamp(target.dataset.energy, 1, 5);
+    const now = new Date();
+    setTodayLog(state, { energy: value * 2, pulse: { energy: value, at: now.toISOString() } });
+    persist();
+    render();
+    if (value <= 2) showAnimalResponse("Tack för att du sa det. Vill du att vi gör dagen mindre? Tryck på Låg energi, så säger jag exakt vad som flyttas.", "Klara");
+    else toast(value >= 4 ? "Fint — Aura föreslår gärna något som kräver lite mer" : "Sparat. Aura väljer lagom stora saker");
+    return;
+  }
   if (action === "toggle-audio") {
     const requested = !audioActive;
     setAmbientEnabled(requested, route).then((actual) => {
@@ -1568,7 +1670,7 @@ document.addEventListener("click", (event) => {
   if (action === "export-data") exportData();
   if (action === "request-reset") { dismissSettings(); resetDialog.showModal(); }
   if (action === "cancel-reset") resetDialog.close();
-  if (action === "confirm-reset") { clearAll(); state = createInitialState(); route = "today"; currentSpread = null; spreadRevealCount = 0; resetDialog.close(); render({ scroll: "top" }); onboardingDialog.showModal(); toast("All lokal data är raderad"); }
+  if (action === "confirm-reset") { clearAll(); state = createInitialState(); ensureLife(state); resetHistory(); route = "today"; currentSpread = null; spreadRevealCount = 0; resetDialog.close(); render({ scroll: "top" }); onboardingDialog.showModal(); toast("All lokal data är raderad"); }
 });
 
 document.addEventListener("input", (event) => {
@@ -1586,6 +1688,7 @@ document.addEventListener("submit", (event) => {
   event.preventDefault();
   const form = event.target;
   const data = new FormData(form);
+  if (everyday.handleSubmit(form, data)) return;
   if (form.id === "reminder-form") {
     if (!reminderDraft) return;
     const reminder = createAuraReminder(reminderDraft, Number(data.get("minutes") || 30), new Date());
@@ -1647,14 +1750,17 @@ document.addEventListener("submit", (event) => {
     return;
   }
   if (form.id === "onboarding-form") {
-    state.profile.name = String(data.get("name") || "Josefin").trim().slice(0, 40) || "Josefin";
+    state.profile.name = String(data.get("name") || "").trim().slice(0, 40);
     state.profile.cycleLength = clamp(data.get("cycleLength") || 28, 21, 45);
     state.profile.periodLength = clamp(data.get("periodLength") || 5, 2, 10);
     state.profile.onboarded = true;
+    ensureLife(state);
+    const rhythm = lifePrefsFrom(data);
+    if (Object.keys(rhythm).length) commitLife(state, [{ op: "prefs.set", patch: rhythm }], { system: true });
     persist();
     onboardingDialog.close();
     render({ scroll: "top" });
-    toast(`Välkommen, ${state.profile.name}`);
+    toast(state.profile.name ? `Välkommen, ${state.profile.name}` : "Välkommen till Aura");
   }
   if (form.id === "gratitude-form") {
     const text = String(data.get("gratitude") || "").trim().slice(0, 120);
@@ -1745,16 +1851,55 @@ document.addEventListener("submit", (event) => {
     persist(); render(); toast("Din rad är sparad lokalt"); showAnimalResponse("Raden är sparad. Fint att ge tanken en egen plats.", "Maja");
   }
   if (form.id === "settings-form") {
-    state.profile.name = String(data.get("name") || state.profile.name).trim().slice(0, 40) || "Josefin";
+    state.profile.name = String(data.get("name") ?? state.profile.name).trim().slice(0, 40);
+    ensureLife(state);
+    commitLife(state, [{ op: "prefs.set", patch: lifePrefsFrom(data, { withModules: true }) }], { system: true });
+    ensureLife(state);
     state.preferences.audioVolume = setAmbientVolume(data.get("audioVolume"));
     settingsVolumeBeforeOpen = null;
     persist(); settingsDialog.close(); render(); toast("Inställningarna är sparade");
   }
 });
 
+document.addEventListener("change", (event) => { everyday.handleChange(event.target); });
+
 breathingDialog.addEventListener("cancel", (event) => { event.preventDefault(); closeBreathing(); });
 settingsDialog.addEventListener("cancel", (event) => { event.preventDefault(); dismissSettings(); });
 reminderDialog.addEventListener("cancel", (event) => { event.preventDefault(); reminderDraft = null; reminderDialog.close(); });
+lifeSheet?.addEventListener("close", () => everyday.onSheetClosed());
+
+everyday.configure({
+  state: () => state,
+  persist,
+  render,
+  route: () => route,
+  go(next) {
+    hideAnimalResponse();
+    route = routeAvailable(next) ? next : "today";
+    render({ scroll: "top" });
+    main.focus({ preventScroll: true });
+  },
+  toast,
+  animal: showAnimalResponse,
+  rememberMoment,
+  icon,
+  escapeHTML,
+  characterDialogue,
+  renderWorldHero,
+  characters: CHARACTERS,
+  worlds: { ...WORLD_PATH_ASSETS, ritual: WORLD_ASSETS.ritual }
+});
+
+// The NOW card follows the clock. Refresh quietly while nobody is typing or in a dialog.
+function calmRefresh() {
+  if (document.hidden) return;
+  if (housekeepLife(state)) persist();
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "");
+  const dialogOpen = Boolean(document.querySelector("dialog[open]"));
+  if (!typing && !dialogOpen && ["today", "day", "chaos", "low", "evening"].includes(route)) render();
+}
+setInterval(calmRefresh, 60000);
+document.addEventListener("visibilitychange", calmRefresh);
 
 render();
 if (!state.profile.onboarded) onboardingDialog.showModal();

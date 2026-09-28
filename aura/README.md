@@ -1,218 +1,136 @@
 # Aura
 
-**A calm, adaptive operating system for everyday life.**
+**An adaptive operating system for everyday life — in a living forest.**
 Aura works out what matters right now and reduces the amount of thinking,
-planning and remembering you have to do. You don't organise Aura; Aura
-helps organise you.
+planning and remembering you have to do. Four companions share the work:
 
-Aura grew out of **Min vardag** (on branch `claude/min-vardag-app-1ie6im`).
-It keeps that app's architecture and principles and broadens it from one
-parent's daily plan into a general personal assistant for many people.
-No user is hardcoded: the first beta user's name, rhythm and areas live in
-their own stored preferences, like everyone else's.
+| Companion | World | Holds |
+|---|---|---|
+| **Klara** (bunny, vardagscoach) | Idag, Coach | *Just nu*, Min dag, Töm huvudet, Låg energi, Kaos, check-ins with AI support |
+| **Liv** (bunny, PMS & cykel) | Cykel | symptoms, cycle map, body support (optional module) |
+| **Maja** (hamster, mönster & minnen) | Livet | inbox, shopping, errands, home chores, projects, routines, Kvällsavslut, Veckan, Mönster |
+| **Astrid** (owl, stjärnor & tarot) | Mystik | star sky, tarot, rituals (optional module) |
 
----
+This folder is the live **Aura — Josefin Edition** from Vercel
+(`aura-josefin-demo`), imported unchanged in its own commit and then
+extended with the everyday engine. The forest worlds, companions, sounds,
+coach, cycle, Mystik and patterns are the live app's own work and are kept
+as they were. No person is hardcoded in the logic: the name and rhythm are
+stored preferences (the edition label in `index.html` and the manifest is
+branding).
 
-## What it does
+## What the everyday engine adds
 
-| Area | What the user gets |
+| Where | What |
 |---|---|
-| **Now** (home) | One recommended action with a one-sentence reason and a duration, or "Nothing urgent — you have 32 minutes before you need to leave". Today at a glance (must / good if possible / can wait), one contextual suggestion, quick actions. |
-| **What should I do now?** | One thing. **Do it** · **Something easier** (lighter, or a five-minute version) · **Something else** · **Not now** (Aura goes quiet for a while). |
-| **My day** | Must, Good if possible, Can wait. Quick add, complete, postpone, reorder, fixed events, and **Rebuild my day** with a preview of what stays, what moves where and what is brought forward. |
-| **Capture / brain dump** | Type or speak messy thoughts. Aura sorts them into shopping, tasks, admin, chores, reminders, events, notes and ideas, with dates, times, durations and repeats. You see and correct every candidate before anything is created. |
-| **Pulse** | A 5–15 second check-in (energy, mood, stress, sleep, note — all optional). One tap on Home records energy. |
-| **Low Energy Mode** | "Let's make today smaller": what is truly necessary, one tiny win, and where everything else moves. Suggested after a low Pulse, never forced. |
-| **Chaos Mode** | Dump everything → Aura organises → one action at a time; finishing reveals the next. The rest stays out of sight. |
-| **Evening reset** | What got done, one-tap decisions about what didn't, empty your head into the inbox, a glance at tomorrow. Two minutes. |
-| **Aura (coach + Ask Aura)** | Questions about your own life are answered from your plan, exactly and instantly: *What was I supposed to buy? What have I postponed? What's due before Friday? What am I waiting for? What did I plan for the bedroom?* Open-ended help goes to Claude with today's plan as context; anything it proposes is shown as changes you apply with a tap. |
-| **Life** | Inbox (no Inbox-Zero pressure), Shopping (categories, usuals), Life admin (needs action / waiting / follow up), Home (recurring chores Aura remembers), Projects (only the next step surfaces), Routines (adaptive), Weekly review, and the optional Cycle and Reflection modules. |
-| **Patterns** | Observations from your own log, only after several occurrences: *"You often move Clean bathroom on Wednesdays. Want me to stop putting it there?"* Never diagnoses, always dismissible. |
-| **Modes** | Normal, Workday and Free day follow your week automatically; Low energy, Chaos and Recovery are one tap away and can always be switched off. |
-| **Onboarding** | Six short, skippable steps ending on a useful first day: language, name, what to help with, what makes life hard, rhythm, first Pulse, first brain dump. |
+| **Idag** | *Just nu*: one thing, with a one-sentence reason and a duration — **Gör det · Något lättare · Något annat · Inte nu**. Or calm states: an event running, leaving soon (travel margin included), wind down, nothing urgent. One-tap energy (1–5). Today at a glance: **Måste · Bra om det hinns · Kan vänta**, one contextual suggestion, quick add, quick actions. |
+| **Min dag** | Day mode (automatic, work, free, low, chaos, recovery), fixed times, the three groups with reorder, routines of the day, done today, and **Bygg om min dag** with a preview of what stays, moves (and to which day) or is brought in. |
+| **Töm huvudet** | Messy text → shopping, tasks, errands, chores, reminders, fixed times, notes and ideas, with dates, times, deadlines and repeats. Every candidate is shown and editable; ambiguous and high-impact ones are marked; nothing is created before confirming. |
+| **Låg energi** | What truly must happen, one small win, and exactly where everything else moves — applied only on a tap, undone in one. Offered after a low check-in or one-tap energy, never forced. |
+| **Kaos** | Dump everything → one thing at a time; finishing reveals the next; the rest stays out of sight. |
+| **Kvällsavslut** | What got done (the forest remembers), one decision per unfinished thing, empty your head into the inbox, a glance at tomorrow. |
+| **Veckan** | Done per day, what moved often, routines, Maja's observations (dismissible), the week ahead. |
+| **Livet** | Inbox (no Inbox-Zero pressure), shopping by department with usuals, errands (needs action / waiting / follow up), home chores that repeat, projects (only the next step reaches the day), adaptive routines, and Mönster. |
+| **Fråga Aura** (on Klara's page) | *Vad skulle jag köpa? Vad har jag skjutit upp? Vad väntar jag på? Vad behöver bli klart före fredag?* — answered exactly from your own lists, labelled "ingen AI". |
 
-Swedish and English throughout, chosen per person.
-
-## Principles the code keeps (and tests)
-
-Carried over from Min vardag:
-- **Unknown is a valid value.** Working hours, schedules and people are never invented.
-- **A plan starts now.** A plan made at 16:00 doesn't begin with breakfast.
-- **Margins are kept.** Travel time around away-from-home events; a quarter of free time is never planned.
-- **Low energy shrinks the day and says what moved** instead of hiding it.
-- **Missed plans don't pile up.** Yesterday's undone plan without a deadline falls back to "can wait".
-- **Aura never invents chores** to fill gaps. It only picks from what you already have.
-- **A rule engine is never called AI.** The interface always says which was used.
-
-New in Aura:
-- **One thing, not a list.** Every recommendation comes with a reason and a duration.
-- **No guilt, no streaks, no gamification**, no motivational filler (a test checks the strings).
-- **Every change is an op**: described in words before it happens, applied to a copy, undoable.
-- **AI output is untrusted input**, validated against real ids before it is even shown.
-- **Notifications only when there is a decision to make.**
+Completing things lights the forest (the live app's forest moments), so the
+new systems speak the same language as the old ones. Every change shows a
+toast with **Ångra**.
 
 ## Architecture
 
-No build step. `core/` and `app/` are plain scripts; tests load exactly the files the browser loads.
+No build step. The page loads classic engine scripts (`core/`, on
+`globalThis.Aura`) and then the ES modules.
 
 ```
-core/            pure domain logic, no DOM — runs in Node tests and the browser
-  util.js        dates and times in the user's own time zone
-  i18n.js        [svenska, English] string pairs, plurals, date words
-  model.js       data model, defaults, migration, Min vardag import, compact storage form
-  items.js       today's buckets (must / good / can wait), recurrence, lists
-  planner.js     fixed blocks, free time, capacity, auto-plan, Rebuild my day
-  engine.js      Aura Engine: NOW card, what-now ranking, modes, Low Energy and Chaos plans
-  routines.js    adaptive routines (full / short) and templates
-  apply.js       ops: describe → validate → apply → log
-  parse.js       brain dump parser, Swedish and English (rules)
-  evening.js     evening reset
-  patterns.js    personal patterns from the log
-  review.js      weekly review
-  search.js      Ask Aura — deterministic life search
-  cycle.js       optional cycle tracking (not medical)
-  reflect.js     optional reflection prompts and contemplative themes
-  notify.js      notification candidates (the rules for when to speak up)
-  compact.js     retention
-app/
-  platform.js    claude.use() bridge — every capability may be absent
-  storage.js     per-person private storage, browser fallback, undo, live sync
-  ai.js          Claude calls: schemas, validation, fallbacks, privacy-minimal context
-  voice.js       speech input where it can really work
-  ui.js          rendering, navigation, sheets, toasts with undo, in-page confirm
-  views/         home, day, capture, modes, evening, aura, life, projects, personal, settings, onboarding
-index.html       shell and design tokens (light and dark)
-test/            unit tests, end-to-end tests, lint/privacy checks, local server
+index.html            shell, dialogs, nav (Idag · Coach · Livet · Cykel · Mystik)
+styles.css            the live design system + "Version 36: vardagen i skogen"
+app.js                the live app: routing, worlds, coach, cycle, Mystik, patterns
+everyday.js           NEW — the everyday pages, sheets and actions, in the forest design
+life.js               NEW — bridge: state.life, pulse from check-ins, undo, daily housekeeping
+storage.js            the live storage (one localStorage key), now with the life slice
+logic.js, care-tools.js, insights-engine.js, wellness-data.js, mystic-data.js,
+tarot-data.js, audio-scapes.js, client-safety.js, coach-transcript.js   the live modules
+sw.js                 offline cache (every page asset and module; lint-checked)
+core/                 the everyday engine — pure functions, same code in Node tests
+  util i18n model items planner routines engine apply parse evening patterns review search notify compact
+assets/               the live art (worlds, companions, tarot), audio, fonts, icons (+ new icons)
+test/                 unit tests, bridge tests, e2e, lint, local server, bundle
 ```
 
-### The Aura Engine
+**The Aura Engine** (`core/engine.js`) combines the clock, fixed events and
+travel margins, today's groups, energy and stress from the check-ins, the
+mode, routines in their window and what was declined today; it scores
+candidates (deadlines, fit before the next commitment, energy match, office
+hours for calls, background tasks, postponements, your own order) and
+returns one recommendation with its most salient reason. Deterministic,
+instant and free.
 
-`engine.js` combines the time, fixed events and travel margins, today's
-buckets, the latest Pulse, the mode, routines in their window, and what
-you already declined today. It scores candidates (deadlines, fit before
-the next commitment, energy match, office hours for calls, background
-tasks like laundry that run alongside, postponement history, your own
-ordering) and returns **one** recommendation with the most salient
-reason. It is deterministic: free, instant and predictable on every screen.
+**Every change is an op** (`core/apply.js`): described in words, applied
+to a copy, logged for patterns and the weekly review, and undoable.
 
-### Data model
+## Data and privacy
 
-One state per person, persisted in slices so no stored document grows
-without bound: `core` (preferences, events, routines, projects, people,
-meta), `items`, `days` (Pulse, mode, routine check-offs, focus, chaos
-queue per date), `log` (compact events for patterns and the review),
-`cycle`, `journal`.
+- Everything stays in the browser, in the live app's single key
+  `min-dag:josefin-edition:v1` (state version 9). Existing data is kept:
+  version 8 loads unchanged and gains a `life` slice (items, fixed events,
+  routines, projects, day notes, a compact log).
+- Body state has one source: the check-ins and the one-tap energy
+  (`state.logs`). The planner reads them; nothing is duplicated.
+- Retention: finished items 60 days, day details 90, the log 180.
+- Export and "Radera allt" in Settings cover the everyday data too.
+- If the browser refuses to save, every toast says "sparas inte" — Aura
+  never implies a save that did not happen.
+- No console logging, no other hosts, no second storage key (lint-checked).
 
-A single **Item** type covers tasks, shopping, admin, chores, reminders,
-notes and ideas — kind decides how Aura treats it, and the user never has
-to file anything. Items carry priority, planned date, deadline, duration,
-energy, context, background, recurrence, project, category, admin status,
-follow-up, person, and postponement history.
+## AI
 
-### Storage and privacy
-
-Aura is published as a claude.ai Artifact and uses the platform's `db`
-capability. Each person's data lives under `data/users/<their id>/`,
-which the platform keeps **private to that person — even from the page's
-owner**. Shared paths are locked to editors and unused.
-
-- Documents stay small: items are stored without default-valued fields
-  (about 70% smaller) and long lists are split over several documents.
-- A copy is cached in the browser under a key derived from the person's
-  id, so Aura opens instantly and survives a flaky connection.
-- Without the platform Aura saves in the browser and says so; if the
-  browser blocks storage it says nothing is saved. It never claims more.
-- Retention: finished items are kept 60 days, day details 90 days, the
-  log 180 days.
-- Export (copy or save as a file), import (Aura or Min vardag, adds only),
-  and delete everything, all in Settings. Cycle data can be deleted on its own.
-- Nothing is logged to the console; no personal names appear in code (lint-checked).
-
-### AI
-
-AI is optional and runs on the **viewer's own Claude account** through the
-Artifact `sample` capability; the first use asks for permission.
-
-| Used for | Model tier | Fallback |
+| Feature | How | Sent |
 |---|---|---|
-| Sorting a brain dump | quick | the rules parser |
-| Open-ended coaching with proposed changes | default | answers from the plan, or an honest "needs AI" |
+| Klara's and Liv's check-in answers | the live `/api/coach` Vercel function (Gemini), unchanged | the current check-in and conversation, as before |
+| Just nu, Min dag, Töm huvudet, Låg energi, Kaos, Fråga Aura, evening, week | rules in `core/`, on the phone | nothing |
 
-- Prompts ask for strict JSON; every item and action is validated (kinds,
-  dates, ids that must exist, people who must be known) before display.
-- Nothing an AI proposes is applied without a tap, and every change is undoable.
-- What is sent: titles and times from today's plan, or the text you ask it
-  to sort. **Never** notes, reflections, cycle data or the people list
-  (a unit test checks this).
-- Failures (no permission, rate limit, bad output) fall back to rules and
-  say why. AI can be turned off entirely in Settings.
-
-### Voice
-
-Voice is an input method into the same capture pipeline. Browser speech
-recognition is used where it can really work. Inside a claude.ai Artifact
-the frame refuses the microphone, so Aura shows no mic button there and
-points to the phone keyboard's microphone, which works in every field.
-A speech service can be plugged into `app/voice.js` later.
-
-### Notifications
-
-`core/notify.js` holds the rules for when Aura may speak up — leaving soon
-with things that won't fit, a reminder whose time has come, a follow-up
-that is due, unfinished musts late in the evening — at most one at a
-time, never motivational. They appear as a quiet line on Now. The
-Artifact platform has no push delivery; a future push channel would read
-the same candidates.
+The everyday features are labelled as rules/"ingen AI" where it matters. A
+unit test checks the coach request carries no plans, lists or journal.
 
 ## Run and test
 
 ```bash
 cd aura
-npm start                 # http://127.0.0.1:4173 — browser storage, rules, no AI
-npm run lint              # syntax, string coverage in both languages, privacy/platform rules
-npm test                  # unit tests (core, systems, storage and AI validation)
-npm run test:e2e          # real browser at Pixel 7 size (needs Playwright + Chromium)
-npm run check             # all of the above
+npm start            # http://127.0.0.1:4173 — live headers; /api/* answers 503 locally
+npm run lint         # syntax, engine strings (sv/en), privacy/CSP rules, offline cache coverage
+npm test             # engine unit tests + bridge/migration tests
+npm run test:e2e     # Pixel 7 browser under the live CSP (needs Playwright + Chromium)
+npm run bundle       # dist/ = exactly the files the deployment serves
 ```
 
-The end-to-end suite runs the page inside the same skeleton the platform
-adds at publish time, with a fixed clock. Part 2 simulates the claude.ai
-runtime (private db and Claude) to test cloud storage, AI labelling,
-validation and failure states.
+## Deploying to the existing Vercel project
 
-## Deploying
+1. `npm run bundle`.
+2. Copy `dist/` over the Vercel project's root files. **Keep the project's
+   own `api/` folder and `vercel.json`** — the Gemini function and the
+   security headers are not part of this folder and must not be replaced.
+3. Deploy as usual. The service worker's cache name changed
+   (`aura-v36-everyday-r1`), so phones pick up the new version on their
+   next visit; existing data carries over.
 
-Publish `index.html` as an Artifact with the `core/`, `app/` and
-`app/views/` scripts as supporting files, declaring:
+`test/serve.js` reproduces the live response headers (CSP, permissions,
+frame, referrer, nosniff), so the tests run under the same rules as
+production.
 
-```js
-capabilities: {
-  db: { rules: [
-    { path: '', read: 'admin', write: 'admin' },                    // no shared data
-    { path: 'data/users/{self}', read: 'interact', write: 'interact' } // each person's own
-  ] },
-  user: {},          // the viewer's opaque id, for their private subtree
-  sample: {},        // Claude, on the viewer's account
-  downloads: true,   // "Save as a file" backup
-}
-```
+## Not shipped (earlier work in this folder)
 
-**Giving someone access** (for example the first beta user): share the
-artifact with them in claude.ai. Inside your organisation, share as
-**Contributor**; someone outside it must be invited by email as
-**Editor** (and link sharing left off), because outside viewers can't
-save data otherwise. Each person gets their own private Aura; nobody,
-including the owner, can read anyone else's.
+`app/`, `core/cycle.js`, `core/reflect.js` and `test/unit-platform.js` are
+from the earlier claude.ai Artifact build. They are not loaded, cached,
+bundled or deployed; they can be removed once the owner agrees.
 
 ## Deliberately deferred
 
-- **Calendar sync** (Google/Outlook): no verified connection exists here;
-  events are entered in Aura. When built it should be read-only and opt-in.
-- **Push notifications**: not available on the Artifact platform; rules are ready.
-- **Built-in microphone inside claude.ai**: refused by the frame; the keyboard microphone is the path.
-- **Drag-to-reorder**: reordering is done with Move up / Move down in the item sheet.
-- **Family module** from Min vardag (children's clothing sizes, pack lists
-  per child): pack lists import as "leaving home" routines and children's
-  needs as shopping items for that person; sizes are not carried over.
-- **Shared households** (two people editing one list): the storage model
-  supports it later via a shared path with its own rules; today every Aura is private.
+- **AI brain-dump sorting**: the Gemini function's code is not in this
+  folder, so no new endpoint was invented; sorting uses rules.
+- **Calendar sync**: fixed times are entered in Aura.
+- **Push notifications**: reminders appear while Aura is open (as before);
+  the engine's notification rules show as one quiet line on Idag.
+- **Built-in microphone**: the live `Permissions-Policy` disables it; the
+  phone keyboard's microphone works in every field.
+- **English UI**: the live product is Swedish; the engine has both languages.

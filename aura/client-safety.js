@@ -1,4 +1,4 @@
-import { urgentCoachResponse } from "./logic.js?v=15";
+import { urgentCoachResponse } from "./logic.js?v=31";
 
 const escapeHTML = (value = "") => String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
 const SAFE_PHONE_LINKS = new Set(["tel:112", "tel:1177", "tel:90101", "tel:116016"]);

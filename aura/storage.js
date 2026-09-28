@@ -4,8 +4,8 @@ const STORAGE_KEY = "min-dag:josefin-edition:v1";
 
 export function createInitialState() {
   return {
-    version: 8,
-    profile: { name: "Josefin", onboarded: false, waterTarget: 6, cycleLength: 28, periodLength: 5, birthDate: "" },
+    version: 9,
+    profile: { name: "", onboarded: false, waterTarget: 6, cycleLength: 28, periodLength: 5, birthDate: "" },
     preferences: { audioEnabled: false, audioVolume: 78, activeExperiment: null, experimentHistory: [] },
     cycle: { lastPeriod: "", events: [] },
     forest: { moments: [] },
@@ -14,8 +14,17 @@ export function createInitialState() {
     tarotReadings: [],
     toolbox: [],
     reminders: [],
+    life: null,
     createdAt: new Date().toISOString()
   };
+}
+
+/* The everyday engine's slice (items, events, routines, projects, day notes).
+   core/model.js knows its shape; without it (e.g. in a bare test) it is kept as-is. */
+function normalizeLife(value) {
+  if (!isObject(value)) return null;
+  const model = globalThis.Aura?.model;
+  return model ? model.migrate(value) : value;
 }
 
 function isObject(value) {
@@ -78,14 +87,15 @@ export function normalizeState(value) {
       audioVolume: Number.isFinite(audioVolume) ? Math.round(Math.min(100, Math.max(20, audioVolume))) : base.preferences.audioVolume,
       experimentHistory
     },
-    version: 8,
+    version: 9,
     cycle: { ...base.cycle, ...incomingCycle, lastPeriod, events: cycleEvents },
     forest: { ...base.forest, ...incomingForest, moments: forestMoments },
     logs,
     journal: Array.isArray(value.journal) ? value.journal.slice(0, 500) : [],
     tarotReadings: Array.isArray(value.tarotReadings) ? value.tarotReadings.slice(0, 100) : [],
     toolbox,
-    reminders
+    reminders,
+    life: normalizeLife(value.life)
   };
 }
 

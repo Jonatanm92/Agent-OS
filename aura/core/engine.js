@@ -290,7 +290,9 @@
     const wd = U.weekday(key);
     const reviewTime = (wd === 0 && nowMin >= 15 * 60) || (wd === 1 && nowMin < 12 * 60);
     const reviewWeek = wd === 1 ? U.addDays(week, -7) : week;
-    if (reviewTime && state.meta.lastReviewWeek !== reviewWeek && state.log.length >= 5 && !dismissed.has('review')) {
+    const weekEnd = U.addDays(reviewWeek, 6);
+    const weekActivity = state.log.filter((l) => l.d && l.d >= reviewWeek && l.d <= weekEnd).length;
+    if (reviewTime && state.meta.lastReviewWeek !== reviewWeek && weekActivity >= 5 && !dismissed.has('review')) {
       return { key: 'review', kind: 'review', week: reviewWeek };
     }
     const inbox = It.inbox(state);

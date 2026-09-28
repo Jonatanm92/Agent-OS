@@ -99,6 +99,16 @@ suite('11. Capture parser — the spec examples', () => {
     const after = ops(s, o, at(TODAY, '10:00'));
     equal(after.events.length, 1); equal(after.items.length, 1);
   });
+  test('a person, a day and a time is an appointment; booking it is an errand', () => {
+    const s = st();
+    I.setLanguage('sv');
+    const kinds = (text) => PA.parse(s, text, at(TODAY, '10:00')).candidates.map((c) => c.kind).join(',');
+    equal(kinds('tandläkare torsdag 14:00'), 'event');
+    equal(kinds('frisör fredag 16:30'), 'event');
+    equal(kinds('boka tandläkaren torsdag 14:00'), 'admin', 'a verb makes it something to do');
+    equal(kinds('tandläkaren'), 'admin', 'no time, no appointment');
+    I.setLanguage('en');
+  });
   test('inbox capture keeps things unsorted until processed', () => {
     const s = st();
     const [c] = PA.parse(s, 'look into swimming lessons', at(TODAY, '10:00')).candidates;
@@ -254,10 +264,17 @@ suite('15. Weekly review', () => {
   });
   test('Sunday afternoon suggests the review once', () => {
     let s = st();
-    s = add(s, [{ title: 'A' }, { title: 'B' }, { title: 'C' }, { title: 'D' }, { title: 'E' }], at('2026-09-22', '09:00'));
+    s = add(s, [{ title: 'A' }, { title: 'B' }, { title: 'C' }, { title: 'D' }, { title: 'E' }], at('2026-09-29', '09:00'));
     equal(E.suggestion(s, at('2026-10-04', '16:00')).kind, 'review');
     s = ops(s, [{ op: 'meta.review', week: '2026-09-28' }], at('2026-10-04', '16:00'));
     assert(!E.suggestion(s, at('2026-10-04', '16:30')) || E.suggestion(s, at('2026-10-04', '16:30')).kind !== 'review');
+  });
+  test('a brand-new week with no history is not offered a review', () => {
+    let s = st();
+    // Everything happened this Monday morning; last week (the one a Monday review looks at) was empty.
+    s = add(s, [{ title: 'A' }, { title: 'B' }, { title: 'C' }, { title: 'D' }, { title: 'E' }, { title: 'F' }], at('2026-09-28', '09:00'));
+    const sug = E.suggestion(s, at('2026-09-28', '10:15'));
+    assert(!sug || sug.kind !== 'review', 'no review of an empty week');
   });
 });
 

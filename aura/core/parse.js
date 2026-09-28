@@ -66,6 +66,11 @@
   const EVENT_NOUNS = words(['appointment', 'meeting', 'party', 'dinner with', 'lunch with', 'coffee with', 'interview', 'match', 'game',
     'concert', 'class', 'lesson', 'training', 'practice', 'möte', 'mötet', 'kalas', 'fest', 'middag med', 'lunch med', 'fika med',
     'intervju', 'match', 'matchen', 'konsert', 'lektion', 'träning', 'träningen', 'tid hos', 'besök', 'utvecklingssamtal']);
+  /* People you have a time with: "tandläkare torsdag 14:00" is an appointment, "boka tandläkaren" an errand. */
+  const APPOINTMENT_NOUNS = words(['dentist', 'doctor', 'gp', 'vet', 'hairdresser', 'physio', 'therapist', 'midwife', 'optician',
+    'tandläkare', 'tandläkaren', 'läkare', 'läkaren', 'vårdcentral', 'vårdcentralen', 'frisör', 'frisören', 'barnmorska', 'barnmorskan',
+    'sjukgymnast', 'sjukgymnasten', 'fysioterapeut', 'psykolog', 'psykologen', 'kurator', 'kuratorn', 'bvc', 'mvc', 'veterinär',
+    'veterinären', 'optiker', 'optikern']);
   const IDEA_WORDS = words(['idea', 'maybe', 'someday', 'some day', 'what if', 'idé', 'kanske', 'någon gång', 'tänk om']);
   const NOTE_START = /^(note|notera|anteckning|obs)\s*[:-]\s*/iu;
   const IDEA_START = /^(idea|idé)\s*[:-]\s*/iu;
@@ -406,7 +411,7 @@
       kind = 'shopping'; category = product; confidence = 0.85;
     } else if (inherited === 'shopping' && wordCount <= 3 && !CHORE_VERBS.test(bodyNoPerson) && !ADMIN_VERBS.test(bodyNoPerson)) {
       kind = 'shopping'; category = product || 'other'; confidence = 0.7;
-    } else if (when.time && EVENT_NOUNS.test(lowered) && !ADMIN_VERBS.test(bodyNoPerson)) {
+    } else if (when.time && (EVENT_NOUNS.test(lowered) || (APPOINTMENT_NOUNS.test(lowered) && (when.date || when.recur))) && !ADMIN_VERBS.test(bodyNoPerson)) {
       kind = 'event'; confidence = 0.8;
     } else if (ADMIN_VERBS.test(bodyNoPerson) || (ADMIN_NOUNS.test(lowered) && !CHORE_VERBS.test(bodyNoPerson))) {
       kind = 'admin'; adminStatus = 'action'; confidence = ADMIN_VERBS.test(bodyNoPerson) ? 0.85 : 0.65;

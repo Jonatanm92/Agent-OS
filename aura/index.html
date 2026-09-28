@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#392b3f" />
-    <meta name="description" content="Aura är Josefins privata, peppande plats för incheckningar i stunden, PMS- och cykelstöd och reflektion med Klara, Liv, Maja och Astrid." />
+    <meta name="description" content="Aura är en privat, lugn plats som vet vad som spelar roll just nu: dagens plan, listor, incheckningar, PMS- och cykelstöd och reflektion med Klara, Liv, Maja och Astrid." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Aura — Josefin Edition</title>
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/assets/app-icon-180.png" />
-    <link rel="stylesheet" href="/styles.css?v=35" />
+    <link rel="stylesheet" href="/styles.css?v=36" />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Hoppa till innehållet</a>
@@ -36,9 +36,9 @@
       <nav class="bottom-nav" aria-label="Huvudnavigering">
         <button type="button" data-route="today"><img src="/assets/icons/home.svg" alt="" /><small>Idag</small></button>
         <button type="button" data-route="coach"><img src="/assets/icons/heart.svg" alt="" /><small>Coach</small></button>
+        <button type="button" data-route="life"><img src="/assets/icons/list.svg" alt="" /><small>Livet</small></button>
         <button type="button" data-route="cycle"><img src="/assets/icons/half-moon.svg" alt="" /><small>Cykel</small></button>
         <button type="button" data-route="ritual"><img src="/assets/icons/sparks.svg" alt="" /><small>Mystik</small></button>
-        <button type="button" data-route="insights"><img src="/assets/icons/stats-up-square.svg" alt="" /><small>Mönster</small></button>
       </nav>
     </div>
 
@@ -48,10 +48,20 @@
         <div class="modal-copy">
           <p class="eyebrow">En liten present till dig</p>
           <h1 id="onboarding-title">Välkommen till <em>Aura</em></h1>
-          <p>Fyra vänner följer dagens skiften och har varsin tydlig roll. Skogens frivilliga ljud slår du på med den tydliga ljudknappen. Dagbok, cykel och tarot stannar i den här webbläsaren.</p>
+          <p>Fyra vänner följer dagens skiften och har varsin tydlig roll: Klara håller i dagen, Liv i kroppen, Maja i listor och minnen, Astrid i stjärnorna. Planer, listor, dagbok, cykel och tarot stannar i den här webbläsaren.</p>
         </div>
         <div class="onboarding-team" aria-label="Ditt peppteam"><div><img src="/assets/companions/klara-coach.webp" alt="" /><span><strong>Klara</strong><small>coach i stunden</small></span></div><div><img src="/assets/companions/klara-cycle-v11.webp" alt="" /><span><strong>Liv</strong><small>PMS & cykel</small></span></div><div><img src="/assets/companions/maja-journal.webp" alt="" /><span><strong>Maja</strong><small>mönster & minnen</small></span></div><div><img src="/assets/companions/astrid-mystic.webp" alt="" /><span><strong>Astrid</strong><small>stjärnor & tarot</small></span></div></div>
-        <label class="field"><span>Vad vill du bli kallad?</span><input name="name" id="onboarding-name" autocomplete="given-name" value="Josefin" maxlength="40" required /></label>
+        <label class="field"><span>Vad vill du bli kallad?</span><input name="name" id="onboarding-name" autocomplete="given-name" placeholder="Ditt namn" maxlength="40" /></label>
+        <details class="disclosure">
+          <summary>Din vardag <span>frivilligt</span></summary>
+          <div class="field-grid">
+            <label class="field"><span>Brukar vakna</span><input name="wake" type="time" value="07:00" /></label>
+            <label class="field"><span>Brukar somna</span><input name="sleep" type="time" value="23:00" /></label>
+            <label class="field"><span>Jobbar från <small>om fasta tider</small></span><input name="workStart" type="time" /></label>
+            <label class="field"><span>Jobbar till</span><input name="workEnd" type="time" /></label>
+          </div>
+          <p class="field-note">Aura planerar aldrig in något utanför dina vakna timmar och lämnar alltid luft. Okänt är helt okej — lämna tomt.</p>
+        </details>
         <details class="disclosure">
           <summary>Cykelinställningar <span>frivilligt</span></summary>
           <div class="field-grid">
@@ -59,7 +69,7 @@
             <label class="field"><span>Menslängd</span><input name="periodLength" type="number" min="2" max="10" value="5" inputmode="numeric" /></label>
           </div>
         </details>
-        <details class="privacy-note"><summary>Så skyddar Aura dina uppgifter</summary><p><strong>Dagbok, cykelhistorik och tarot stannar i den här webbläsaren.</strong> När du ber Klara eller Liv om ett AI-svar skickas bara den aktuella incheckningen och relevant samtalskontext via Auras skyddade server. API-nyckeln finns aldrig i appen.</p></details>
+        <details class="privacy-note"><summary>Så skyddar Aura dina uppgifter</summary><p><strong>Planer, listor, dagbok, cykelhistorik och tarot stannar i den här webbläsaren.</strong> Dagens plan och Töm huvudet sorteras med Auras egna regler direkt i telefonen. När du ber Klara eller Liv om ett AI-svar skickas bara den aktuella incheckningen och relevant samtalskontext via Auras skyddade server. API-nyckeln finns aldrig i appen.</p></details>
         <button class="button button-primary button-wide" value="start" type="submit">Nu börjar vi <img class="button-icon" src="/assets/icons/nav-arrow-right.svg" alt="" /></button>
       </form>
     </dialog>
@@ -80,10 +90,38 @@
     <dialog id="settings-dialog" class="modal" aria-labelledby="settings-title">
       <form method="dialog" id="settings-form" class="modal-card settings-card">
         <div class="modal-heading"><div><p class="eyebrow">Din plats</p><h2 id="settings-title">Inställningar & integritet</h2></div><button class="icon-button" type="button" data-action="close-settings" aria-label="Stäng inställningar"><img src="/assets/icons/xmark.svg" alt="" /></button></div>
-        <label class="field"><span>Namn</span><input name="name" maxlength="40" required /></label>
+        <label class="field"><span>Namn</span><input name="name" maxlength="40" placeholder="Ditt namn" /></label>
+        <details class="settings-section life-settings"><summary>Din vardag</summary>
+          <div class="field-grid">
+            <label class="field"><span>Brukar vakna</span><input name="wake" type="time" /></label>
+            <label class="field"><span>Brukar somna</span><input name="sleep" type="time" /></label>
+            <label class="field"><span>Jobbar från <small>tomt = inga fasta tider</small></span><input name="workStart" type="time" /></label>
+            <label class="field"><span>Jobbar till</span><input name="workEnd" type="time" /></label>
+          </div>
+          <input type="hidden" name="workDayMarker" value="1" />
+          <fieldset class="chip-field"><legend>Arbetsdagar</legend><div class="chip-row">
+            <label class="chip"><input type="checkbox" name="workDay" value="1" /><span>Mån</span></label>
+            <label class="chip"><input type="checkbox" name="workDay" value="2" /><span>Tis</span></label>
+            <label class="chip"><input type="checkbox" name="workDay" value="3" /><span>Ons</span></label>
+            <label class="chip"><input type="checkbox" name="workDay" value="4" /><span>Tor</span></label>
+            <label class="chip"><input type="checkbox" name="workDay" value="5" /><span>Fre</span></label>
+            <label class="chip"><input type="checkbox" name="workDay" value="6" /><span>Lör</span></label>
+            <label class="chip"><input type="checkbox" name="workDay" value="0" /><span>Sön</span></label>
+          </div></fieldset>
+          <fieldset class="chip-field"><legend>Det här vill jag ha i Aura</legend><div class="module-grid">
+            <label class="toggle-line"><input type="checkbox" name="module" value="cycle" /> <span>Liv · PMS & cykel</span></label>
+            <label class="toggle-line"><input type="checkbox" name="module" value="reflection" /> <span>Astrid · Mystik</span></label>
+            <label class="toggle-line"><input type="checkbox" name="module" value="shopping" /> <span>Handla</span></label>
+            <label class="toggle-line"><input type="checkbox" name="module" value="admin" /> <span>Ärenden</span></label>
+            <label class="toggle-line"><input type="checkbox" name="module" value="home" /> <span>Hemmet</span></label>
+            <label class="toggle-line"><input type="checkbox" name="module" value="projects" /> <span>Projekt</span></label>
+            <label class="toggle-line"><input type="checkbox" name="module" value="routines" /> <span>Rutiner</span></label>
+          </div></fieldset>
+          <p class="field-note">Avstängda delar försvinner ur menyn. Inget raderas — slå på igen när du vill.</p>
+        </details>
         <div class="modal-actions"><button class="button button-primary" value="save" type="submit">Spara</button><button class="button button-ghost" value="cancel" type="button" data-action="close-settings">Avbryt</button></div>
         <hr />
-        <details class="settings-section"><summary>Dina data & AI</summary><p>Dagbok, cykelhistorik och tarot ligger lokalt i den här webbläsaren. När du ber om AI-stöd skickas den aktuella incheckningen via Auras skyddade server. Du kan exportera en kopia eller radera allt här.</p><div class="button-row"><button class="button button-secondary" type="button" data-action="export-data">Exportera</button><button class="button button-danger" type="button" data-action="request-reset">Radera allt</button></div></details>
+        <details class="settings-section"><summary>Dina data & AI</summary><p>Planer, listor, dagbok, cykelhistorik och tarot ligger lokalt i den här webbläsaren. Dagens plan, Töm huvudet och Fråga Aura använder ingen AI och skickar inget. När du ber Klara eller Liv om AI-stöd skickas den aktuella incheckningen via Auras skyddade server. Du kan exportera en kopia eller radera allt här.</p><div class="button-row"><button class="button button-secondary" type="button" data-action="export-data">Exportera</button><button class="button button-danger" type="button" data-action="request-reset">Radera allt</button></div></details>
         <section class="settings-section sound-settings" aria-labelledby="sound-settings-title">
           <div class="sound-settings-heading"><div><p class="eyebrow">Ljudlandskap</p><h3 id="sound-settings-title">Naturens ljud</h3></div><output id="ambient-volume-value" for="ambient-volume">78%</output></div>
           <label class="sound-volume" for="ambient-volume"><span>Ljudstyrka</span><input id="ambient-volume" name="audioVolume" type="range" min="20" max="100" step="1" value="78" /><span class="range-labels"><small>Mjuk</small><small>Tydlig</small></span></label>
@@ -94,7 +132,7 @@
     </dialog>
 
     <dialog id="reset-dialog" class="modal" aria-labelledby="reset-title">
-      <div class="modal-card compact-card"><p class="eyebrow">Det går inte att ångra</p><h2 id="reset-title">Radera allt lokalt?</h2><p>Journal, incheckningar, tarotläsningar och cykeldata tas bort från den här webbläsaren.</p><div class="modal-actions"><button class="button button-danger" type="button" data-action="confirm-reset">Ja, radera</button><button class="button button-ghost" type="button" data-action="cancel-reset">Behåll</button></div></div>
+      <div class="modal-card compact-card"><p class="eyebrow">Det går inte att ångra</p><h2 id="reset-title">Radera allt lokalt?</h2><p>Planer, listor, journal, incheckningar, tarotläsningar och cykeldata tas bort från den här webbläsaren.</p><div class="modal-actions"><button class="button button-danger" type="button" data-action="confirm-reset">Ja, radera</button><button class="button button-ghost" type="button" data-action="cancel-reset">Behåll</button></div></div>
     </dialog>
 
     <dialog id="reminder-dialog" class="modal reminder-modal" aria-labelledby="reminder-title">
@@ -111,8 +149,27 @@
       </form>
     </dialog>
 
+    <dialog id="life-sheet" class="modal life-sheet" aria-labelledby="life-sheet-title">
+      <div class="modal-card sheet-card"></div>
+    </dialog>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <aside class="animal-response" id="animal-response" role="status" aria-live="polite" hidden></aside>
-    <script type="module" src="/app.js?v=35"></script>
+    <script src="/core/util.js?v=1"></script>
+    <script src="/core/i18n.js?v=1"></script>
+    <script src="/core/model.js?v=1"></script>
+    <script src="/core/items.js?v=1"></script>
+    <script src="/core/planner.js?v=1"></script>
+    <script src="/core/routines.js?v=1"></script>
+    <script src="/core/engine.js?v=1"></script>
+    <script src="/core/apply.js?v=1"></script>
+    <script src="/core/parse.js?v=1"></script>
+    <script src="/core/evening.js?v=1"></script>
+    <script src="/core/patterns.js?v=1"></script>
+    <script src="/core/review.js?v=1"></script>
+    <script src="/core/search.js?v=1"></script>
+    <script src="/core/notify.js?v=1"></script>
+    <script src="/core/compact.js?v=1"></script>
+    <script type="module" src="/app.js?v=36"></script>
   </body>
 </html>
