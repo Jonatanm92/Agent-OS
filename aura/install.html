@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#392b3f" />
+    <meta name="description" content="Installera Aura på iPhone eller Android och ta med Josefins levande feelgood-skog till hemskärmen." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Installera Aura — Josefin Edition</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/app-icon-180.png" />
+    <link rel="preload" href="/assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/assets/worlds/today-enchanted-v35.webp" as="image" type="image/webp" fetchpriority="high" />
+    <link rel="stylesheet" href="/install.css?v=2" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Hoppa till guiden</a>
+
+    <div class="ambient-light ambient-light-one" aria-hidden="true"></div>
+    <div class="ambient-light ambient-light-two" aria-hidden="true"></div>
+
+    <header class="install-topbar">
+      <a class="brand" href="/" aria-label="Öppna Aura">
+        <span class="brand-mark" aria-hidden="true"><img src="/icon.svg" alt="" /></span>
+        <span class="brand-copy"><strong>Aura</strong><small>Josefin Edition</small></span>
+      </a>
+      <a class="topbar-link" href="/">
+        <span>Öppna appen</span>
+        <img src="/assets/icons/nav-arrow-right.svg" alt="" />
+      </a>
+    </header>
+
+    <main id="main-content">
+      <section class="install-hero" aria-labelledby="install-title">
+        <img class="hero-forest" src="/assets/worlds/today-enchanted-v35.webp" alt="" fetchpriority="high" />
+        <div class="hero-scrim" aria-hidden="true"></div>
+        <div class="firefly firefly-one" aria-hidden="true"></div>
+        <div class="firefly firefly-two" aria-hidden="true"></div>
+        <div class="firefly firefly-three" aria-hidden="true"></div>
+
+        <figure class="klara-welcome">
+          <img src="/assets/companions/klara-coach.webp" alt="Klara, Auras kanin med sin lilla lykta" />
+          <figcaption><strong>Klara väntar på dig</strong><span>Din väg in i Aura är redo.</span></figcaption>
+        </figure>
+
+        <div class="hero-copy">
+          <p class="eyebrow">Din egen plats i skogen</p>
+          <h1 id="install-title">Ta med <em>Aura</em> hem.</h1>
+          <p class="hero-intro">Lägg Aura på hemskärmen och öppna din feelgood-skog med ett tryck — precis som en vanlig app.</p>
+
+          <div class="install-actions">
+            <button class="button button-install" id="install-button" type="button" hidden>
+              <span>Installera Aura</span>
+              <img src="/assets/icons/sparks.svg" alt="" />
+            </button>
+            <a class="button button-open" href="/">Öppna Aura</a>
+          </div>
+
+          <p class="install-status" id="install-status" role="status" aria-live="polite">Öppna länken i mobilen och följ guiden för din enhet.</p>
+
+          <ul class="hero-benefits" aria-label="Fördelar med installationen">
+            <li><img src="/assets/icons/check-circle.svg" alt="" />Egen ikon på hemskärmen</li>
+            <li><img src="/assets/icons/check-circle.svg" alt="" />Öppnas i ett lugnt appfönster</li>
+            <li><img src="/assets/icons/check-circle.svg" alt="" />Dina stunder sparas lokalt</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="guide-section" id="installationsguide" aria-labelledby="guide-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Välj din mobil</p>
+            <h2 id="guide-title">Klart på mindre än en minut.</h2>
+          </div>
+          <p>Installationen hämtas direkt från den här sidan. Du behöver inte leta i någon appbutik.</p>
+        </div>
+
+        <div class="guide-grid">
+          <article class="guide-card" data-platform-guide="ios" aria-labelledby="ios-guide-title">
+            <div class="guide-card-heading">
+              <div>
+                <p class="platform-label">iPhone · Safari</p>
+                <h3 id="ios-guide-title">Lägg till på hemskärmen</h3>
+              </div>
+              <span class="guide-match" hidden>För din enhet</span>
+            </div>
+            <ol class="steps">
+              <li>
+                <span class="step-number">1</span>
+                <div><strong>Öppna sidan i Safari</strong><p>Om länken öppnades i en annan app, välj att öppna den i Safari först.</p></div>
+              </li>
+              <li>
+                <span class="step-number">2</span>
+                <div><strong>Tryck på Dela</strong><p>Delningsknappen finns i Safaris verktygsrad.</p></div>
+              </li>
+              <li>
+                <span class="step-number">3</span>
+                <div><strong>Välj Lägg till på hemskärmen</strong><p>Du kan behöva svepa nedåt i listan för att hitta valet.</p></div>
+              </li>
+              <li>
+                <span class="step-number">4</span>
+                <div><strong>Tryck på Lägg till</strong><p>Aura dyker upp på hemskärmen med sin egen ikon.</p></div>
+              </li>
+            </ol>
+          </article>
+
+          <article class="guide-card" data-platform-guide="android" aria-labelledby="android-guide-title">
+            <div class="guide-card-heading">
+              <div>
+                <p class="platform-label">Android · Chrome</p>
+                <h3 id="android-guide-title">Installera som app</h3>
+              </div>
+              <span class="guide-match" hidden>För din enhet</span>
+            </div>
+            <ol class="steps">
+              <li>
+                <span class="step-number">1</span>
+                <div><strong>Öppna sidan i Chrome</strong><p>Den vanliga webbläsaren på din Android-mobil fungerar oftast också.</p></div>
+              </li>
+              <li>
+                <span class="step-number">2</span>
+                <div><strong>Tryck på Installera Aura</strong><p>När webbläsaren erbjuder installation visas knappen högst upp på sidan.</p></div>
+              </li>
+              <li>
+                <span class="step-number">3</span>
+                <div><strong>Om knappen inte syns</strong><p>Öppna webbläsarens meny och välj Installera app eller Lägg till på startskärmen.</p></div>
+              </li>
+              <li>
+                <span class="step-number">4</span>
+                <div><strong>Bekräfta installationen</strong><p>Aura öppnas sedan från din hemskärm utan appbutik.</p></div>
+              </li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <section class="arrival-section" aria-labelledby="arrival-title">
+        <div class="arrival-art">
+          <img src="/assets/worlds/today-enchanted-v35.webp" alt="Förtrollat morgonljus över stigen in i Auras skog" loading="lazy" />
+          <div class="arrival-quote"><span>Allt är på plats</span><strong>Din stig väntar.</strong></div>
+        </div>
+        <div class="arrival-copy">
+          <p class="eyebrow">När Aura är installerad</p>
+          <h2 id="arrival-title">Ett tryck tillbaka till dig.</h2>
+          <p>Öppna dagens incheckning, prata med Klara, följ cykelmönster eller gå till Astrids mystiska vrå. Aura uppdateras när en ny version är redo.</p>
+          <a class="text-link" href="/">Gå in i Aura <img src="/assets/icons/nav-arrow-right.svg" alt="" /></a>
+        </div>
+      </section>
+
+      <section class="privacy-card" aria-labelledby="privacy-title">
+        <div class="privacy-symbol" aria-hidden="true"><img src="/assets/icons/sparks.svg" alt="" /></div>
+        <div>
+          <p class="eyebrow">Integritet</p>
+          <h2 id="privacy-title">Din plats, dina stunder.</h2>
+          <p>Incheckningar, dagbok, cykel och tarot sparas lokalt i den Aura du använder. Bara när du själv väljer AI-stöd delas den aktuella incheckningen och relevant coachkontext med Gemini.</p>
+        </div>
+      </section>
+
+      <section class="final-cta" aria-labelledby="final-title">
+        <img src="/assets/companions/maja-journal.webp" alt="Maja, Auras hamster med sin dagbok" loading="lazy" />
+        <div>
+          <p class="eyebrow">Vi ses där inne</p>
+          <h2 id="final-title">Aura är gjord för Josefin.</h2>
+          <p>Öppna appen nu, eller följ guiden ovan och låt den få en egen plats på hemskärmen.</p>
+        </div>
+        <a class="button button-final" href="/">Öppna Aura</a>
+      </section>
+    </main>
+
+    <footer><span>Aura · Josefin Edition</span><span>En liten plats för stora och små dagar.</span></footer>
+
+    <script type="module" src="/install.js?v=1"></script>
+  </body>
+</html>
