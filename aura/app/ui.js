@@ -182,6 +182,7 @@
   function renderSheet(fresh) {
     if (ui.confirm) { renderConfirm(); return; }
     doc.body.classList.toggle('sheet-open', !!ui.sheet);
+    $app.inert = !!ui.sheet; $dock.inert = !!ui.sheet;
     if (!ui.sheet) { $sheet.innerHTML = ''; return; }
     const def = sheets[ui.sheet.name];
     const spec = def.render(ui.sheet.data, S.state);
@@ -217,6 +218,7 @@
   function renderConfirm() {
     const c = ui.confirm;
     doc.body.classList.add('sheet-open');
+    $app.inert = true; $dock.inert = true;
     $sheet.innerHTML = `<div class="scrim" data-action="confirm-no"><div class="sheet confirm rise" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
       <h2 id="confirm-title">${esc(c.title)}</h2>
       ${c.body ? `<p class="lead">${esc(c.body)}</p>` : ''}

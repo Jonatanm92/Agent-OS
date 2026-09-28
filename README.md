@@ -1,5 +1,7 @@
 # Agent OS — the Sovereign Stack you own
 
+> This repository also contains **[Aura](aura/README.md)** — a calm, adaptive assistant for everyday life (a standalone app in `aura/`, evolved from Min vardag).
+
 A self-hosted **Mission Control** dashboard that wires together a free, open-source
 coding agent and a persistent memory layer — no monthly bill, no vendor lock-in.
 

@@ -136,9 +136,11 @@
           store.state = assemble(parts);
           for (const name of SLICES) store.lastSaved[name] = JSON.stringify(slice(store.state, name));
         } else {
-          // First visit on this account: bring along anything made in this browser before signing in.
+          // First visit on this account: bring along anything made in this browser before signing in,
+          // then remove that anonymous copy so no other account on this browser can pick it up.
           const local = PF.readLocal(LOCAL_KEY);
           store.state = local && hasContent(M.migrate(local)) ? M.migrate(local) : M.emptyState();
+          if (local) PF.removeLocal(LOCAL_KEY);
           store.lastSaved = {};
         }
         store.mode = 'cloud';

@@ -104,6 +104,20 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     A.i18n.setLanguage('en');
     equal(S.statusText(), 'Saved in this browser only');
   });
+  await testAsync('things made before signing in move into that account once, and leave no copy for others', async () => {
+    delete globalThis.claude;
+    globalThis.localStorage = fakeLocalStorage();
+    await S.init();
+    S.commit([{ op: 'item.add', item: { title: 'Made before signing in' } }, { op: 'prefs.set', patch: { onboarded: true } }]);
+    const shared = new Map();
+    installRuntime({ uid: 'u_first', db: fakeDb(shared) });
+    await S.init();
+    assert(S.state.items.some((i) => i.title === 'Made before signing in'), 'carried into the account');
+    equal(globalThis.localStorage.getItem('aura:v1:local'), null, 'anonymous copy removed');
+    installRuntime({ uid: 'u_second', db: fakeDb(shared) });
+    await S.init();
+    equal(S.state.items.length, 0, 'a second account on the same browser starts empty');
+  });
   await testAsync('storage blocked: memory mode, honestly labelled', async () => {
     delete globalThis.claude;
     globalThis.localStorage = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); }, removeItem() {} };
