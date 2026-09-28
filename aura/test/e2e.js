@@ -120,6 +120,9 @@ async function onboard(page, dump) {
   await tap(page, '.now button:has-text("Something else")');
   const second = await page.locator('.now .now-title').innerText();
   check('"Something else" offers a different action', first !== second, `${first} / ${second}`);
+  await tap(page, '.now button:has-text("Something easier")');
+  const easier = await page.locator('.now .now-title').innerText();
+  check('"Something easier" offers a lighter action or a five-minute version', easier !== second || /five minutes/i.test(easier), `${second} → ${easier}`);
   await tap(page, '.now button:has-text("Do it")');
   check('"Do it" turns the card into what you are doing, with Done', /You're doing|In progress/i.test(await text(page, '.now')) && await page.locator('.now button:has-text("Done")').count() === 1);
   await tap(page, '.now button:has-text("Done")');
@@ -175,6 +178,15 @@ async function onboard(page, dump) {
   await tap(page, '.sheet .chip:has-text("tomorrow")');
   await tap(page, '.sheet button[aria-label="Close"]');
   check('postponing moves it out of today', !(await text(page, '.b-must')).includes(itemTitle));
+  const goodBefore = await page.locator('.b-good .row-main .title').allInnerTexts();
+  if (goodBefore.length >= 2) {
+    await page.locator('.b-good .row-main').nth(1).click();
+    await W(page, 300);
+    await tap(page, '.sheet button:has-text("Move up")');
+    await tap(page, '.sheet button[aria-label="Close"]');
+    const goodAfter = await page.locator('.b-good .row-main .title').allInnerTexts();
+    check('items can be reordered within a bucket', goodAfter[0] === goodBefore[1], `${goodBefore.join(' / ')} → ${goodAfter.join(' / ')}`);
+  }
   await tap(page, 'button:has-text("Rebuild my day")');
   check('Rebuild my day shows a plan before changing anything', await page.locator('.sheet').count() === 1 && /plan for the rest of the day/i.test(await text(page, '.sheet')));
   await tap(page, '.sheet button[aria-label="Close"]');
