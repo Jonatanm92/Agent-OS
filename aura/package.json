@@ -1,0 +1,14 @@
+{
+  "name": "aura",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aura — a calm, adaptive assistant for everyday life. No build step: core/ and app/ are plain scripts, tested exactly as the browser runs them.",
+  "scripts": {
+    "start": "node test/serve.js 4173",
+    "test": "node test/unit-core.js && node test/unit-systems.js && node test/unit-platform.js",
+    "test:e2e": "NODE_PATH=/opt/node22/lib/node_modules node test/e2e.js",
+    "lint": "node test/lint.js",
+    "check": "npm run lint && npm test && npm run test:e2e"
+  },
+  "engines": { "node": ">=20" }
+}
