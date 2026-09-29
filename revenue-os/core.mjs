@@ -278,10 +278,26 @@ export function createCandidateMission(input = {}) {
   };
 }
 
-export function nextRunnableTask(state) {
+export function taskBlockReason(state, task, now = Date.now()) {
+  if (task.executionMode !== 'internal') return 'only internal tasks can run';
+  const mission = (state.missions ?? []).find((item) => item.id === task.missionId);
+  if (!mission || mission.status !== 'active' || mission.stage === 'killed') return 'mission is not active';
+  if (!['queued', 'failed'].includes(task.status)) return `task is ${task.status}`;
+  if (task.blockedBy) return `blocked: ${task.blockedBy}`;
+  if ((Number(task.attemptCount) || 0) >= 3) return 'three attempts exhausted; inspect before requeue';
+  if (task.status === 'failed' && task.retryable !== true) return 'failure requires review before requeue';
+  if (task.nextAttemptAt && (!Number.isFinite(Date.parse(task.nextAttemptAt)) || Date.parse(task.nextAttemptAt) > now)) return 'retry is not due';
+  for (const id of task.dependsOn ?? []) {
+    const dependency = (state.tasks ?? []).find((item) => item.id === id && item.missionId === task.missionId);
+    if (!dependency || dependency.status !== 'done') return `dependency ${id} is not verified done`;
+  }
+  return '';
+}
+
+export function nextRunnableTask(state, now = Date.now()) {
   const tasks = Array.isArray(state?.tasks) ? state.tasks : [];
   return tasks
-    .filter((task) => task.status === 'queued' && task.executionMode === 'internal')
+    .filter((task) => !taskBlockReason(state, task, now))
     .sort((a, b) => {
       const priorityDiff = (Number(a.priority) || 99) - (Number(b.priority) || 99);
       if (priorityDiff !== 0) return priorityDiff;
@@ -330,6 +346,7 @@ export function hydrateState(state, defaults) {
     automation: replaceUnusedLegacySeed
       ? defaults.automation
       : { ...defaults.automation, ...(source.automation ?? {}) },
+    runBudget: source.runBudget ?? { date: '', attempts: 0 },
     roles: replaceUnusedLegacySeed
       ? defaults.roles
       : (Array.isArray(source.roles) && source.roles.length ? source.roles : defaults.roles),

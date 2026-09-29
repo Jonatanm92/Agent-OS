@@ -4,6 +4,7 @@ import {
   createCandidateMission,
   evaluateMission,
   REQUIRED_GATES,
+  nextRunnableTask,
 } from './core.mjs';
 import {
   addAudit,
@@ -22,7 +23,7 @@ import {
 
 function normalizeTaskPatch(body, httpError) {
   const patch = {};
-  const statuses = new Set(['queued', 'running', 'done', 'blocked', 'failed', 'cancelled']);
+  const statuses = new Set(['queued', 'review', 'done', 'blocked', 'failed', 'cancelled']);
   if (body.status !== undefined) {
     const status = String(body.status);
     if (!statuses.has(status)) throw httpError(400, 'invalid task status');
@@ -32,6 +33,7 @@ function normalizeTaskPatch(body, httpError) {
   if (body.error !== undefined) patch.error = String(body.error).slice(0, 20_000);
   if (body.blockedBy !== undefined) patch.blockedBy = String(body.blockedBy).slice(0, 2_000);
   if (body.priority !== undefined) patch.priority = Math.max(1, Math.min(99, Number(body.priority) || 99));
+  if (body.reviewNote !== undefined) patch.reviewNote = String(body.reviewNote).trim().slice(0, 5_000);
   return patch;
 }
 
@@ -127,7 +129,7 @@ export async function handleApi(req, res, pathname, helpers) {
   match = pathname.match(/^\/api\/tasks\/([^/]+)\/run$/);
   if (match && req.method === 'POST') return json(res, 200, { task: await runTask(decodeURIComponent(match[1]), 'manual') });
   if (req.method === 'POST' && pathname === '/api/tasks/run-next') {
-    const task = state.tasks.filter((item) => item.status === 'queued' && item.executionMode === 'internal').sort((a, b) => a.priority - b.priority)[0];
+    const task = nextRunnableTask(state);
     if (!task) return json(res, 409, { error: 'no queued internal task' });
     return json(res, 200, { task: await runTask(task.id, 'manual') });
   }
@@ -136,7 +138,24 @@ export async function handleApi(req, res, pathname, helpers) {
   if (match && req.method === 'PATCH') {
     const task = findTask(decodeURIComponent(match[1]));
     if (!task) throw httpError(404, 'task not found');
-    Object.assign(task, normalizeTaskPatch(await readJson(req), httpError));
+    if (task.status === 'running') throw httpError(409, 'cannot change a running task');
+    const patch = normalizeTaskPatch(await readJson(req), httpError);
+    if (patch.status === 'done' && task.executionMode === 'internal') {
+      if (task.status !== 'review') throw httpError(409, 'internal output must await QA before completion');
+      if (!(patch.output ?? task.output)?.trim() || !patch.reviewNote) throw httpError(400, 'output and a QA verification note are required');
+      patch.reviewedAt = new Date().toISOString();
+    }
+    if (patch.status === 'queued' && ['failed', 'blocked', 'review'].includes(task.status)) {
+      if (!patch.reviewNote) throw httpError(400, 'record why requeue is safe before retrying');
+      patch.attemptCount = 0;
+      patch.nextAttemptAt = null;
+      patch.retryable = false;
+      patch.error = '';
+      patch.blockedBy = '';
+      patch.completedAt = null;
+      patch.reviewedAt = null;
+    }
+    Object.assign(task, patch);
     task.updatedAt = new Date().toISOString();
     if (task.status === 'done' && !task.completedAt) task.completedAt = task.updatedAt;
     addAudit({ type: 'task', title: `Task updated: ${task.title}`, detail: `Status: ${task.status}. Updated manually by CEO/project manager.` });
