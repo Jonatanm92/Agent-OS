@@ -29,6 +29,16 @@ export function PipelineTab({ onOpenProject }: { onOpenProject?: (projectId: str
     refresh();
   }, []);
 
+  // Close the "what was built" modal with Escape (keyboard users).
+  useEffect(() => {
+    if (!viewing) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setViewing(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [viewing]);
+
   const setItemBusy = (id: string, v: boolean) => setBusy((b) => ({ ...b, [id]: v }));
 
   const capture = async () => {
@@ -68,6 +78,7 @@ export function PipelineTab({ onOpenProject }: { onOpenProject?: (projectId: str
         <input
           value={idea}
           placeholder="Drop an idea — a project, a thought, a link, anything. Agents take it from here…"
+          aria-label="Capture a new idea"
           onChange={(e) => setIdea(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && capture()}
         />
@@ -75,7 +86,7 @@ export function PipelineTab({ onOpenProject }: { onOpenProject?: (projectId: str
           {capturing ? 'Capturing…' : 'Capture'}
         </button>
       </div>
-      {err && <div className="banner error" style={{ margin: '0 16px' }}>{err}</div>}
+      {err && <div className="banner error" role="alert" style={{ margin: '0 16px' }}>{err}</div>}
 
       <div className="pipeline-board">
         {COLUMNS.map((col) => {
@@ -92,8 +103,8 @@ export function PipelineTab({ onOpenProject }: { onOpenProject?: (projectId: str
                   <div className="pipe-card" key={it.id}>
                     <div className="pipe-card-top">
                       <span className="pipe-card-title">{it.title}</span>
-                      <button className="del" title="Delete" onClick={() => act(it.id, api.deletePipeline)}>
-                        ×
+                      <button className="del" title="Delete" aria-label={`Delete ${it.title}`} onClick={() => act(it.id, api.deletePipeline)}>
+                        <span aria-hidden="true">×</span>
                       </button>
                     </div>
                     {(it.score > 0 || it.tags.length > 0) && (
@@ -146,10 +157,16 @@ export function PipelineTab({ onOpenProject }: { onOpenProject?: (projectId: str
 
       {viewing && (
         <div className="modal-scrim" onClick={() => setViewing(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pipe-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-head">
-              <strong>{viewing.title}</strong>
-              <button className="del" onClick={() => setViewing(null)}>×</button>
+              <strong id="pipe-modal-title">{viewing.title}</strong>
+              <button className="del" aria-label="Close" onClick={() => setViewing(null)}><span aria-hidden="true">×</span></button>
             </div>
             {viewing.plan && (
               <>

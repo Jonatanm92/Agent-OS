@@ -72,15 +72,16 @@ function Skills({ agents, skills, onChange }: { agents: Agent[]; skills: Skill[]
       <h3>🧩 Skills</h3>
       <p className="muted small">Reusable prompts any agent can run. Use <code>{'{{input}}'}</code> as a placeholder.</p>
       <div className="studio-create">
-        <input placeholder="Skill name (e.g. Summarize URL)" value={name} onChange={(e) => setName(e.target.value)} />
+        <input placeholder="Skill name (e.g. Summarize URL)" aria-label="Skill name" value={name} onChange={(e) => setName(e.target.value)} />
         <textarea
           rows={3}
           placeholder="Prompt — e.g. Summarize the following in 5 bullets: {{input}}"
+          aria-label="Skill prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
         />
         <div className="studio-create-row">
-          <select value={agentId} onChange={(e) => setAgentId(e.target.value)}>
+          <select value={agentId} onChange={(e) => setAgentId(e.target.value)} aria-label="Agent for this skill">
             {agents.filter((a) => a.backend !== 'cli').map((a) => (
               <option key={a.id} value={a.id}>{a.label}</option>
             ))}
@@ -95,11 +96,12 @@ function Skills({ agents, skills, onChange }: { agents: Agent[]; skills: Skill[]
             <div className="studio-item-head">
               <span className="studio-item-name">{s.name}</span>
               <span className="muted tiny">{agentLabel(agents, s.agent_id)}</span>
-              <button className="del" onClick={async () => { await api.deleteSkill(s.id); onChange(); }}>×</button>
+              <button className="del" aria-label={`Delete skill ${s.name}`} onClick={async () => { await api.deleteSkill(s.id); onChange(); }}><span aria-hidden="true">×</span></button>
             </div>
             <div className="studio-run-row">
               <input
                 placeholder="input (optional)"
+                aria-label={`Input for skill ${s.name}`}
                 value={runInput[s.id] ?? ''}
                 onChange={(e) => setRunInput((r) => ({ ...r, [s.id]: e.target.value }))}
               />
@@ -135,16 +137,16 @@ function Loops({ agents, loops, onChange }: { agents: Agent[]; loops: Loop[]; on
       <h3>🔁 Automation loops</h3>
       <p className="muted small">Scheduled recurring agent tasks. Each run is logged and filed to your vault under Loops/.</p>
       <div className="studio-create">
-        <input placeholder="Loop name (e.g. Morning email triage)" value={name} onChange={(e) => setName(e.target.value)} />
-        <textarea rows={2} placeholder="Task prompt the agent runs each time" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+        <input placeholder="Loop name (e.g. Morning email triage)" aria-label="Loop name" value={name} onChange={(e) => setName(e.target.value)} />
+        <textarea rows={2} placeholder="Task prompt the agent runs each time" aria-label="Loop task prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
         <div className="studio-create-row">
-          <select value={agentId} onChange={(e) => setAgentId(e.target.value)}>
+          <select value={agentId} onChange={(e) => setAgentId(e.target.value)} aria-label="Agent for this loop">
             {agents.filter((a) => a.backend !== 'cli').map((a) => (
               <option key={a.id} value={a.id}>{a.label}</option>
             ))}
           </select>
           <span className="muted tiny">every</span>
-          <input className="port-input" value={mins} onChange={(e) => setMins(e.target.value)} />
+          <input className="port-input" value={mins} aria-label="Interval in minutes" onChange={(e) => setMins(e.target.value)} />
           <span className="muted tiny">min</span>
           <button className="primary-btn small-btn" onClick={create}>+ Create</button>
         </div>
@@ -156,7 +158,7 @@ function Loops({ agents, loops, onChange }: { agents: Agent[]; loops: Loop[]; on
             <div className="studio-item-head">
               <span className="studio-item-name">{l.name}</span>
               <span className="muted tiny">every {l.interval_minutes}m · {agentLabel(agents, l.agent_id)}</span>
-              <button className="del" onClick={async () => { await api.deleteLoop(l.id); onChange(); }}>×</button>
+              <button className="del" aria-label={`Delete loop ${l.name}`} onClick={async () => { await api.deleteLoop(l.id); onChange(); }}><span aria-hidden="true">×</span></button>
             </div>
             <div className="studio-run-row">
               <label className="memory-toggle">
@@ -185,6 +187,7 @@ function Audit({ entries }: { entries: AuditEntry[] }) {
       <div className="audit-list">
         {entries.map((e) => (
           <div className={`audit-row ${e.status}`} key={e.id}>
+            {e.status === 'error' && <span className="sr-only">Failed: </span>}
             <span className="audit-kind">{e.kind}</span>
             <span className="audit-title">{e.title}</span>
             <span className="muted tiny">{new Date(e.ts).toLocaleTimeString()}</span>

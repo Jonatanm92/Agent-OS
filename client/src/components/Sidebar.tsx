@@ -27,33 +27,35 @@ export function Sidebar({
   onSelectAgent: (id: string) => void;
 }) {
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" id="sidebar-nav">
       <div className="brand">
-        <span className="brand-mark">◆</span>
+        <span className="brand-mark" aria-hidden="true">◆</span>
         <span className="brand-name">Agent OS</span>
       </div>
 
-      <div className="nav-section-label">Mission</div>
-      <nav className="nav">
+      <div className="nav-section-label" id="nav-mission-label">Mission</div>
+      <nav className="nav" aria-labelledby="nav-mission-label">
         <button
           className={`nav-item ${tab === 'mission' ? 'active' : ''}`}
+          aria-current={tab === 'mission' ? 'page' : undefined}
           onClick={() => setTab('mission')}
         >
-          <span className="nav-dot" />
+          <span className="nav-dot" aria-hidden="true" />
           <span className="nav-label">Mission Control</span>
         </button>
       </nav>
 
-      <div className="nav-section-label">Agents</div>
-      <nav className="nav">
+      <div className="nav-section-label" id="nav-agents-label">Agents</div>
+      <nav className="nav" aria-labelledby="nav-agents-label">
         {agents.map((a) => (
           <button
             key={a.id}
             className={`nav-item ${tab === 'chat' && activeAgentId === a.id ? 'active' : ''}`}
+            aria-current={tab === 'chat' && activeAgentId === a.id ? 'page' : undefined}
             onClick={() => onSelectAgent(a.id)}
             title={`${a.blurb}${a.model ? `  •  model: ${a.model}` : ''}`}
           >
-            <span className="nav-dot" />
+            <span className="nav-dot" aria-hidden="true" />
             <span className="nav-label">{a.label}</span>
             {a.available === false ? (
               <span className="agent-transport install">install</span>
@@ -66,18 +68,19 @@ export function Sidebar({
       </nav>
 
       <div className="shared-memory-note" title="Every agent reads the same Obsidian vault">
-        ◇ shared memory
+        <span aria-hidden="true">◇</span> shared memory
       </div>
 
-      <div className="nav-section-label">Tools</div>
-      <nav className="nav">
+      <div className="nav-section-label" id="nav-tools-label">Tools</div>
+      <nav className="nav" aria-labelledby="nav-tools-label">
         {TOOLS.map((t) => (
           <button
             key={t.id}
             className={`nav-item ${tab === t.tab ? 'active' : ''}`}
+            aria-current={tab === t.tab ? 'page' : undefined}
             onClick={() => setTab(t.tab)}
           >
-            <span className="nav-dot" />
+            <span className="nav-dot" aria-hidden="true" />
             <span className="nav-label">{t.label}</span>
           </button>
         ))}
@@ -86,12 +89,13 @@ export function Sidebar({
       <div className="sidebar-foot">
         <button
           className={`nav-item ${tab === 'settings' ? 'active' : ''}`}
+          aria-current={tab === 'settings' ? 'page' : undefined}
           onClick={() => setTab('settings')}
         >
-          <span className="nav-dot" /> <span className="nav-label">Settings</span>
+          <span className="nav-dot" aria-hidden="true" /> <span className="nav-label">Settings</span>
         </button>
-        <div className={`fcc-status ${status?.ok ? 'up' : 'down'}`}>
-          <span className="status-led" />
+        <div className={`fcc-status ${status?.ok ? 'up' : 'down'}`} role="status">
+          <span className="status-led" aria-hidden="true" />
           {status?.ok ? 'FCC connected' : 'FCC offline'}
         </div>
       </div>

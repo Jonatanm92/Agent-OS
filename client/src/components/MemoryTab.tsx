@@ -52,14 +52,16 @@ export function MemoryTab() {
         </button>
         <div className="mem-notes">
           {notes.map((n) => (
-            <div
+            <button
               key={n.path}
+              type="button"
               className={`mem-note ${selected === n.path ? 'active' : ''}`}
+              aria-current={selected === n.path ? 'true' : undefined}
               onClick={() => open(n.path)}
             >
               <span className="mem-name">{n.path}</span>
               <span className="muted tiny">{(n.size / 1024).toFixed(1)} kb</span>
-            </div>
+            </button>
           ))}
           {notes.length === 0 && (
             <p className="muted small">

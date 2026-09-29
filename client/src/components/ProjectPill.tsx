@@ -32,8 +32,12 @@ export function ProjectPill({
 
   return (
     <div className="project-pill">
-      <span className="project-pill-label">Active project</span>
-      <select value={activeProjectId} onChange={(e) => onChange(e.target.value)}>
+      <span className="project-pill-label" id="project-pill-label">Active project</span>
+      <select
+        value={activeProjectId}
+        onChange={(e) => onChange(e.target.value)}
+        aria-labelledby="project-pill-label"
+      >
         {projects.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
@@ -54,6 +58,7 @@ export function ProjectPill({
           <input
             autoFocus
             placeholder="new-project"
+            aria-label="New project name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => setCreating(false)}
@@ -61,11 +66,17 @@ export function ProjectPill({
         </form>
       ) : (
         <>
-          <button className="ghost-btn" onClick={() => setCreating(true)} title="New empty project">
-            +
+          <button className="ghost-btn" onClick={() => setCreating(true)} title="New empty project" aria-label="New empty project">
+            <span aria-hidden="true">+</span>
           </button>
-          <button className="ghost-btn" onClick={() => setShowTpl((s) => !s)} title="Scaffold from template">
-            ⧫
+          <button
+            className="ghost-btn"
+            onClick={() => setShowTpl((s) => !s)}
+            title="Scaffold from template"
+            aria-label="Scaffold from template"
+            aria-expanded={showTpl}
+          >
+            <span aria-hidden="true">⧫</span>
           </button>
         </>
       )}
