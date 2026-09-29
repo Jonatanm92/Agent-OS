@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Deadline Ledger QA</title>
+  <script src="https://cdn.jsdelivr.net/npm/monday-sdk-js/dist/main.js"></script>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#323338;background:#f7f7f9}*{box-sizing:border-box}body{margin:0;padding:18px}.wrap{max-width:1050px;margin:auto}h1{margin:0 0 6px}.sub{color:#676879;margin-bottom:16px}.bar,.row,.metric{background:#fff;border:1px solid #e5e5ea;border-radius:10px}.bar{padding:12px;margin-bottom:12px;display:flex;gap:8px;justify-content:space-between}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}.metric{padding:12px}.metric b{font-size:24px;display:block}.metric span{font-size:12px;color:#676879}.row{padding:14px;margin:8px 0}.top{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.count{margin-left:auto;background:#efefff;color:#6161ff;padding:3px 8px;border-radius:999px;font-weight:700;font-size:12px}.values{margin:10px 0}.old{text-decoration:line-through;color:#676879}.new{font-weight:700;color:#087f5b}.missing{color:#b2233b;font-weight:700}.ok{color:#087f5b;font-weight:700}.reason{display:flex;gap:8px;margin-top:10px}.reason input{flex:1;padding:8px;border:1px solid #cfcfd8;border-radius:7px}.reason button,.bar button{padding:8px 12px;border:0;border-radius:7px;background:#6161ff;color:white;font-weight:700}.reason button:disabled{opacity:.55;cursor:not-allowed}.status{font-size:12px;color:#676879}.error{background:#fff0f2;color:#b2233b;padding:10px;border-radius:8px;margin:10px 0}@media(max-width:650px){.metrics{grid-template-columns:1fr}.bar{flex-direction:column}.reason{flex-direction:column}.count{margin-left:0}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Deadline Ledger</h1>
+  <div class="sub">Runtime QA — live API + global board-scoped reason persistence</div>
+  <div class="bar"><div><strong id="board">Loading monday context…</strong><div class="status" id="status"></div></div><button id="refresh">Refresh</button></div>
+  <div id="error"></div>
+  <div class="metrics"><div class="metric"><b id="changes">0</b><span>Deadline changes</span></div><div class="metric"><b id="missing">0</b><span>Missing reasons</span></div><div class="metric"><b id="governed">100%</b><span>Governed</span></div></div>
+  <div id="rows"></div>
+</div>
+<script>
+const monday=window.mondaySdk();monday.setApiVersion('2026-07');
+const LEGACY='deadline-ledger-reasons-v1',RETRIES=3,MAX_REASON=1000;let boardId=null,reasons={},logs=[];
+const key=()=>`deadline-ledger:reasons:v2:board:${String(boardId)}`;
+function safeJson(v){try{return typeof v==='object'?v:JSON.parse(v)}catch{return null}}
+function decode(v){if(!v)return{};if(typeof v==='object'&&!Array.isArray(v))return v;if(typeof v!=='string')return{};try{const p=JSON.parse(v);return p&&typeof p==='object'&&!Array.isArray(p)?p:{}}catch{return{}}}
+function has(v){return Object.keys(v||{}).length>0}
+function activityDate(v){const s=String(v||'');if(/^\d{17}$/.test(s))return new Date(Number(BigInt(s)/10000n));const d=new Date(s);return Number.isNaN(d.getTime())?null:d}
+function display(p,k){const v=p&&p[k];if(!v)return'—';if(v.date)return[v.date,v.time].filter(Boolean).join(' ');if(v.from||v.to)return`${v.from||'—'} → ${v.to||'—'}`;return typeof v==='string'?v:JSON.stringify(v)}
+function parse(log){if(log.event!=='update_column_value')return null;const p=safeJson(log.data);if(!p)return null;const t=String(p.column_type||'').toLowerCase();if(!['date','timeline','timerange'].includes(t))return null;const d=activityDate(log.created_at);return{id:String(log.id),itemId:String(p.pulse_id||''),itemName:String(p.pulse_name||'Untitled item'),columnId:String(p.column_id||''),columnTitle:String(p.column_title||'Date'),previous:display(p,'previous_value'),next:display(p,'value'),when:d?d.toISOString():'',ms:d?d.getTime():0,userId:String(log.user_id||'')}}
+function build(){const rows=logs.map(parse).filter(Boolean),counts=new Map();rows.slice().sort((a,b)=>a.ms-b.ms).forEach(r=>{const k=`${r.itemId}:${r.columnId}`;r.sequence=(counts.get(k)||0)+1;counts.set(k,r.sequence)});return rows.map(r=>({...r,reason:(reasons[r.id]&&reasons[r.id].reason)||''})).sort((a,b)=>b.ms-a.ms)}
+function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){const rows=build(),miss=rows.filter(r=>!r.reason).length;changes.textContent=rows.length;missing.textContent=miss;governed.textContent=rows.length?Math.round((rows.length-miss)/rows.length*100)+'%':'100%';document.getElementById('rows').innerHTML=rows.map(r=>`<div class="row"><div class="top"><strong>${esc(r.itemName)}</strong><span>${esc(r.columnTitle)}</span><span class="count">change #${r.sequence}</span></div><div class="values"><span class="old">${esc(r.previous)}</span> → <span class="new">${esc(r.next)}</span></div><div class="status">${r.when?new Date(r.when).toLocaleString():'Unknown time'} · user ${esc(r.userId)}</div><div class="${r.reason?'ok':'missing'}">${r.reason?'Reason recorded':'Reason missing'}</div><div class="reason"><input id="r-${r.id}" maxlength="${MAX_REASON}" value="${esc(r.reason)}" placeholder="Why did this deadline move?"/><button data-id="${r.id}">Save reason</button></div></div>`).join('')||'<div class="row">No Date/Timeline changes found.</div>';document.querySelectorAll('[data-id]').forEach(btn=>btn.onclick=()=>saveReason(btn.dataset.id))}
+async function readGlobal(){const res=await monday.storage.getItem(key());return{reasons:decode(res&&res.data&&res.data.value),version:(res&&res.data&&res.data.version)||''}}
+function conflict(x){return String((x&&x.data&&x.data.error)||(x&&x.message)||x||'').toLowerCase().includes('version mismatch')}
+async function readStore(){let store=await readGlobal();if(has(store.reasons))return store;try{const legacy=await monday.storage.instance.getItem(LEGACY),old=decode(legacy&&legacy.data&&legacy.data.value);if(!has(old))return store;const opts=store.version?{previous_version:store.version}:undefined,res=await monday.storage.setItem(key(),JSON.stringify(old),opts);if(res&&res.data&&res.data.success===false)return store;return{reasons:old,version:(res&&res.data&&res.data.version)||''}}catch{return store}}
+async function loadStorage(){const store=await readStore();reasons=store.reasons}
+async function writeReason(id,entry){for(let i=0;i<RETRIES;i++){const current=await readStore(),next={...current.reasons,[id]:entry};try{const opts=current.version?{previous_version:current.version}:undefined,res=await monday.storage.setItem(key(),JSON.stringify(next),opts);if(res&&res.data&&res.data.success===false){if(conflict(res))continue;throw new Error(res.data.error||'Storage write failed')}return next}catch(e){if(conflict(e)&&i<RETRIES-1)continue;throw e}}throw new Error('Storage changed repeatedly. Refresh and retry.')}
+async function saveReason(id){const input=document.getElementById('r-'+id),button=document.querySelector(`[data-id="${id}"]`),value=(input.value||'').trim();if(value.length<3){showError('Reason must be at least 3 characters.');return}if(value.length>MAX_REASON){showError(`Reason must be ${MAX_REASON} characters or fewer.`);return}button.disabled=true;button.textContent='Saving…';showError('');try{const previous=reasons[id]||{},now=new Date().toISOString(),next=await writeReason(id,{...previous,reason:value,createdAt:previous.createdAt||previous.recordedAt||now,updatedAt:now,revision:Number(previous.revision||0)+1});reasons=next;document.getElementById('status').textContent='Reason saved to global monday storage for this board';render()}catch(e){showError('Storage save failed: '+(e.message||e));button.disabled=false;button.textContent='Save reason'}}
+function showError(msg){document.getElementById('error').innerHTML=msg?`<div class="error">${esc(msg)}</div>`:''}
+async function load(){showError('');document.getElementById('status').textContent='Reading board activity…';try{const ctx=await monday.get('context');boardId=ctx&&ctx.data&&ctx.data.boardId;if(!boardId)throw new Error('No boardId in monday context');await loadStorage();const q=`query DeadlineLedgerActivity($boardId:[ID!]){boards(ids:$boardId){id name activity_logs(limit:500,page:1){id event data user_id created_at}}}`;const res=await monday.api(q,{variables:{boardId:[String(boardId)]}}),board=res&&res.data&&res.data.boards&&res.data.boards[0];if(!board)throw new Error('Board could not be read');document.getElementById('board').textContent=board.name;logs=board.activity_logs||[];document.getElementById('status').textContent='Live monday API + global storage loaded';render()}catch(e){showError(e.message||String(e));document.getElementById('status').textContent='QA failed'}}
+document.getElementById('refresh').onclick=load;load();
+</script>
+</body>
+</html>
