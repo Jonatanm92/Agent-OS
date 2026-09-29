@@ -2,7 +2,7 @@
   "name": "agent-os",
   "version": "1.0.0",
   "private": true,
-  "description": "Agent OS — Mission Control for Free Claude Code (the Sovereign Stack 'Command' pillar)",
+  "description": "Self-hosted, vendor-neutral mission control for coding agents, local memory, auditable workflows, and project-scoped tools.",
   "workspaces": [
     "server",
     "client"
@@ -24,5 +24,24 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jonatanm92/Agent-OS.git"
+  },
+  "homepage": "https://github.com/Jonatanm92/Agent-OS#readme",
+  "bugs": {
+    "url": "https://github.com/Jonatanm92/Agent-OS/issues"
+  },
+  "keywords": [
+    "ai-agents",
+    "coding-agents",
+    "self-hosted",
+    "agent-orchestration",
+    "claude-code",
+    "codex",
+    "obsidian",
+    "developer-tools"
+  ]
 }

@@ -1,5 +1,13 @@
 # Agent OS — the Sovereign Stack you own
 
+[![CI](https://github.com/Jonatanm92/Agent-OS/actions/workflows/ci.yml/badge.svg)](https://github.com/Jonatanm92/Agent-OS/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
+> **Project status:** active, early-stage open source. Agent OS is usable today, but
+> interfaces may still change while the project hardens its provider adapters, security,
+> tests, and cross-platform setup. External issues and pull requests are welcome.
+
+
 A self-hosted **Mission Control** dashboard that wires together a free, open-source
 coding agent and a persistent memory layer — no monthly bill, no vendor lock-in.
 
@@ -16,6 +24,26 @@ This is an open implementation of the four-pillar "Sovereign Stack" idea:
 > to your running **FCC proxy** over its Anthropic-compatible `/v1/messages` endpoint.
 > FCC decides which provider/model the traffic routes to (configured once, in its Admin
 > UI). Swap the free model the day a better one drops — everything else stays put.
+
+---
+
+
+## Open-source goals
+
+Agent OS exists to make multi-agent development infrastructure inspectable and
+self-hostable rather than tied to a single model vendor or hosted control plane.
+
+The project is especially interested in contributions around:
+
+- provider and agent interoperability
+- safer tool execution and secrets handling
+- cross-platform installation
+- reproducible workflows and auditability
+- accessibility and mobile usability
+- tests for long-running agent/tool loops
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md), and
+[ROADMAP.md](./ROADMAP.md) before contributing.
 
 ---
 
