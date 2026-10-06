@@ -100,6 +100,22 @@ studio.seedSkillOnce('research-problem-discovery', {
   agent_id: 'growth-hacker',
 });
 
+studio.seedSkillOnce('content-threads-30-posts', {
+  name: 'Content: 30 Threads post ideas',
+  description:
+    'Write 30 Threads posts that attract people with a specific problem and build interest in your product. Input: product, audience and problem.',
+  prompt: [
+    'Act as a content strategist for Threads. My product, audience and the problem they experience: {{input}}.',
+    '',
+    'Create 30 post ideas that attract people experiencing that problem. Mix educational, relatable, controversial, story-based and curiosity-driven posts. Each should provide value on its own while naturally creating interest in the solution my product provides. Avoid generic advice, obvious sales language and repetitive hooks.',
+    '',
+    'Write each post in full, ready to publish, under 500 characters (the Threads limit). Label each with its type.',
+    '',
+    'Honesty rules: never invent statistics, customer stories, testimonials or experience I have not told you about. Story posts retell only cases I gave you or public cases you can cite; otherwise mark them [OWNER STORY — use only if true]. List the source for every factual claim at the end.',
+  ].join('\n'),
+  agent_id: 'content-creator',
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));

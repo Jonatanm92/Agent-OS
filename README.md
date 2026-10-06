@@ -174,7 +174,9 @@ The **Studio** tab is the Skill + Loop engineering layer (behavior):
   agent can run on demand. "Skill creation," done. Ships with a **Research: Problem
   discovery** skill: give it an audience/niche and it returns 10 recurring pains (urgency,
   current fixes, gaps, product idea) and ranks the top 3. Every quote is marked as cited or
-  "verify", so nothing unverified passes as evidence.
+  "verify", so nothing unverified passes as evidence. **Content: 30 Threads post ideas**
+  turns a product, audience and problem into 30 ready-to-post Threads drafts across five
+  post types, without invented stats or stories.
 - **Automation loops** — schedule a recurring agent task (e.g. *"every 60 min, summarize
   my inbox"*). A built-in scheduler runs due loops, and each run is **filed to your vault**
   under `Loops/`. "Loop engineering," done.
