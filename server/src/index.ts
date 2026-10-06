@@ -116,6 +116,20 @@ studio.seedSkillOnce('content-threads-30-posts', {
   agent_id: 'content-creator',
 });
 
+studio.seedSkillOnce('sales-page-direct-response', {
+  name: 'Sales: Direct-response sales page',
+  description:
+    'Write a complete, specific sales page with promise, problem, objections, FAQ and CTA. Input: product and price.',
+  prompt: [
+    'Act as a direct-response copywriter. Write a complete sales page for this product and price: {{input}}.',
+    '',
+    "Include a strong headline, clear promise, problem, why existing solutions fail, benefits, what's included, transformation, objections, FAQ and CTA. Keep it specific and outcome-focused. Avoid hype, fake urgency and vague claims. Make the value immediately obvious to the ideal customer.",
+    '',
+    'Honesty rules: no invented testimonials, customer counts, results, scarcity or deadlines. Promise only outcomes that can be verified, and say plainly what the product does not do. If I have no track record yet, build trust with how the result is proven instead. End with a list of every commitment the page makes (turnaround, guarantee, support) so I can confirm each before publishing.',
+  ].join('\n'),
+  agent_id: 'content-creator',
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));

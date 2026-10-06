@@ -176,7 +176,9 @@ The **Studio** tab is the Skill + Loop engineering layer (behavior):
   current fixes, gaps, product idea) and ranks the top 3. Every quote is marked as cited or
   "verify", so nothing unverified passes as evidence. **Content: 30 Threads post ideas**
   turns a product, audience and problem into 30 ready-to-post Threads drafts across five
-  post types, without invented stats or stories.
+  post types, without invented stats or stories. **Sales: Direct-response sales page**
+  writes a full page for a product and price, with no fake testimonials or urgency, and
+  lists every commitment it makes so you can confirm them before publishing.
 - **Automation loops** — schedule a recurring agent task (e.g. *"every 60 min, summarize
   my inbox"*). A built-in scheduler runs due loops, and each run is **filed to your vault**
   under `Loops/`. "Loop engineering," done.
