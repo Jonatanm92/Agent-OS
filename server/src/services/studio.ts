@@ -80,6 +80,19 @@ export function createSkill(s: Partial<Skill>): Skill {
   return row;
 }
 
+/**
+ * Add a built-in skill once per install. A settings marker records that it was
+ * seeded, so existing installs pick it up on their next boot, and a skill the
+ * user deletes is not re-created afterwards.
+ */
+export function seedSkillOnce(marker: string, s: Partial<Skill>): Skill | null {
+  const key = `seeded_skill:${marker}`;
+  if (db().prepare('SELECT 1 FROM settings WHERE key = ?').get(key)) return null;
+  const skill = createSkill(s);
+  db().prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run(key, skill.created_at);
+  return skill;
+}
+
 export function deleteSkill(id: string): void {
   db().prepare('DELETE FROM skills WHERE id = ?').run(id);
 }

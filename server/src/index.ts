@@ -76,6 +76,30 @@ if (studio.listSkills().length === 0) {
   });
 }
 
+// Market research skills — seeded once per install, including existing ones.
+studio.seedSkillOnce('research-problem-discovery', {
+  name: 'Research: Problem discovery (10 pains → top 3)',
+  description:
+    'Find 10 recurring problems in a target niche, score urgency, and rank the top 3 digital-product opportunities. Input: the audience/niche.',
+  prompt: [
+    'You are a market research strategist. Analyze my target niche: {{input}}.',
+    '',
+    'Research Reddit, forums, reviews, search results and marketplaces. Find 10 problems people repeatedly complain about or actively seek solutions for.',
+    '',
+    'For each problem, give me:',
+    '1. The problem in their own words',
+    '2. Urgency (1-10)',
+    '3. Current solutions',
+    '4. Why they fall short',
+    '5. A simple digital product that could solve it',
+    '',
+    'Then rank the top 3 opportunities and explain why they rank highest.',
+    '',
+    'Evidence rules: if you cannot browse the web right now, say so at the top. Never invent quotes, usernames, URLs or statistics. Mark every "own words" line as either [CITED] with its source link or [PARAPHRASE — verify]. End with the exact searches (site + query) I should run to confirm the top 3 before building anything.',
+  ].join('\n'),
+  agent_id: 'growth-hacker',
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
