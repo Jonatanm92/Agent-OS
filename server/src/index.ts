@@ -130,6 +130,20 @@ studio.seedSkillOnce('sales-page-direct-response', {
   agent_id: 'content-creator',
 });
 
+studio.seedSkillOnce('launch-30-day-organic', {
+  name: 'Launch: 30-day organic plan',
+  description:
+    'A realistic one-person, no-ads, 30-day daily plan from finding the problem to the first sale. Input: product, platform and current state.',
+  prompt: [
+    'Act as a digital product launch strategist. Build a 30-day plan to sell this product organically: {{input}}.',
+    '',
+    'Give me a simple daily schedule covering content, engagement and promotion. Include what to post, the purpose of each post, the CTA to use and when to directly promote the product. Focus on Threads and keep the system realistic for one person to execute consistently without paid ads. One workflow, from finding the problem to making the first sale.',
+    '',
+    'Realism rules: state the daily time budget. Never schedule direct promotion before the product can actually be delivered; put readiness gates on promotion days. No fake scarcity or deadlines. No cold DM spam: message only people who asked. Respect each community\'s self-promotion rules. Include what to track daily and decision points (what to change if nobody responds).',
+  ].join('\n'),
+  agent_id: 'growth-hacker',
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));

@@ -178,7 +178,9 @@ The **Studio** tab is the Skill + Loop engineering layer (behavior):
   turns a product, audience and problem into 30 ready-to-post Threads drafts across five
   post types, without invented stats or stories. **Sales: Direct-response sales page**
   writes a full page for a product and price, with no fake testimonials or urgency, and
-  lists every commitment it makes so you can confirm them before publishing.
+  lists every commitment it makes so you can confirm them before publishing. **Launch:
+  30-day organic plan** gives one person a daily, no-ads schedule from finding the problem
+  to the first sale, with readiness gates before any direct promotion.
 - **Automation loops** — schedule a recurring agent task (e.g. *"every 60 min, summarize
   my inbox"*). A built-in scheduler runs due loops, and each run is **filed to your vault**
   under `Loops/`. "Loop engineering," done.
