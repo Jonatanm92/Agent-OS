@@ -11,7 +11,7 @@ Varje prompt ber om samma format, så att resultatet går att klistra in direkt.
 ## 1. Signalagent (köra varje vardag)
 
 ```text
-Du är researcher åt en svensk konsult med 11 års erfarenhet av e-handelsdrift (SAP på Komplett, Infor M3 och WM6 på Varner) som säljer AI-piloter som automatiserar driftproblem hos nordiska handlare.
+Du är researcher åt Jonatan, som har 11 år inom e-handelns logistik och back office (användare av SAP på Komplett och Infor M3/WM6 på Varner, ett år som Operations Lead) och som bygger AI-agenter. Han söker i första hand jobb där verksamhetserfarenhet från användarsidan plus AI-intresse väger tungt, och i andra hand uppdrag som automatiserar driftproblem.
 
 Hitta köpsignaler från de senaste 14 dagarna hos handlare/e-handlare i Sverige, Norge, Danmark och Finland:
 - platsannonser som nämner Infor M3, SAP, WMS, WM6, systemförvaltare e-handel, orderflöde, lageroptimering eller integration
@@ -58,7 +58,7 @@ Svara med:
 ## 4. Samtalsförberedelse (före varje kundsamtal)
 
 ```text
-Jag ska ha ett 20-minuterssamtal med [ROLL] på [BOLAG] om driftproblem i order/lager/returer. Min bakgrund: 11 år i e-handelsdrift (SAP, Infor M3, WM6), bygger AI-agenter.
+Jag ska ha ett 20-minuterssamtal med [ROLL] på [BOLAG] om driftproblem i order/lager/returer. Min bakgrund: 11 år inom e-handelns logistik och back office som användare av SAP, Infor M3 och WM6, ett år som Operations Lead; bygger AI-agenter. Jag är inte konsult eller systemspecialist.
 
 Ge mig:
 1. Fem öppna frågor som får dem att berätta om sitt mest tidsödande manuella moment (ingen säljpitch)

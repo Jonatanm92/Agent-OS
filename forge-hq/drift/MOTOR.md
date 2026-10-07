@@ -10,8 +10,12 @@ jobbspåret parallellt. VD = Jonatan (Vänersborg). Claude = projektledare.
    Om API:et inte svarar: notera det i briefen och fortsätt med steg 4–5.
 2. **Välj ut max 5** av dagens nya signaler. Prioritera:
    - handel, e-handel, grossist och distribution före tillverkning
-   - roller som äger system/flöden (M3-specialist, systemförvaltare, order fulfilment,
-     WMS-specialist, business analyst) före operativa roller
+   - roller där verksamhetserfarenhet från användarsidan väger tungt: superuser/key user,
+     systemansvarig lager/order, order fulfilment, e-handelskoordinator, support- och
+     implementationsroller hos leverantörer av WMS/logistik-/e-handelssystem
+   - rena konsult- och specialistroller (t.ex. "M3-konsult", "M3 Specialist") är
+     stretch: märk dem "stretch" och föreslå dem bara om annonsen öppnar för
+     verksamhetsbakgrund
    - Västsverige (närhet till Vänersborg) vid lika fit
    - Om annonsen är från ett bemanningsbolag: ta reda på det faktiska bolaget ur
      rubriken/texten. Hittar du det inte, hoppa över den.
@@ -25,7 +29,9 @@ jobbspåret parallellt. VD = Jonatan (Vänersborg). Claude = projektledare.
      mening varför. Jobbtips är lika mycket värda som säljleads.
    - **Säljspår:** ett utkast till kort meddelande (max 5 meningar, svenska, du-form) från
      Jonatan till rätt roll. Ingen säljpitch: nämn signalen, hans bakgrund i en mening
-     (11 år e-handelsdrift, SAP/M3/WM6) och ställ **en** fråga om deras problem.
+     (11 år inom e-handelns logistik och back office som användare av SAP, M3 och WM6;
+     bygger AI-agenter) och ställ **en** fråga om deras problem. Överdriv aldrig: han har
+     inte varit konsult eller systemspecialist, och SAP-kunskapen är några år gammal.
 5. **Uppdatera `signals.csv`:** sätt status `vald`, `jobbtips` eller `skippad` på dagens rader.
 6. **Skriv dagsbriefen** `forge-hq/drift/dagsbrief/ÅÅÅÅ-MM-DD.md` (mall nedan).
 7. **Committa och pusha** till grenen `claude/new-session-iti11u`.

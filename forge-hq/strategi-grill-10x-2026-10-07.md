@@ -118,3 +118,18 @@ kallt till driftchefer har låg träffsäkerhet. Därför byter spåren plats:
 **Nätverk byggs, det köps inte:** M3-användarföreningen (cirka 140 medlemsföretag,
 [movexm3.se](https://www.movexm3.se/), konferens maj 2027), e-handelsevent i Göteborg
 ([ehandel.se/event](https://www.ehandel.se/event)) och LinkedIn-inlägg om M3 + AI i praktiken.
+
+## Rättelse 2026-10-07: användare, inte specialist
+
+VD har arbetat i SAP, M3 och WM6 som logistik- och back office-medarbetare, inte som
+konsult eller systemspecialist, och SAP-kunskapen är några år gammal. "M3-specialist" och
+"AI-person hos M3-partner" överdriver därför profilen och stryks som huvudmål.
+
+**Ny målbild för jobbspåret:** roller där användarsidans erfarenhet + egenbyggda AI-agenter
+är en fördel: superuser/key user, systemansvarig för lager/order, order fulfilment,
+e-handelskoordinator, och support/implementation hos leverantörer av WMS-, logistik- och
+e-handelssystem (de anställer ofta folk som kan verksamheten och lär dem systemet).
+Konsultroller är stretch, inte mål.
+
+**Pilotspåret** säljs aldrig som "byggd av någon som drivit flödet", utan som "byggd av
+någon som har jobbat i flödet och bygger AI-agenter". Fortsatt sekundärt.
