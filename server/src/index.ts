@@ -144,6 +144,35 @@ studio.seedSkillOnce('launch-30-day-organic', {
   agent_id: 'growth-hacker',
 });
 
+// Side-income agents (Swedish small-business website fixes) — see forge-hq/side-income.
+studio.seedSkillOnce('sv-sales-reply', {
+  name: 'Sälj: Svar och uppföljning (sv)',
+  description:
+    'Svarsutkast till en småföretagare som svarat på ett erbjudande om hemsidefix. Input: deras meddelande + vad du erbjöd.',
+  prompt: [
+    'Du hjälper en svensk frilansare som fixar småföretags hemsidor. Kundens meddelande och vad som erbjöds: {{input}}.',
+    '',
+    'Skriv ett kort, vänligt svar på svenska (max 6 meningar) som för affären framåt: bekräfta exakt vad som ska göras, pris, när det blir klart, att kunden betalar när den är nöjd, och vad du behöver (ett eget WordPress-konto åt dig, aldrig kundens lösenord).',
+    '',
+    'Regler: lova inget som inte stod i erbjudandet, ingen press eller falsk brådska. Om kunden ber om något större eller osäkert (webbshop, betalningar, flytt av sajt), föreslå att ta det som ett separat jobb efter en titt. Ge till sist ett alternativt kortare svar.',
+  ].join('\n'),
+  agent_id: 'content-creator',
+});
+
+studio.seedSkillOnce('sv-delivery-copy', {
+  name: 'Leverans: Hemsidetexter (sv)',
+  description:
+    'Första utkast till nya texter för en småföretagssida. Input: företag, ort, tjänster, nuvarande text.',
+  prompt: [
+    'Skriv om hemsidetexterna för detta svenska småföretag: {{input}}.',
+    '',
+    'Leverera: 1) sidtitel (max 60 tecken) och Google-beskrivning (max 155 tecken), 2) rubrik och 2–3 korta stycken för startsidan, 3) en tydlig kontaktuppmaning.',
+    '',
+    'Regler: enkel, varm svenska, inga floskler. Hitta aldrig på fakta (priser, år i branschen, certifieringar, omdömen, öppettider) – skriv [FYLL I: …] där uppgift saknas. Behåll allt som stämmer i den nuvarande texten.',
+  ].join('\n'),
+  agent_id: 'content-creator',
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
