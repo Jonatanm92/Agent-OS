@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Ägarpanel – Anbudskollen</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="logo" href="/"><span class="logo-mark">A</span><span>Ägarpanel</span></a>
+      <nav class="nav"><button class="btn btn-ghost btn-sm hidden" id="logout">Logga ut</button></nav>
+    </div>
+  </header>
+  <main class="wrap" id="admin" style="padding-top:24px">
+    <form class="card" id="login" style="max-width:460px;margin:40px auto">
+      <h2>Logga in</h2>
+      <p class="muted small">Ange värdet du satt i miljövariabeln <code>ADMIN_TOKEN</code>. Den sparas bara i den här webbläsaren.</p>
+      <div class="field"><label for="token">Admin-nyckel</label><input id="token" type="password" autocomplete="current-password"></div>
+      <button class="btn btn-primary" type="submit">Logga in</button>
+      <div id="login-status" role="status"></div>
+    </form>
+  </main>
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>

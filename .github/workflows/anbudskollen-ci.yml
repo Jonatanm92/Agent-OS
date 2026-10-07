@@ -1,0 +1,38 @@
+name: Anbudskollen CI
+
+on:
+  pull_request:
+    paths:
+      - "anbudskollen/**"
+      - ".github/workflows/anbudskollen-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "anbudskollen/**"
+      - ".github/workflows/anbudskollen-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: anbudskollen-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test and syntax check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: anbudskollen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: anbudskollen/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test

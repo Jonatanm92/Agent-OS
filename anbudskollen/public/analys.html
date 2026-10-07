@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ny analys – Anbudskollen</title>
+  <meta name="description" content="Ladda upp förfrågningsunderlaget och få en gratis förhandsvisning av go/avstå, deadlines och skall-krav.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="logo" href="/"><span class="logo-mark">A</span><span data-config="brand">Anbudskollen</span></a>
+      <nav class="nav"><a class="nav-link" href="/rapport.html?exempel=1">Exempelrapport</a></nav>
+    </div>
+  </header>
+
+  <main class="wrap" style="max-width:820px;padding-top:32px">
+    <h1 style="font-size:2rem">Analysera en upphandling</h1>
+    <p class="muted">Ladda upp alla dokument som hör till upphandlingen. Förhandsvisningen är gratis – ni ser rekommendation, deadlines och de första skall-kraven innan ni bestämmer er.</p>
+    <div id="engine-note"></div>
+
+    <form id="analysis-form" novalidate>
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Välj filer">
+        <strong>Dra och släpp filerna här</strong>
+        <span class="muted">eller klicka för att välja · PDF, Word, Excel · max <span id="max-files">15</span> filer à <span id="max-mb">30</span> MB</span>
+        <input id="file-input" type="file" name="files" multiple accept=".pdf,.docx,.xlsx,.txt,.md,.csv" hidden>
+      </div>
+      <ul class="file-list" id="file-list"></ul>
+      <p class="small muted">Tips: ta med upphandlingsdokument, kravspecifikation, avtalsvillkor, prisbilaga och frågor &amp; svar/rättelser. Ju mer komplett underlag, desto säkrare analys.</p>
+
+      <fieldset>
+        <legend>Företagsprofil <span class="muted small">(valfritt men rekommenderas)</span></legend>
+        <p class="small muted" style="margin-top:0">Med en profil bedömer vi varje skall-krav mot ert företag och ger en personlig go/avstå. Skriv kort – stödord räcker.</p>
+        <div class="grid grid-2">
+          <div class="field"><label for="p-companyName">Företag</label><input id="p-companyName" name="companyName" type="text" placeholder="Städproffsen i Exempelstad AB"></div>
+          <div class="field"><label for="p-region">Geografisk täckning</label><input id="p-region" name="region" type="text" placeholder="Exempelstad med omnejd"></div>
+          <div class="field"><label for="p-employees">Antal anställda</label><input id="p-employees" name="employees" type="text" placeholder="18"></div>
+          <div class="field"><label for="p-turnover">Årsomsättning senaste året</label><input id="p-turnover" name="turnover" type="text" placeholder="9,5 mkr"></div>
+        </div>
+        <div class="field"><label for="p-services">Vad levererar ni?</label><textarea id="p-services" name="services" placeholder="Lokalvård för kontor och skolor, fönsterputs, golvvård"></textarea></div>
+        <div class="field"><label for="p-certifications">Certifieringar, försäkringar och avtal</label><input id="p-certifications" name="certifications" type="text" placeholder="ISO 9001, ISO 14001, kollektivavtal, ansvarsförsäkring 10 mkr"></div>
+        <div class="field"><label for="p-references">Liknande uppdrag/referenser</label><textarea id="p-references" name="references" placeholder="Lokalvård 12 000 m² för Grannby kommun 2023–2025 …"></textarea></div>
+        <div class="field"><label for="p-other">Övrigt som påverkar beslutet</label><input id="p-other" name="other" type="text" placeholder="Kan starta med kort varsel, har 3 lediga arbetsledare"></div>
+      </fieldset>
+
+      <label class="check"><input type="checkbox" name="accept" value="on" id="accept"> <span>Jag godkänner <a href="/villkor.html" target="_blank">villkoren</a> och <a href="/integritet.html" target="_blank">integritetspolicyn</a>. Jag laddar inte upp sekretessbelagda eller säkerhetsskyddsklassade uppgifter.</span></label>
+      <div id="form-status" role="status"></div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn btn-primary btn-lg" type="submit" id="submit">Starta gratis analys</button>
+        <span class="muted small">Tar oftast 2–10 minuter.</span>
+      </div>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap row">
+      <span data-company="legalName">[Ditt företagsnamn]</span>
+      <span class="spacer"></span>
+      <a href="/villkor.html">Villkor</a>
+      <a href="/integritet.html">Integritet</a>
+    </div>
+  </footer>
+  <script type="module" src="/js/analys.js"></script>
+</body>
+</html>

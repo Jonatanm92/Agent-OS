@@ -28,6 +28,16 @@ This is an open implementation of the four-pillar "Sovereign Stack" idea:
 ---
 
 
+## Anbudskollen – revenue app
+
+[`anbudskollen/`](./anbudskollen) is a standalone, Swedish-language web app that turns public-procurement
+documents into a source-traced requirement matrix, deadlines, contract risks and a go/no-go recommendation,
+with a free preview and a paid full report (Stripe or invoice). It productises the BidSprint 48 offer from
+`revenue-os/`. See [anbudskollen/README.md](./anbudskollen/README.md) and the launch plan in
+[anbudskollen/LANSERINGSPLAN.md](./anbudskollen/LANSERINGSPLAN.md).
+
+---
+
 ## Open-source goals
 
 Agent OS exists to make multi-agent development infrastructure inspectable and

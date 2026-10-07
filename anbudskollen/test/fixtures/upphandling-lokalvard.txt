@@ -1,0 +1,55 @@
+UPPHANDLINGSDOKUMENT
+Lokalvård för förskolor och skolor 2027–2029
+Upphandlande organisation: Exempelstads kommun
+Diarienummer: KS 2026/1187
+Förfarande: Upphandlingen genomförs som ett förenklat förfarande enligt lagen (2016:1145) om offentlig upphandling (LOU).
+
+1. Om upphandlingen
+1.1 Exempelstads kommun bjuder in leverantörer att lämna anbud på lokalvård för 14 förskolor och 6 grundskolor, totalt cirka 38 000 kvadratmeter golvyta.
+1.2 Avtalsperioden är två år från och med 2027-02-01. Kommunen har möjlighet att förlänga avtalet med 1 + 1 år på oförändrade villkor.
+1.3 Det uppskattade värdet för hela avtalsperioden inklusive förlängningar är 24 000 000 kr. Kommunen garanterar inte några volymer. Volymerna är uppskattade och kan förändras under avtalstiden.
+1.4 Anbud ska lämnas elektroniskt via upphandlingsverktyget e-Avrop. Anbud som lämnas på annat sätt beaktas inte.
+1.5 Sista anbudsdag är 2026-11-12 kl. 23.59. Anbudet ska vara giltigt till och med 2027-05-31.
+1.6 Frågor om upphandlingen ska ställas via e-Avrop senast 2026-10-29. Svar publiceras senast 2026-11-03.
+1.7 Visning av ett urval av objekten genomförs 2026-10-21 kl. 09.00. Visningen är frivillig.
+1.8 Planerad tilldelning sker 2026-12-03.
+
+2. Krav på leverantören
+2.1 Leverantören ska vara registrerad i aktiebolags-, handels- eller föreningsregistret och ha fullgjort sina skyldigheter avseende skatter och sociala avgifter.
+2.2 Leverantören ska ha en årsomsättning som uppgår till minst 6 000 000 kr för det senast avslutade räkenskapsåret. Kommunen kontrollerar omsättningen via kreditupplysning.
+2.3 Leverantören ska ha en riskklass motsvarande lägst 3 hos UC eller motsvarande kreditvärderingsföretag. Leverantör med lägre riskklass ska bifoga en förklaring och en bankgaranti eller moderbolagsgaranti.
+2.4 Leverantören ska ha ett certifierat kvalitetsledningssystem enligt ISO 9001 eller likvärdigt. Bifoga kopia av giltigt certifikat.
+2.5 Leverantören ska ha ett certifierat miljöledningssystem enligt ISO 14001 eller likvärdigt. Bifoga kopia av giltigt certifikat.
+2.6 Leverantören ska ha erfarenhet av minst två uppdrag avseende lokalvård i skol- eller förskolemiljö med en omfattning om minst 10 000 kvadratmeter vardera under de senaste tre åren. Referenserna ska redovisas på bilaga 3 Referensuppdrag.
+2.7 Leverantören ska utse en avtalsansvarig med minst tre års erfarenhet av att leda lokalvårdsuppdrag. CV för avtalsansvarig ska bifogas.
+
+3. Krav på tjänsten
+3.1 Lokalvården ska utföras enligt Svensk Standard SS 627801 för kvalitetsnivå 3 i förskolornas lekrum och nivå 2 i övriga utrymmen.
+3.2 Daglig städning ska utföras mellan kl. 16.00 och 22.00 på vardagar, så att verksamheten inte störs.
+3.3 All personal som utför uppdraget ska ha genomgått grundutbildning i lokalvård motsvarande Städbranschens Yrkesbevis eller likvärdigt inom sex månader från avtalsstart.
+3.4 All personal ska kunna kommunicera på svenska i tal och skrift med kommunens personal.
+3.5 Leverantören ska använda miljömärkta kemtekniska produkter (Svanen, EU Ecolabel eller likvärdigt) i minst 90 procent av volymen.
+3.6 Leverantören ska utföra egenkontroll varje månad och rapportera resultatet till kommunen senast den 10:e i efterföljande månad.
+3.7 Leverantören bör erbjuda ett digitalt felanmälningssystem som verksamheterna kan använda dygnet runt.
+3.8 Vid behov ska leverantören utföra extra städning, exempelvis vid vattenskador eller utbrott av magsjuka, med en inställelsetid om högst fyra timmar.
+
+4. Avtalsvillkor
+4.1 Leverantören ska ha en ansvarsförsäkring som omfattar minst 10 000 000 kr per skadetillfälle under hela avtalstiden.
+4.2 Om leverantören inte utför städning enligt avtal utgår vite med 5 000 kr per objekt och påbörjad dag.
+4.3 Leverantören ansvarar för skador som leverantören eller dennes personal orsakar. Leverantörens skadeståndsansvar är obegränsat vid grov vårdslöshet.
+4.4 Betalning sker 30 dagar efter godkänd faktura. Fakturor ska skickas elektroniskt enligt Peppol BIS Billing 3.
+4.5 Priserna är fasta under de första 12 månaderna. Därefter får priserna justeras en gång per år med högst 80 procent av förändringen i Arbetskostnadsindex (AKI) för privat sektor.
+4.6 Leverantören ska tillämpa lön, semester och arbetstid som lägst motsvarar nivåerna i gällande kollektivavtal för serviceentreprenad.
+4.7 Leverantören får anlita underleverantörer endast efter skriftligt godkännande från kommunen.
+4.8 Leverantören ska teckna ett personuppgiftsbiträdesavtal med kommunen om personuppgifter behandlas inom uppdraget.
+
+5. Utvärdering
+5.1 Tilldelning sker till det anbud som har det bästa förhållandet mellan pris och kvalitet.
+5.2 Pris viktas till 60 procent och kvalitet till 40 procent.
+5.3 Kvalitet utvärderas utifrån en beskrivning av leverantörens genomförande av uppdraget, max två A4-sidor, där inskolning av personal, kvalitetsuppföljning och kommunikation med verksamheterna bedöms.
+5.4 Mervärde ges om leverantören använder fossilfria fordon i uppdraget, vilket ger ett prisavdrag om 3 procent i utvärderingen.
+
+6. Anbudets form och innehåll
+6.1 Anbudet ska vara skrivet på svenska.
+6.2 Prisbilaga 2 ska fyllas i fullständigt. Ofullständiga prisuppgifter medför att anbudet förkastas.
+6.3 Anbudet ska undertecknas av behörig firmatecknare.
