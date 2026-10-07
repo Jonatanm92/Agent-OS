@@ -27,7 +27,11 @@ jobbspåret parallellt. VD = Jonatan (Vänersborg). Claude = projektledare.
    en M3-partner: lägg rekryteraren/bolaget i `leadkallor.md` (avsnitt 1 eller 2) med källa.
    - **Jobbspår:** passar annonsen Jonatans profil (`../../CAREER_PORTFOLIO.md`)? Ja/nej + en
      mening varför. Jobbtips är lika mycket värda som säljleads.
-   - **Säljspår:** ett utkast till kort meddelande (max 5 meningar, svenska, du-form) från
+   - **Ansökningsvinkel** (för jobbtips): 2–3 meningar som kopplar hans faktiska
+     bakgrund till annonsens krav, plus sista ansökningsdag och hur man söker. Skriv aldrig
+     säljmeddelanden till bolag som bara annonserar en tjänst.
+   - **Säljspår** (bara när signalen visar ett driftproblem, inte för vanliga jobbannonser):
+     ett utkast till kort meddelande (max 5 meningar, svenska, du-form) från
      Jonatan till rätt roll. Ingen säljpitch: nämn signalen, hans bakgrund i en mening
      (11 år inom e-handelns logistik och back office som användare av SAP, M3 och WM6;
      bygger AI-agenter) och ställ **en** fråga om deras problem. Överdriv aldrig: han har
