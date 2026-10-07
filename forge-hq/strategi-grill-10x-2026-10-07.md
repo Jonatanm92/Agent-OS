@@ -94,3 +94,27 @@ lovar inget till kunder. Det är dina beslut.
    signaler, utkast och dagsbrief. (Rekommendation: ja.)
 3. **De första 10 namnen:** vem från Komplett- och Varner-tiden kan du skriva till den här
    veckan? Bara namn räcker; Claude researchar resten.
+
+---
+
+## Uppdatering 2026-10-07: inget varmt nätverk
+
+VD har inga kvarvarande kontakter från Komplett/Varner. Det tar bort huvudspårets största
+fördel (varma kontakter). En okänd person som säljer piloter för 25 000–40 000 kr helt
+kallt till driftchefer har låg träffsäkerhet. Därför byter spåren plats:
+
+1. **Jobbspåret blir primärt för inkomst.** Det finns öppna M3-tjänster just nu (Scan,
+   Saint-Gobain Distribution m.fl. i signalloggen) och rekryterare som aktivt letar
+   M3-erfarenhet. Där är din bakgrund efterfrågad i dag, utan nätverk.
+2. **10x-versionen av jobbspåret:** bli "AI-personen" hos en M3-partner. CGI har
+   [160+ M3-konsulter](https://www.cgi.com/se/sv/tjanster/affarssystem/infor-m3);
+   Columbus, Meridion, Elvenite och Navcite är de andra stora
+   ([MAF:s konferens](https://www.movexm3.se/en/conference/page/start/) listar alla fem).
+   Få kan både M3 och AI-agenter – det är en sällsynt profil hos dem, och deras kunder blir
+   indirekt dina.
+3. **Pilotspåret blir sekundärt** och går via partnerkanalen (underkonsult åt en M3-partner)
+   eller via signaler där annonsen själv visar problemet. Ingen kall massutskickning.
+
+**Nätverk byggs, det köps inte:** M3-användarföreningen (cirka 140 medlemsföretag,
+[movexm3.se](https://www.movexm3.se/), konferens maj 2027), e-handelsevent i Göteborg
+([ehandel.se/event](https://www.ehandel.se/event)) och LinkedIn-inlägg om M3 + AI i praktiken.

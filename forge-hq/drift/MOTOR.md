@@ -18,7 +18,9 @@ jobbspåret parallellt. VD = Jonatan (Vänersborg). Claude = projektledare.
 3. **Researcha varje utvald signal** (webbsök, max ca 5 min per bolag): vad bolaget säljer,
    storlek, troligt driftproblem som annonsen avslöjar, och vilken roll som äger problemet.
    Varje uppgift ska ha en källa. Gissa aldrig namn på personer.
-4. **Två spår per signal:**
+4. **Två spår per signal** (jobbspåret är primärt sedan 2026-10-07 – VD saknar varmt
+   nätverk, se strategins uppdatering). Om annonsen kommer från ett bemanningsbolag eller
+   en M3-partner: lägg rekryteraren/bolaget i `leadkallor.md` (avsnitt 1 eller 2) med källa.
    - **Jobbspår:** passar annonsen Jonatans profil (`../../CAREER_PORTFOLIO.md`)? Ja/nej + en
      mening varför. Jobbtips är lika mycket värda som säljleads.
    - **Säljspår:** ett utkast till kort meddelande (max 5 meningar, svenska, du-form) från
