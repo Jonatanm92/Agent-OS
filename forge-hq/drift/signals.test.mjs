@@ -36,3 +36,11 @@ test('readSeen returns logged ids and handles a missing file', () => {
   assert.ok(seen.has('42'));
   assert.ok(seen.has('7'));
 });
+
+test('profile track keeps office logistics roles without a named system', () => {
+  assert.equal(isRelevant(toSignal(hit('Product & Supply Coordinator', 'Inget systemnamn'), 'q'), 'profil'), true);
+  assert.equal(isRelevant(toSignal(hit('Orderadministratör', ''), 'q'), 'profil'), true);
+  assert.equal(isRelevant(toSignal(hit('Processoperatör', 'logistik'), 'q'), 'profil'), false);
+  assert.equal(isRelevant(toSignal(hit('Konstruktör', 'M3'), 'q'), 'profil'), false);
+  assert.equal(isRelevant(toSignal(hit('Product & Supply Coordinator', ''), 'q')), false);
+});
