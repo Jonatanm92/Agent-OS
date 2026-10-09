@@ -1,0 +1,21 @@
+{
+  "name": "levande-sagor",
+  "version": "1.0.0",
+  "description": "Levande sagor: barnens teckningar vaknar och får egna sagor (PWA + Cloudflare Worker).",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "typecheck": "tsc",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261009.1",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.149.0"
+  },
+  "private": true
+}

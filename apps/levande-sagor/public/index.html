@@ -1,0 +1,2308 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Barnens teckningar vaknar och får egna sagor, upplästa på svenska.">
+<meta name="theme-color" content="#27317C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sagor">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Levande sagor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@600;800;900&display=swap">
+<style>
+/* Layout: a picture-book column. The illustrated stage is the hero of every screen; text, controls and cards sit below it like the page under a book plate. */
+:root {
+  --paper: #F3F5FA;
+  --paper-2: #E7ECF5;
+  --sheet: #FFFFFF;
+  --grid: #D5DEEC;
+  --ink: #161B36;
+  --ink-soft: #545E7E;
+  --line: #CDD6E4;
+  --edge: #161B36;
+  --accent: #27317C;
+  --accent-2: #1B2262;
+  --accent-ink: #FFFFFF;
+  --gold: #F6BE3B;
+  --on-gold: #1B1A2B;
+  --mark: rgba(246, 190, 59, .5);
+  --focus-ring: rgba(39, 49, 124, .25);
+  --danger: #B33A26;
+  --grain: .05;
+  --shadow-lg: 0 2px 0 rgba(22, 27, 54, .92), 0 24px 44px -24px rgba(22, 27, 54, .55);
+  --shadow-sm: 0 2px 0 rgba(22, 27, 54, .92), 0 10px 18px -12px rgba(22, 27, 54, .5);
+  --glow-bg: radial-gradient(70% 45% at 50% 0%, rgba(246, 190, 59, .16), transparent 70%);
+  --font-display: "Grandstander", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Andika", "Verdana", system-ui, sans-serif;
+  --story-size: 1.3rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0D1330; --paper-2: #18204A; --sheet: #151C42; --grid: #253069;
+    --ink: #F2F0E8; --ink-soft: #A8B0CE; --line: #2B3570; --edge: #F2F0E8;
+    --accent: #F6BE3B; --accent-2: #E3A41C; --accent-ink: #1B1A2B;
+    --mark: rgba(246, 190, 59, .32); --focus-ring: rgba(246, 190, 59, .32); --danger: #FF8C76; --grain: .09;
+    --shadow-lg: 0 2px 0 #05081A, 0 24px 44px -24px rgba(0, 0, 0, .85);
+    --shadow-sm: 0 2px 0 #05081A, 0 10px 18px -12px rgba(0, 0, 0, .75);
+    --glow-bg: radial-gradient(60% 50% at 50% 0%, rgba(246, 190, 59, .10), transparent 70%);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0D1330; --paper-2: #18204A; --sheet: #151C42; --grid: #253069;
+  --ink: #F2F0E8; --ink-soft: #A8B0CE; --line: #2B3570; --edge: #F2F0E8;
+  --accent: #F6BE3B; --accent-2: #E3A41C; --accent-ink: #1B1A2B;
+  --mark: rgba(246, 190, 59, .32); --focus-ring: rgba(246, 190, 59, .32); --danger: #FF8C76; --grain: .09;
+  --shadow-lg: 0 2px 0 #05081A, 0 24px 44px -24px rgba(0, 0, 0, .85);
+  --shadow-sm: 0 2px 0 #05081A, 0 10px 18px -12px rgba(0, 0, 0, .75);
+  --glow-bg: radial-gradient(60% 50% at 50% 0%, rgba(246, 190, 59, .10), transparent 70%);
+  color-scheme: dark;
+}
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--font-body); font-size: 1rem; line-height: 1.5; -webkit-font-smoothing: antialiased; background-image: var(--glow-bg); background-repeat: no-repeat; min-height: 100%; }
+body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: var(--grain); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.bar, .app, .bedtime, .sheet-wrap, .toast { position: relative; z-index: 1; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+h1, h2, h3 { margin: 0; }
+
+/* Top bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--paper) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1.5px solid var(--line); }
+.bar-inner { max-width: 600px; margin-inline: auto; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.wordmark { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; min-width: 0; font: 800 clamp(1.08rem, 4.2vw, 1.35rem)/1 var(--font-display); color: var(--ink); background: none; border: 0; padding: 6px 0; cursor: pointer; letter-spacing: -.01em; }
+.wordmark em { font-style: normal; box-shadow: inset 0 -.36em 0 var(--mark); }
+.wm-star { width: 26px; height: 26px; flex: none; animation: wm 6s ease-in-out infinite; }
+@keyframes wm { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(10deg) scale(1.06); } }
+.bar-actions { display: flex; align-items: center; gap: 8px; }
+.bar-btn { font: 700 .98rem/1 var(--font-body); color: var(--ink); background: var(--sheet); border: 2px solid var(--edge); border-radius: 999px; padding: 9px 14px; box-shadow: var(--shadow-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.round-btn { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--edge); background: var(--sheet); color: var(--ink); box-shadow: var(--shadow-sm); cursor: pointer; }
+.round-btn svg { width: 20px; height: 20px; }
+.bar-btn:active, .round-btn:active { transform: translateY(2px); box-shadow: none; }
+.count { min-width: 1.5em; padding: 2px 6px; border-radius: 999px; background: var(--gold); color: var(--on-gold); font-size: .82rem; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* Column */
+.app { max-width: 600px; margin-inline: auto; padding-inline: 16px; padding-block: 8px 56px; }
+.screen { display: grid; gap: 18px; padding-top: 14px; }
+.screen.in { animation: screen-in .45s cubic-bezier(.2, .8, .2, 1); }
+@keyframes screen-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Stage: an illustrated plate where the child's drawing lives */
+.stage { position: relative; width: 100%; max-width: 100%; aspect-ratio: 4 / 3; border-radius: 26px; overflow: hidden; background: #E9F1FA; border: 2px solid var(--edge); box-shadow: var(--shadow-lg); isolation: isolate; touch-action: pan-y; }
+.stage::after { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; border-radius: inherit; background: radial-gradient(120% 85% at 18% 0%, rgba(255, 250, 230, .2), transparent 58%); box-shadow: inset 0 0 0 5px rgba(255, 255, 255, .28), inset 0 -40px 70px -30px rgba(10, 14, 40, .22), inset 0 0 90px rgba(10, 14, 40, .12); }
+.scene { position: absolute; inset: 0; z-index: 0; opacity: 0; transition: opacity .8s ease; }
+.scene.on { opacity: 1; }
+.scene svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.stage::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .2; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .18 0 0 0 0 .3 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.fig { position: absolute; z-index: 3; left: 50%; bottom: var(--ground, 8%); width: 48%; height: 64%; transform: translateX(-50%); cursor: pointer; }
+.fig-pop, .fig-move, .fig-breathe { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.fig-breathe { animation: breathe 2.6s ease-in-out infinite; }
+.fig-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; visibility: hidden; -webkit-user-drag: none; user-select: none; }
+.fig-img.f0 { visibility: visible; }
+:root[data-frame="1"] .fig-img.f0, :root[data-frame="2"] .fig-img.f0 { visibility: hidden; }
+:root[data-frame="1"] .fig-img.f1, :root[data-frame="2"] .fig-img.f2 { visibility: visible; }
+.fig-shadow { position: absolute; left: 50%; bottom: -5%; width: 62%; height: 9%; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(15, 20, 45, .34), rgba(15, 20, 45, 0)); }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.015, 1.035); } }
+.stage.enter .fig-pop { animation: pop-in .7s cubic-bezier(.2, .9, .25, 1.2); }
+@keyframes pop-in { from { transform: translateY(8%) scale(.9); opacity: .2; } to { transform: none; opacity: 1; } }
+.stage.awaken .fig-pop { animation: awaken 1.3s cubic-bezier(.2, .8, .2, 1); }
+@keyframes awaken { 0% { transform: scale(.86) rotate(-7deg); filter: grayscale(1) contrast(.9); } 45% { transform: scale(1.08) rotate(3deg); filter: none; } 70% { transform: scale(.98) rotate(-1deg); } 100% { transform: none; } }
+
+.fig[data-motion="vinka"] .fig-move { animation: vinka 1.5s ease-in-out infinite; }
+@keyframes vinka { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg) translateY(-3%); } }
+.fig[data-motion="hoppa"] .fig-move { animation: hoppa 1s cubic-bezier(.3, 0, .3, 1) infinite; }
+@keyframes hoppa { 0%, 100% { transform: translateY(0) scale(1.07, .92); } 18% { transform: translateY(0) scale(.95, 1.06); } 50% { transform: translateY(-32%) scale(.98, 1.03); } 82% { transform: translateY(0) scale(1.02, .98); } }
+.fig[data-motion="hoppa"] .fig-shadow { animation: skugga 1s cubic-bezier(.3, 0, .3, 1) infinite; }
+@keyframes skugga { 0%, 18%, 82%, 100% { transform: translateX(-50%) scale(1); opacity: 1; } 50% { transform: translateX(-50%) scale(.55); opacity: .45; } }
+.fig[data-motion="gå"] { animation: ga 7s ease-in-out infinite alternate; }
+@keyframes ga { from { left: 30%; } to { left: 70%; } }
+.fig[data-motion="gå"] .fig-move { animation: gunk .45s ease-in-out infinite alternate; }
+@keyframes gunk { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-5%) rotate(4deg); } }
+.fig[data-motion="snurra"] .fig-move { animation: snurra 2.6s ease-in-out infinite; }
+@keyframes snurra { 0% { transform: rotate(0); } 45%, 100% { transform: rotate(360deg); } }
+.fig[data-motion="sova"] .fig-move { animation: sova 3.8s ease-in-out infinite; }
+@keyframes sova { 0%, 100% { transform: rotate(-9deg) scale(1, .98); } 50% { transform: rotate(-9deg) scale(1.02, 1.01); } }
+.fig[data-motion="dansa"] .fig-move { animation: dansa .9s ease-in-out infinite; }
+@keyframes dansa { 0%, 100% { transform: translateX(-7%) rotate(-9deg); } 50% { transform: translateX(7%) translateY(-5%) rotate(9deg); } }
+.fig[data-motion="flyga"] { bottom: calc(var(--ground, 8%) + 16%); }
+.fig[data-motion="flyga"] .fig-move { animation: flyga 3s ease-in-out infinite; }
+@keyframes flyga { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-9%) rotate(4deg); } }
+.fig[data-motion="flyga"] .fig-shadow { bottom: -30%; transform: translateX(-50%) scale(.6); opacity: .5; }
+.fig[data-motion="gunga"] .fig-move { animation: gunga 2.2s ease-in-out infinite; }
+@keyframes gunga { 0%, 100% { transform: rotate(-11deg); } 50% { transform: rotate(11deg); } }
+
+/* Story props: things that appear, are carried, or fly away */
+.prop { position: absolute; aspect-ratio: 1; pointer-events: none; }
+.prop svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 2px 0 rgba(10, 14, 40, .2)); }
+.prop.free { z-index: 2; width: 11%; }
+.prop.hand { z-index: 2; right: -6%; bottom: 30%; width: 30%; }
+.prop[data-act="marken"] { left: 67%; bottom: calc(var(--ground, 8%) - 1%); animation: p-glow 2.4s ease-in-out infinite; }
+.prop[data-act="svävar"] { left: 67%; bottom: calc(var(--ground, 8%) + 40%); animation: p-hover 3.2s ease-in-out infinite; }
+.prop[data-act="himlen"] { left: var(--sky-x, 76%); top: var(--sky-y, 11%); width: 8%; animation: p-twinkle 2.6s ease-in-out infinite; }
+.prop[data-act="flyger"] { width: 9%; animation: p-fly 3s cubic-bezier(.5, 0, .3, 1) forwards, p-twinkle 2.6s ease-in-out 3s infinite; }
+.prop[data-act="himlen"] svg, .prop[data-act="flyger"] svg { filter: drop-shadow(0 0 7px rgba(255, 214, 90, .95)); }
+.prop.hand svg { animation: p-sway 1.6s ease-in-out infinite; transform-origin: 30% 80%; }
+@keyframes p-glow { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.06); filter: brightness(1.15); } }
+@keyframes p-hover { 0%, 100% { transform: translate(0, 0) rotate(-6deg); } 50% { transform: translate(-10%, -14%) rotate(6deg); } }
+@keyframes p-twinkle { 0%, 100% { transform: scale(1) rotate(0); opacity: 1; } 50% { transform: scale(.82) rotate(12deg); opacity: .75; } }
+@keyframes p-fly { 0% { left: 64%; top: calc(100% - var(--ground, 8%) - 46%); transform: scale(1) rotate(0); } 55% { transform: scale(1.25) rotate(220deg); } 100% { left: var(--sky-x, 76%); top: var(--sky-y, 11%); transform: scale(.9) rotate(360deg); } }
+@keyframes p-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+.zzz { position: absolute; z-index: 4; left: 60%; bottom: calc(var(--ground, 8%) + 46%); display: none; font: 800 1.3rem/1 var(--font-display); color: #FFFFFF; text-shadow: 0 0 3px #161B36, 0 0 3px #161B36; pointer-events: none; }
+.stage[data-motion="sova"] .zzz { display: block; }
+.zzz span { display: inline-block; opacity: 0; animation: zzz 2.4s ease-in-out infinite; }
+.zzz span:nth-child(2) { animation-delay: .6s; font-size: 1.2em; }
+.zzz span:nth-child(3) { animation-delay: 1.2s; font-size: 1.45em; }
+@keyframes zzz { 0% { opacity: 0; transform: translate(0, 0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(14px, -26px); } }
+.sparkles { position: absolute; inset: 0; z-index: 5; display: none; pointer-events: none; }
+.stage.waking .sparkles, .stage.awaken .sparkles { display: block; }
+.sparkles i { position: absolute; width: 16px; height: 16px; background: #FFC93C; clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); animation: gnista 1.8s ease-in-out infinite; }
+.sparkles i:nth-child(1) { left: 24%; top: 26%; animation-delay: -.2s; }
+.sparkles i:nth-child(2) { left: 72%; top: 20%; animation-delay: -.9s; width: 12px; height: 12px; }
+.sparkles i:nth-child(3) { left: 78%; top: 56%; animation-delay: -1.4s; }
+.sparkles i:nth-child(4) { left: 18%; top: 60%; animation-delay: -.5s; width: 11px; height: 11px; }
+.sparkles i:nth-child(5) { left: 50%; top: 10%; animation-delay: -1.1s; width: 13px; height: 13px; }
+.sparkles i:nth-child(6) { left: 64%; top: 76%; animation-delay: -.7s; width: 10px; height: 10px; }
+@keyframes gnista { 0%, 100% { transform: scale(.2) rotate(0); opacity: 0; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } }
+.stage-busy { position: absolute; inset: 0; z-index: 7; display: grid; place-items: center; background: rgba(252, 253, 255, .8); font: 800 1.25rem/1.2 var(--font-display); color: #161B36; text-align: center; padding: 16px; }
+
+/* Scene ambience */
+.scene .drift { animation: drift 30s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translateX(-14px); } to { transform: translateX(18px); } }
+.scene .twinkle { animation: twinkle 3s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
+.scene .wave { animation: wave 6s ease-in-out infinite alternate; }
+.scene .wave2 { animation: wave 8s ease-in-out infinite alternate-reverse; }
+@keyframes wave { from { transform: translateX(-18px); } to { transform: translateX(12px); } }
+.scene .bob { animation: bob 3s ease-in-out infinite alternate; }
+@keyframes bob { from { transform: translateY(0) rotate(-2deg); } to { transform: translateY(4px) rotate(2deg); } }
+.scene .drop { animation: rain .8s linear infinite; }
+@keyframes rain { from { transform: translateY(-12px); } to { transform: translateY(320px); } }
+.scene .flake { animation: snow 9s linear infinite; }
+@keyframes snow { from { transform: translate(0, -14px); } to { transform: translate(18px, 320px); } }
+.scene .glow { animation: glow 3.6s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+.scene .aurora { animation: aurora 10s ease-in-out infinite alternate; }
+.scene .aurora2 { animation: aurora 13s ease-in-out infinite alternate-reverse; }
+@keyframes aurora { from { transform: translateX(-24px) skewX(-4deg); opacity: .65; } to { transform: translateX(20px) skewX(5deg); opacity: 1; } }
+.scene .flutter { animation: flutter 7s ease-in-out infinite alternate; }
+@keyframes flutter { 0% { transform: translate(0, 0); } 50% { transform: translate(30px, -16px); } 100% { transform: translate(60px, 4px); } }
+.scene .gull { animation: gull 16s linear infinite; }
+@keyframes gull { from { transform: translateX(-60px); } to { transform: translateX(460px); } }
+
+/* Type */
+.eyebrow { margin: 0; font: 700 .8rem/1.2 var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.hero-title { font: 900 clamp(1.9rem, 1.3rem + 2.9vw, 2.65rem)/1.04 var(--font-display); letter-spacing: -.02em; text-wrap: balance; }
+.lede { margin: 0; font-size: 1.0625rem; line-height: 1.55; color: var(--ink-soft); max-width: 60ch; }
+.caption { margin: -8px 0 0; font-size: .85rem; color: var(--ink-soft); }
+.section-title { font: 800 1.5rem/1.15 var(--font-display); text-wrap: balance; }
+.list-title { font: 800 1.15rem/1.2 var(--font-display); }
+.privacy { margin: 0; font-size: .86rem; color: var(--ink-soft); max-width: 62ch; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.steps li { display: grid; gap: 8px; align-content: start; padding: 12px; border-radius: 18px; background: var(--sheet); border: 1.5px solid var(--line); min-width: 0; font-size: .9rem; color: var(--ink-soft); }
+.steps strong { display: block; font: 800 1.05rem/1.2 var(--font-display); color: var(--ink); }
+.step-ico { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--paper-2); color: var(--ink); }
+.step-ico svg { width: 22px; height: 22px; }
+@media (max-width: 460px) { .steps { grid-template-columns: 1fr; } .steps li { grid-template-columns: auto 1fr; align-items: center; } }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font: 800 1.1rem/1.1 var(--font-display); padding: .95rem 1.35rem; border-radius: 16px; border: 2px solid var(--edge); background: var(--sheet); color: var(--ink); box-shadow: var(--shadow-sm); cursor: pointer; text-align: center; transition: transform .12s ease, box-shadow .12s ease; user-select: none; }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(2px); box-shadow: none; }
+.btn:disabled { opacity: .45; cursor: default; transform: none; }
+.btn-primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: var(--accent-ink); box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.btn.small { font-size: .95rem; padding: .6rem 1rem; border-radius: 12px; justify-self: start; }
+.btn svg { width: 1.15em; height: 1.15em; flex: none; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.actions > .btn { flex: 1 1 200px; }
+.actions.stack { flex-direction: column; }
+.actions.stack > .btn { flex: none; }
+.btn-wide { width: 100%; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+:root:has(#photo:focus-visible) #photoLabel { outline: 3px solid var(--accent); outline-offset: 3px; }
+.link-btn { justify-self: start; background: none; border: 0; padding: 4px 0; color: var(--ink-soft); font: 700 .95rem var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.icon-btn { width: 52px; height: 52px; flex: none; border-radius: 50%; border: 2px solid var(--edge); background: var(--sheet); color: var(--ink); box-shadow: var(--shadow-sm); display: grid; place-items: center; cursor: pointer; }
+.icon-btn svg { width: 22px; height: 22px; }
+.icon-btn:active { transform: translateY(2px); box-shadow: none; }
+.icon-btn:disabled { opacity: .3; cursor: default; transform: none; }
+.danger-btn { background: none; border: 0; padding: 6px 0; color: var(--danger); font: 700 .95rem var(--font-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Form */
+.form { display: grid; gap: 18px; }
+.field { display: grid; gap: 8px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.field > label, .field > legend { font: 700 1.05rem/1.3 var(--font-body); padding: 0; }
+.field > legend { margin-bottom: 8px; }
+.hint { margin: 0; font-size: .86rem; color: var(--ink-soft); }
+.field input, .field textarea, .field select { width: 100%; box-sizing: border-box; font: 1.0625rem/1.4 var(--font-body); padding: .75rem .9rem; border: 2px solid var(--line); border-radius: 14px; background: var(--sheet); color: var(--ink); resize: vertical; }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-soft); opacity: .8; }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--focus-ring); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 700 1rem/1 var(--font-body); padding: .68rem 1rem; border-radius: 999px; border: 2px solid var(--line); background: var(--sheet); color: var(--ink); cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--edge); background: var(--gold); color: var(--on-gold); box-shadow: 0 2px 0 var(--edge); }
+.notice { margin: 0; padding: 12px 14px; border-radius: 14px; background: var(--paper-2); color: var(--ink); font-size: .975rem; }
+.notice.warn { color: var(--danger); }
+
+/* Writing */
+.status { display: grid; gap: 6px; }
+.status-title { font: 800 1.45rem/1.2 var(--font-display); text-wrap: balance; }
+.status-sub { margin: 0; color: var(--ink-soft); }
+.meter { height: 14px; border-radius: 999px; border: 2px solid var(--edge); background: var(--paper-2); overflow: hidden; }
+.meter i { display: block; height: 100%; width: var(--p, 8%); border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width .6s ease; }
+.meter.wait i { width: 30%; animation: meter-wait 1.6s ease-in-out infinite; }
+@keyframes meter-wait { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+
+/* Player */
+.story-title { font: 800 1.05rem/1.2 var(--font-display); color: var(--ink-soft); text-wrap: balance; }
+.cover { display: grid; gap: 10px; }
+.cover-title { font: 900 clamp(1.8rem, 1.3rem + 2.6vw, 2.4rem)/1.06 var(--font-display); letter-spacing: -.015em; text-wrap: balance; }
+.cover-by { margin: 0; color: var(--ink-soft); }
+.cover .actions { margin-top: 6px; }
+.reader { min-height: 8.6em; }
+.page-text { margin: 0; font-size: var(--story-size); line-height: 1.62; hyphens: auto; overflow-wrap: break-word; }
+.reader.turn .page-text { animation: text-in .5s cubic-bezier(.2, .8, .2, 1); }
+@keyframes text-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.page-text .w { border-radius: 6px; padding: 0 .05em; margin: 0 -.05em; transition: background-color .15s ease; }
+.page-text .w.on { background: var(--mark); }
+.controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-width: 0; }
+.dots i { width: 9px; height: 9px; border-radius: 999px; background: var(--line); transition: width .3s ease, background-color .3s ease; }
+.dots i.on { width: 24px; background: var(--accent); }
+.dots i.done { background: var(--ink-soft); }
+.end-card { display: grid; gap: 14px; }
+.end-word { margin: 0; font: 900 2.8rem/1 var(--font-display); }
+.end-card > p:not(.end-word) { margin: 0; color: var(--ink-soft); }
+.ideas { display: grid; gap: 8px; }
+.ideas-title { margin: 0; font: 800 1.1rem/1.2 var(--font-display); }
+.idea-list { display: grid; gap: 8px; }
+.idea { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; border-radius: 16px; border: 2px solid var(--line); background: var(--sheet); color: var(--ink); font: 700 1rem/1.3 var(--font-body); cursor: pointer; }
+.idea svg { width: 20px; height: 20px; flex: none; color: var(--gold); }
+.idea:hover { border-color: var(--edge); }
+
+/* Library and figure card */
+.lib-head { display: grid; gap: 4px; }
+.lib-sum { margin: 0; color: var(--ink-soft); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.fig-card { display: grid; gap: 6px; align-content: start; text-align: left; background: var(--sheet); border: 2px solid var(--edge); border-radius: 20px; padding: 10px; box-shadow: var(--shadow-sm); cursor: pointer; color: var(--ink); font: inherit; min-width: 0; transition: transform .15s ease; }
+.fig-card:hover { transform: translateY(-2px) rotate(-.4deg); }
+.fig-card.new { border-style: dashed; border-color: var(--line); box-shadow: none; background: transparent; place-content: center; justify-items: center; text-align: center; min-height: 190px; color: var(--ink-soft); }
+.fig-card.new svg { width: 34px; height: 34px; color: var(--accent); }
+.thumb { aspect-ratio: 1; max-width: 100%; display: grid; place-items: center; border-radius: 14px; padding: 8px; background-color: var(--paper-2); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 12px 12px; }
+.thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.fig-card-name { font: 800 1.1rem/1.2 var(--font-display); overflow-wrap: anywhere; }
+.fig-card-meta { font-size: .85rem; color: var(--ink-soft); }
+.figcard { display: grid; gap: 8px; padding: 18px; border-radius: 22px; border: 2px solid var(--edge); background: linear-gradient(160deg, var(--sheet), var(--paper-2)); box-shadow: var(--shadow-lg); }
+.figcard-name { font: 900 1.9rem/1.05 var(--font-display); overflow-wrap: anywhere; }
+.figcard-meta { margin: 0; color: var(--ink-soft); }
+.traits { margin: 6px 0 0; display: grid; gap: 8px; }
+.traits div { display: grid; grid-template-columns: 7.5em 1fr; gap: 10px; padding-top: 8px; border-top: 1.5px dashed var(--line); }
+.traits dt { font: 700 .82rem/1.4 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.traits dd { margin: 0; font-weight: 700; min-width: 0; }
+.story-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.story-item { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left; padding: 14px 16px; border-radius: 16px; border: 2px solid var(--line); background: var(--sheet); color: var(--ink); font: 700 1.05rem/1.3 var(--font-body); cursor: pointer; }
+.story-item span:last-child { font-weight: 400; font-size: .86rem; color: var(--ink-soft); white-space: nowrap; }
+.row-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+/* Settings sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 60; display: grid; align-items: end; }
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(8, 11, 30, .45); }
+.sheet { position: relative; width: 100%; max-width: 600px; margin-inline: auto; box-sizing: border-box; max-height: 88vh; overflow-y: auto; display: grid; gap: 18px; padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px)); border-radius: 26px 26px 0 0; background: var(--sheet); color: var(--ink); border: 2px solid var(--edge); border-bottom: 0; animation: sheet-in .35s cubic-bezier(.2, .8, .2, 1); }
+@keyframes sheet-in { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.switch-row { grid-template-columns: 1fr auto; align-items: center; font-weight: 700; }
+.switch { width: 58px; height: 34px; border-radius: 999px; border: 2px solid var(--edge); background: var(--paper-2); position: relative; cursor: pointer; padding: 0; }
+.switch span { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--ink-soft); transition: transform .2s ease, background-color .2s ease; }
+.switch[aria-checked="true"] { background: var(--gold); }
+.switch[aria-checked="true"] span { transform: translateX(24px); background: var(--on-gold); }
+
+/* Bedtime: a deliberately single, near-black look */
+.bedtime { position: fixed; inset: 0; z-index: 50; background: radial-gradient(80% 60% at 50% 35%, #0B1028, #03050D); color: #C8CEE8; display: grid; place-items: center; text-align: center; padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.bedtime-inner { display: grid; gap: 14px; justify-items: center; max-width: 30ch; }
+.bed-moon { width: 84px; height: 84px; animation: moon 6s ease-in-out infinite; }
+@keyframes moon { 0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 241, 184, .25)); } 50% { filter: drop-shadow(0 0 18px rgba(255, 241, 184, .5)); } }
+.bed-title { margin: 0; font: 800 1.4rem/1.2 var(--font-display); color: #E8E4D2; }
+.bed-sub { margin: 0; font-size: .95rem; color: #8D95B8; }
+.bed-dots { display: flex; gap: 6px; }
+.bed-dots i { width: 7px; height: 7px; border-radius: 50%; background: #262C4D; }
+.bed-dots i.on { background: #8D95B8; }
+.bed-actions { display: flex; gap: 12px; margin-top: 8px; }
+.bed-btn { font: 700 1rem var(--font-body); color: #C8CEE8; background: transparent; border: 2px solid #2A3157; border-radius: 999px; padding: 10px 18px; cursor: pointer; }
+
+.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70; max-width: calc(100% - 32px); padding: 11px 16px; border-radius: 14px; background: var(--ink); color: var(--paper); font-weight: 700; box-shadow: 0 8px 22px rgba(0, 0, 0, .28); }
+
+/* Hero headline: three short lines, the last word underlined like a crayon stroke */
+.hero-title span { display: block; }
+.squiggle { font-style: normal; position: relative; white-space: nowrap; }
+.squiggle::after { content: ""; position: absolute; left: -3%; right: -3%; bottom: -.16em; height: .34em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6 Q6 1 11 6 T21 6 T31 6 T39 6' fill='none' stroke='%23F6BE3B' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E") left center / 1.15em 100% repeat-x; animation: draw 1.1s .5s cubic-bezier(.6, 0, .2, 1) both; }
+@keyframes draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+.intro { display: grid; gap: 18px; }
+.scene-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.file-host { position: relative; overflow: hidden; }
+.file-overlay { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; margin: 0; padding: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.file-host:has(.file-overlay:focus-visible) { outline: 3px solid var(--accent); outline-offset: 3px; }
+.lib-ico { width: 20px; height: 20px; flex: none; }
+@media (max-width: 440px) { .lib-text { display: none; } .bar-btn { padding: 9px 11px; } }
+.fig-card, .thumb { box-sizing: border-box; }
+.thumb { display: block; position: relative; width: 100%; aspect-ratio: auto; height: 136px; }
+.shelf .thumb { height: 116px; }
+.thumb img { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); max-width: none; max-height: none; object-fit: contain; }
+.stage.is-cover .fig { width: 38%; height: 50%; }
+/* Home for families who already have figures */
+.home-greet { display: grid; gap: 4px; }
+.greet-title { font: 900 clamp(1.75rem, 1.2rem + 2.6vw, 2.35rem)/1.05 var(--font-display); letter-spacing: -.015em; text-wrap: balance; }
+.home-main { display: grid; gap: 18px; }
+.shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.shelf { display: flex; gap: 14px; overflow-x: auto; padding: 14px 4px 16px; margin-inline: -4px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.shelf::-webkit-scrollbar { display: none; }
+.shelf .fig-card { flex: 0 0 136px; scroll-snap-align: start; }
+.shelf .fig-card.new { min-height: 0; }
+
+/* Washi tape and a slight tilt: drawings taped to the fridge */
+.fig-card { position: relative; }
+.fig-card:not(.new)::before { content: ""; position: absolute; z-index: 1; top: -9px; left: 50%; width: 58px; height: 18px; transform: translateX(-50%) rotate(-4deg); border-radius: 2px; background: rgba(246, 190, 59, .62); box-shadow: 0 1px 2px rgba(0, 0, 0, .1); }
+.fig-card:nth-child(3n+1):not(.new)::before { background: rgba(255, 143, 177, .6); transform: translateX(-50%) rotate(3deg); }
+.fig-card:nth-child(3n+2):not(.new)::before { background: rgba(120, 180, 240, .6); }
+.grid > .fig-card:nth-child(odd):not(.new), .shelf > .fig-card:nth-child(odd):not(.new) { transform: rotate(-1deg); }
+.grid > .fig-card:nth-child(even):not(.new), .shelf > .fig-card:nth-child(even):not(.new) { transform: rotate(.9deg); }
+.grid > .fig-card:hover, .shelf > .fig-card:hover { transform: translateY(-3px) rotate(0); }
+
+/* Player: the cover is the book itself */
+.stage-wrap { position: relative; }
+.cover-label { position: absolute; z-index: 8; left: 12px; right: 12px; top: 12px; display: grid; gap: 6px; justify-items: start; pointer-events: none; }
+.cover-label > * { max-width: 100%; }
+.cover-label .eyebrow { padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .88); color: #1B2262; }
+.cover-label .cover-title { padding: 6px 12px 8px; border-radius: 14px; background: rgba(255, 255, 255, .94); color: #141A3A; border: 2px solid #141A3A; box-shadow: 0 3px 0 #141A3A; transform: rotate(-1.2deg); font: 900 clamp(1.1rem, .85rem + 2vw, 1.6rem)/1.08 var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
+
+/* Transport: a lantern-gold play button between the page arrows */
+.transport { display: flex; align-items: center; justify-content: center; gap: 26px; }
+.play-btn { width: 72px; height: 72px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--edge); background: radial-gradient(circle at 35% 30%, #FFE29A, var(--gold) 60%); color: #1B1A2B; box-shadow: var(--shadow-sm), inset 0 -4px 0 rgba(0, 0, 0, .08); cursor: pointer; transition: transform .12s ease; }
+.play-btn:active { transform: scale(.95); }
+.play-btn svg { width: 30px; height: 30px; }
+.play-btn .i-pause { display: none; }
+.play-btn.on .i-play { display: none; }
+.play-btn.on .i-pause { display: block; }
+.play-btn.on { animation: playing 1.6s ease-in-out infinite; }
+@keyframes playing { 0%, 100% { box-shadow: var(--shadow-sm), 0 0 0 0 rgba(246, 190, 59, .45); } 50% { box-shadow: var(--shadow-sm), 0 0 0 12px rgba(246, 190, 59, 0); } }
+.sub-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sub-actions .link-btn { display: inline-flex; align-items: center; gap: 6px; }
+.sub-actions .link-btn svg { width: 18px; height: 18px; }
+.page-no { font-size: .86rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+/* Storybook drop cap on the first page */
+.page-text.first::first-letter { float: left; margin: .08em .1em 0 0; font: 900 3.3em/.8 var(--font-display); color: var(--gold); -webkit-text-stroke: 2px var(--edge); }
+
+/* Story options folded into one summary line */
+.opts { display: grid; gap: 14px; }
+.summary-btn { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; width: 100%; text-align: left; padding: 14px 16px; border-radius: 16px; border: 2px solid var(--line); background: var(--sheet); color: var(--ink); cursor: pointer; font: inherit; }
+.summary-btn:hover { border-color: var(--edge); }
+.summary-label { grid-column: 1; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; }
+.summary-value { grid-column: 1; font-weight: 700; font-size: 1.05rem; }
+.summary-edit { grid-column: 2; grid-row: 1 / span 2; font: 800 .95rem var(--font-display); color: var(--accent); }
+.opts-panel { display: grid; gap: 18px; padding: 4px 2px 6px; }
+
+/* Collector card: a slow glint, like a foil trading card */
+.figcard { position: relative; overflow: hidden; }
+.figcard::after { content: ""; position: absolute; inset: -50%; pointer-events: none; background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, .38) 50%, transparent 58%); transform: translateX(-60%); animation: sheen 7s ease-in-out infinite; }
+@keyframes sheen { 0%, 72% { transform: translateX(-60%); } 100% { transform: translateX(60%); } }
+.figcard > * { position: relative; z-index: 1; }
+
+/* A quiet night sky behind bedtime mode */
+.bedtime::before { content: ""; position: absolute; top: 0; left: 0; width: 2px; height: 2px; border-radius: 50%; background: transparent; box-shadow: 8vw 12vh #5D679C, 22vw 30vh #3E4780, 35vw 8vh #6E78AE, 52vw 22vh #4A548D, 70vw 10vh #5D679C, 86vw 28vh #3E4780, 14vw 62vh #3E4780, 30vw 80vh #4A548D, 62vw 70vh #5D679C, 80vw 86vh #3E4780, 92vw 58vh #6E78AE, 46vw 92vh #4A548D; animation: twinkle 4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .squiggle::after, .figcard::after, .play-btn.on, .bedtime::before { animation: none !important; }
+  .stage *, .stage *::before, .stage *::after, .wm-star, .screen.in, .reader.turn .page-text, .sheet, .bed-moon { animation: none !important; }
+  .scene { transition: none; }
+  .btn, .icon-btn, .fig-card { transition: none; }
+}
+</style>
+</head>
+<body>
+<header class="bar" lang="sv">
+  <div class="bar-inner">
+    <button class="wordmark" id="homeBtn" type="button" aria-label="Levande sagor, till start">
+      <svg class="wm-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.6 6.2 20l1.5-6.5-5-4.4 6.6-.6z" fill="#F6BE3B" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span>Levande <em>sagor</em></span>
+    </button>
+    <div class="bar-actions">
+      <button class="round-btn" id="settingsBtn" type="button" aria-label="Inställningar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></svg>
+      </button>
+      <button class="bar-btn" id="libraryBtn" type="button" aria-label="Våra figurer"><svg class="lib-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="9" rx="1.5"/><path d="M3.5 17h7M13.5 17h7M3.5 20.5h4.5M13.5 20.5h4.5"/></svg><span class="lib-text">Våra figurer</span><span class="count" id="libCount" hidden>0</span></button>
+    </div>
+  </div>
+</header>
+
+<main class="app" lang="sv">
+  <input type="file" id="photo" accept="image/*" class="visually-hidden" aria-label="Fota en teckning">
+
+  <section class="screen" id="scr-start" aria-label="Start">
+    <div class="home-greet" id="homeGreet" hidden>
+      <p class="eyebrow" id="greetEyebrow">Hej igen</p>
+      <h1 class="greet-title" id="greetTitle">Vilket äventyr blir det i dag?</h1>
+    </div>
+    <div class="stage" id="heroStage"></div>
+    <p class="caption" id="heroCaption">Exempelfigur: Pluttan, ritad med kritor. Tryck på henne!</p>
+    <div class="home-main" id="homeMain" hidden>
+      <div class="actions">
+        <button class="btn btn-primary" id="homeNew" type="button">Ny saga</button>
+        <button class="btn" id="homeRead" type="button">Läs senaste sagan</button>
+      </div>
+      <div class="shelf-head"><h2 class="list-title">Era figurer</h2><button class="link-btn" id="shelfAll" type="button">Visa alla</button></div>
+      <div class="shelf" id="shelf"></div>
+    </div>
+    <div class="intro" id="intro">
+    <h1 class="hero-title" id="heroTitle"><span>Rita en figur.</span> <span>Fota den.</span> <span>Se den <em class="squiggle">vakna</em>.</span></h1>
+    <p class="lede">Barnets egen teckning klipps ut, börjar röra sig och får en saga skriven just om sig. Sagan läses upp på svenska, och figuren gör det som händer i den.</p>
+    <div class="actions">
+      <label class="btn btn-primary" for="photo" id="photoLabel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+        Fota en teckning
+      </label>
+      <button class="btn" id="demoBtn" type="button">Prova exempelsagan</button>
+    </div>
+    <ol class="steps">
+      <li><span class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/></svg></span><span><strong>Rita</strong>Barnet ritar en figur på papper.</span></li>
+      <li><span class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg></span><span><strong>Fota</strong>Figuren klipps ut och vaknar.</span></li>
+      <li><span class="step-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5C6 5 9 5 12 7c3-2 6-2 9-.5V19c-3-1.5-6-1.5-9 .5-3-2-6-2-9-.5z"/><path d="M12 7v12.5"/></svg></span><span><strong>Lyssna</strong>En saga om just den figuren läses upp.</span></li>
+    </ol>
+    </div>
+    <p class="privacy">Figurerna och sagorna sparas bara i den här webbläsaren. Bilden på teckningen skickas till Claude så att sagan kan skrivas. Barnets namn skickas aldrig, utan läggs in i sagan här på telefonen.</p>
+  </section>
+
+  <section class="screen" id="scr-prepare" hidden aria-labelledby="prepTitle">
+    <div class="stage" id="prepStage"></div>
+    <button class="link-btn" id="wholeToggle" type="button">Blev utklippet fel? Använd hela bilden</button>
+    <p class="notice" id="cutNote" hidden></p>
+    <form class="form" id="prepForm" novalidate>
+      <h2 class="section-title" id="prepTitle">Figuren har vaknat! Berätta om den.</h2>
+      <div class="field">
+        <label for="figName">Vad heter figuren?</label>
+        <input id="figName" type="text" autocomplete="off" maxlength="40" placeholder="Lämna tomt så hittar sagan på ett namn">
+      </div>
+      <div class="field">
+        <label for="childName">Vem har ritat?</label>
+        <input id="childName" type="text" autocomplete="off" maxlength="40" placeholder="Barnets namn">
+        <p class="hint">Namnet stannar i telefonen och skickas aldrig till Claude.</p>
+      </div>
+      <div class="field" id="descField" hidden>
+        <label for="figDesc">Hur ser figuren ut?</label>
+        <textarea id="figDesc" rows="2" maxlength="300" placeholder="Till exempel: en lila boll med tre orange tofsar och stora ögon"></textarea>
+      </div>
+      <div class="field">
+        <label for="wish">Vad ska sagan handla om?</label>
+        <textarea id="wish" rows="2" maxlength="300" placeholder="Valfritt. Till exempel: den vill lära sig simma"></textarea>
+      </div>
+      <div class="opts">
+        <button type="button" class="summary-btn" id="optsToggle" aria-expanded="false" aria-controls="optsPanel">
+          <span class="summary-label">Sagan blir</span>
+          <span class="summary-value" id="optsSummary"></span>
+          <span class="summary-edit">Ändra</span>
+        </button>
+        <div class="opts-panel" id="optsPanel" hidden>
+      <fieldset class="field">
+        <legend>Hur gammalt är barnet?</legend>
+        <div class="chips" data-group="age">
+          <button type="button" class="chip" data-value="2–4">2–4 år</button>
+          <button type="button" class="chip" data-value="5–7">5–7 år</button>
+          <button type="button" class="chip" data-value="8–12">8–12 år</button>
+        </div>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Vilken sorts saga?</legend>
+        <div class="chips" data-group="kind">
+          <button type="button" class="chip" data-value="lugn">Lugn godnattsaga</button>
+          <button type="button" class="chip" data-value="äventyr">Äventyr</button>
+          <button type="button" class="chip" data-value="rolig">Något tokroligt</button>
+        </div>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Hur lång?</legend>
+        <div class="chips" data-group="length">
+          <button type="button" class="chip" data-value="kort">Kort, 2 min</button>
+          <button type="button" class="chip" data-value="mellan">Mellan, 4 min</button>
+          <button type="button" class="chip" data-value="lång">Lång, 7 min</button>
+        </div>
+      </fieldset>
+        </div>
+      </div>
+      <p class="notice warn" id="prepNotice" hidden role="alert"></p>
+      <button class="btn btn-primary btn-wide" id="wakeBtn" type="submit">Skriv sagan</button>
+    </form>
+  </section>
+
+  <section class="screen" id="scr-writing" hidden aria-labelledby="writeTitle">
+    <div class="stage" id="writeStage"></div>
+    <div class="status" aria-live="polite">
+      <h2 class="status-title" id="writeTitle">Claude tittar på teckningen …</h2>
+      <p class="status-sub" id="writeSub">Det brukar ta mellan tio sekunder och en minut.</p>
+    </div>
+    <div class="meter wait" id="meter" aria-hidden="true"><i></i></div>
+    <button class="btn" id="cancelBtn" type="button">Avbryt</button>
+  </section>
+
+  <section class="screen" id="scr-player" hidden aria-label="Sagan">
+    <p class="story-title" id="storyTitle"></p>
+    <div class="stage-wrap">
+      <div class="stage" id="playStage"></div>
+      <div class="cover-label" id="coverLabel" hidden>
+        <p class="eyebrow" id="coverEyebrow"></p>
+        <h2 class="cover-title" id="coverTitle"></h2>
+      </div>
+    </div>
+    <p class="caption" id="artStatus" hidden aria-live="polite"></p>
+    <div class="cover" id="cover" hidden>
+      <p class="cover-by" id="coverBy"></p>
+      <div class="actions">
+        <button class="btn btn-primary" id="startBtn" type="button">Börja läsa</button>
+        <button class="btn" id="listenBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>
+          Lyssna på sagan
+        </button>
+      </div>
+      <button class="link-btn" id="coverBedBtn" type="button">Godnattläge med mörk skärm</button>
+    </div>
+    <div class="reader" id="reader" hidden><p class="page-text" id="pageText" aria-live="polite"></p></div>
+    <div class="end-card" id="endCard" hidden>
+      <p class="end-word">Slut.</p>
+      <p id="endLine"></p>
+      <div class="ideas" id="ideasWrap" hidden>
+        <p class="ideas-title">Vad händer sen?</p>
+        <div class="idea-list" id="ideaList"></div>
+      </div>
+      <div class="actions stack">
+        <button class="btn btn-primary" id="againBtn" type="button">Egen idé till nästa saga</button>
+        <button class="btn" id="saveBtn" type="button" hidden>Spara sagan som fil</button>
+        <button class="btn" id="toFigBtn" type="button">Till figurkortet</button>
+      </div>
+    </div>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div class="transport" id="transport">
+      <button class="icon-btn" id="prevBtn" type="button" aria-label="Föregående sida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="play-btn" id="readBtn" type="button" aria-label="Läs upp">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13l10.5-6.5z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="nextBtn" type="button" aria-label="Nästa sida"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="sub-actions" id="subActions">
+      <button class="link-btn" id="bedBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Godnattläge</button>
+      <span class="page-no" id="pageNo"></span>
+    </div>
+    <p class="notice" id="speechNotice" hidden></p>
+  </section>
+
+  <section class="screen" id="scr-library" hidden aria-labelledby="libTitle">
+    <div class="lib-head">
+      <h2 class="section-title" id="libTitle">Våra figurer</h2>
+      <p class="lib-sum" id="libSum"></p>
+    </div>
+    <div class="grid" id="libGrid"></div>
+  </section>
+
+  <section class="screen" id="scr-figure" hidden aria-labelledby="figTitle">
+    <div class="stage" id="figStage"></div>
+    <article class="figcard">
+      <p class="eyebrow" id="figNo">Figurkort</p>
+      <h2 class="figcard-name" id="figTitle"></h2>
+      <p class="figcard-meta" id="figMeta"></p>
+      <dl class="traits" id="figTraits"></dl>
+    </article>
+    <div class="ideas" id="figIdeasWrap" hidden>
+      <p class="ideas-title">Idéer till nästa saga</p>
+      <div class="idea-list" id="figIdeas"></div>
+    </div>
+    <button class="btn btn-primary" id="figNewBtn" type="button">Ny saga</button>
+    <h3 class="list-title">Sagor</h3>
+    <ul class="story-list" id="figStories"></ul>
+    <div class="row-links">
+      <button class="link-btn" id="figSaveAll" type="button" hidden>Spara alla sagor som en bok</button>
+      <button class="danger-btn" id="figDelete" type="button">Ta bort figuren</button>
+    </div>
+  </section>
+
+</main>
+
+<div class="bedtime" id="bedtime" hidden role="dialog" aria-modal="true" aria-labelledby="bedTitle">
+  <div class="bedtime-inner">
+    <svg class="bed-moon" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="30" fill="#FFF1B8"/><circle cx="63" cy="41" r="26" fill="#070A1C"/></svg>
+    <p class="bed-title" id="bedTitle">Sagan läses upp</p>
+    <p class="bed-sub" id="bedSub">Skärmen är mörk så att det blir lättare att somna.</p>
+    <div class="bed-dots" id="bedDots" aria-hidden="true"></div>
+    <div class="bed-actions">
+      <button class="bed-btn" id="bedPause" type="button">Pausa</button>
+      <button class="bed-btn" id="bedExit" type="button">Avsluta</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-wrap" id="sheet" hidden>
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" lang="sv">
+    <div class="sheet-head">
+      <h2 class="section-title" id="sheetTitle">Inställningar</h2>
+      <button class="round-btn" id="sheetClose" type="button" aria-label="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <fieldset class="field">
+      <legend>Textstorlek i sagan</legend>
+      <div class="chips" data-setting="size">
+        <button type="button" class="chip" data-value="normal">Normal</button>
+        <button type="button" class="chip" data-value="stor">Stor</button>
+        <button type="button" class="chip" data-value="störst">Störst</button>
+      </div>
+    </fieldset>
+    <fieldset class="field">
+      <legend>Uppläsningens tempo</legend>
+      <div class="chips" data-setting="rate">
+        <button type="button" class="chip" data-value="lugn">Lugnt</button>
+        <button type="button" class="chip" data-value="normal">Normalt</button>
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="voiceSelect">Röst</label>
+      <select id="voiceSelect"></select>
+      <p class="hint" id="voiceHint"></p>
+      <button class="btn small" id="voiceTest" type="button">Provlyssna</button>
+    </div>
+    <div class="field switch-row">
+      <span id="soundLabel">Ljudeffekter</span>
+      <button class="switch" id="soundToggle" type="button" role="switch" aria-checked="true" aria-labelledby="soundLabel"><span></span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="/claude-shim.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const reducedMotion = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+  const newId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+  let writeCtl = null;
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ---------- Platform capabilities (Claude writes the story; files can be saved) ---------- */
+  const capReady = (async () => {
+    const caps = { sample: null, images: null, downloads: null };
+    const c = window.claude;
+    if (!c || typeof c.use !== 'function') return caps;
+    const use = (n) => Promise.resolve(c.use(n)).catch(() => null);
+    const [s, d] = await Promise.all([use('sample'), use('downloads')]);
+    caps.sample = s || null;
+    caps.downloads = d || null;
+    if (caps.sample) {
+      try { const lim = await caps.sample.limits(); caps.images = lim && lim.images ? lim.images : null; } catch (e) { caps.images = null; }
+    }
+    return caps;
+  })();
+
+  /* ---------- Small persistence helpers ---------- */
+  const remember = {
+    get(k) { try { return localStorage.getItem('levande:' + k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem('levande:' + k, v); } catch (e) { /* storage unavailable */ } }
+  };
+  const store = (() => {
+    const mem = new Map();
+    let dbp = null;
+    function open() {
+      if (dbp) return dbp;
+      dbp = new Promise((resolve) => {
+        try {
+          const req = indexedDB.open('levande-sagor', 1);
+          req.onupgradeneeded = () => { try { req.result.createObjectStore('figurer', { keyPath: 'id' }); } catch (e) { /* exists */ } };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+          req.onblocked = () => resolve(null);
+        } catch (e) { resolve(null); }
+      });
+      return dbp;
+    }
+    async function all() {
+      const db = await open();
+      if (!db) return Array.from(mem.values());
+      return new Promise((resolve) => {
+        try {
+          const r = db.transaction('figurer').objectStore('figurer').getAll();
+          r.onsuccess = () => { const list = r.result || []; list.forEach((f) => mem.set(f.id, f)); resolve(list); };
+          r.onerror = () => resolve(Array.from(mem.values()));
+        } catch (e) { resolve(Array.from(mem.values())); }
+      });
+    }
+    async function put(fig) {
+      mem.set(fig.id, fig);
+      const db = await open();
+      if (!db) return;
+      await new Promise((resolve) => {
+        try {
+          const tx = db.transaction('figurer', 'readwrite');
+          tx.objectStore('figurer').put(fig);
+          tx.oncomplete = () => resolve(); tx.onerror = () => resolve(); tx.onabort = () => resolve();
+        } catch (e) { resolve(); }
+      });
+    }
+    async function del(id) {
+      mem.delete(id);
+      const db = await open();
+      if (!db) return;
+      await new Promise((resolve) => {
+        try {
+          const tx = db.transaction('figurer', 'readwrite');
+          tx.objectStore('figurer').delete(id);
+          tx.oncomplete = () => resolve(); tx.onerror = () => resolve(); tx.onabort = () => resolve();
+        } catch (e) { resolve(); }
+      });
+    }
+    return { all, put, del };
+  })();
+
+  /* ---------- Scenes ---------- */
+  const SCENES = ['äng', 'skog', 'hav', 'natt', 'stad', 'rymd', 'hem', 'berg', 'regn', 'snö'];
+  const MOTIONS = ['vinka', 'hoppa', 'gå', 'snurra', 'sova', 'dansa', 'flyga', 'gunga'];
+  const GROUND = { 'äng': 8, 'skog': 7, 'hav': 5, 'natt': 8, 'stad': 5, 'rymd': 7, 'hem': 6, 'berg': 7, 'regn': 6, 'snö': 7, 'papper': 9 };
+
+  const svg = (inner) => '<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">' + inner + '</svg>';
+  const skyG = (u, a, b) => '<defs><linearGradient id="' + u + '-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><rect width="400" height="300" fill="url(#' + u + '-sky)"/>';
+  const sun = (x, y) => '<circle cx="' + x + '" cy="' + y + '" r="44" fill="#FFE68A" opacity=".45"/><circle cx="' + x + '" cy="' + y + '" r="25" fill="#FFD447"/>';
+  const cloud = (x, y, s, fill, dur) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><g class="drift" style="animation-duration:' + dur + 's"><ellipse cx="0" cy="0" rx="30" ry="11" fill="' + fill + '"/><ellipse cx="-13" cy="-7" rx="14" ry="11" fill="' + fill + '"/><ellipse cx="9" cy="-11" rx="17" ry="13" fill="' + fill + '"/></g></g>';
+  const pine = (x, y, s, c, snow) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><rect x="-3" y="0" width="6" height="12" fill="#5B3B27"/><polygon points="0,-58 -20,-18 20,-18" fill="' + c + '"/><polygon points="0,-40 -25,2 25,2" fill="' + c + '"/>' + (snow ? '<polygon points="0,-58 -9,-40 0,-44 9,-40" fill="#FFFFFF"/><polygon points="-25,2 -14,-8 0,-4 14,-8 25,2" fill="#FFFFFF" opacity=".9"/>' : '') + '</g>';
+  const flower = (x, y, c) => '<circle cx="' + x + '" cy="' + y + '" r="4.4" fill="' + c + '"/><circle cx="' + x + '" cy="' + y + '" r="1.8" fill="#FFC93C"/>';
+  const mushroom = (x, y, s) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><rect x="-4" y="-12" width="8" height="14" rx="3" fill="#F7F2E7"/><path d="M-15 -10 Q0 -32 15 -10 Z" fill="#D7322B"/><circle cx="-6" cy="-15" r="2" fill="#FFFFFF"/><circle cx="4" cy="-20" r="2.2" fill="#FFFFFF"/><circle cx="9" cy="-13" r="1.6" fill="#FFFFFF"/></g>';
+  const stars = (n, seed, h) => {
+    const r = mulberry32(seed); let s = '';
+    for (let i = 0; i < n; i++) {
+      s += '<circle class="twinkle" style="animation-delay:-' + (r() * 3).toFixed(2) + 's" cx="' + (r() * 400).toFixed(1) + '" cy="' + (r() * h).toFixed(1) + '" r="' + (0.7 + r() * 1.5).toFixed(1) + '" fill="#FFF7D6"/>';
+    }
+    return s;
+  };
+  const wavePath = (y, amp, seg, fill, cls) => {
+    let d = 'M-60 ' + y;
+    for (let x = -60; x < 470; x += seg) d += ' q' + seg / 4 + ' ' + (-amp) + ' ' + seg / 2 + ' 0 t' + seg / 2 + ' 0';
+    return '<path class="' + cls + '" d="' + d + ' V300 H-60Z" fill="' + fill + '"/>';
+  };
+  const cottage = (x, y) => '<g transform="translate(' + x + ' ' + y + ')"><circle cx="-5" cy="-20" r="18" fill="#FFD86B" opacity=".18" class="glow"/><rect x="-26" y="-34" width="52" height="34" fill="#A8322D"/><polygon points="-32,-34 0,-58 32,-34" fill="#2E2A2E"/><rect x="-26" y="-34" width="4" height="34" fill="#F4F1EA"/><rect x="22" y="-34" width="4" height="34" fill="#F4F1EA"/><rect x="-14" y="-26" width="14" height="12" fill="#FFD86B" class="glow"/><rect x="7" y="-20" width="10" height="20" fill="#5B2A22"/></g>';
+  const houses = () => {
+    const hs = [
+      { x: 6, w: 70, h: 92, c: '#E7B24B', r: '#5A3A2E' },
+      { x: 82, w: 58, h: 122, c: '#A8322D', r: '#2E2A2E' },
+      { x: 146, w: 78, h: 84, c: '#8DB3D9', r: '#3B4A6B' },
+      { x: 230, w: 64, h: 112, c: '#F2EADB', r: '#5A3A2E' },
+      { x: 300, w: 94, h: 96, c: '#7FB07A', r: '#2E2A2E' }
+    ];
+    const base = 254;
+    return hs.map((h) => {
+      const top = base - h.h; let win = '';
+      for (let yy = top + 16; yy < base - 28; yy += 26) {
+        for (let xx = h.x + 10; xx < h.x + h.w - 14; xx += 20) win += '<rect x="' + xx + '" y="' + yy + '" width="10" height="13" rx="1.5" fill="#FFF3CF"/>';
+      }
+      return '<polygon points="' + (h.x - 4) + ',' + top + ' ' + (h.x + h.w / 2) + ',' + (top - 26) + ' ' + (h.x + h.w + 4) + ',' + top + '" fill="' + h.r + '"/><rect x="' + h.x + '" y="' + top + '" width="' + h.w + '" height="' + h.h + '" fill="' + h.c + '"/>' + win;
+    }).join('');
+  };
+
+  const SCENE_SVG = {
+    'papper': () => {
+      let g = '';
+      for (let x = 8; x <= 400; x += 16) g += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="300"/>';
+      for (let y = 6; y <= 300; y += 16) g += '<line x1="0" y1="' + y + '" x2="400" y2="' + y + '"/>';
+      return svg('<rect width="400" height="300" fill="#FCFDFF"/><g stroke="#D6E2F1" stroke-width="1">' + g + '</g>');
+    },
+    'äng': (u) => svg(skyG(u, '#8CCFF2', '#E2F4FC') + sun(330, 62) + cloud(86, 64, 1.1, '#FFFFFF', 30) + cloud(214, 40, 0.8, '#FFFFFF', 38)
+      + '<path d="M0 205 Q100 160 210 198 T400 186 V300 H0Z" fill="#A6D883"/>'
+      + '<path d="M0 238 Q130 204 250 232 T400 226 V300 H0Z" fill="#6DB55A"/>'
+      + [[30, 262, '#FFFFFF'], [70, 284, '#FF8FB1'], [112, 258, '#FFFFFF'], [146, 290, '#FFD447'], [262, 272, '#FF8FB1'], [300, 256, '#FFFFFF'], [342, 286, '#FFFFFF'], [374, 262, '#FF8FB1'], [24, 292, '#FFD447']].map((f) => flower(f[0], f[1], f[2])).join('')),
+    'skog': (u) => svg(skyG(u, '#BFE6D2', '#EEF8F1') + cloud(300, 46, 0.8, '#FFFFFF', 34)
+      + pine(40, 190, 1.3, '#4C8B66') + pine(110, 176, 1.1, '#4C8B66') + pine(205, 168, 0.9, '#5E9C74') + pine(298, 186, 1.25, '#4C8B66') + pine(370, 172, 1.05, '#4C8B66')
+      + '<path d="M0 220 Q200 196 400 222 V300 H0Z" fill="#7FB069"/>'
+      + pine(18, 266, 1.55, '#2F6B4A') + pine(384, 262, 1.65, '#2F6B4A')
+      + mushroom(92, 268, 1) + mushroom(320, 276, 0.8)
+      + '<path d="M0 274 Q200 256 400 276 V300 H0Z" fill="#5E9452"/>'),
+    'hav': (u) => svg(skyG(u, '#86CDEF', '#E2F5FC') + sun(70, 58) + cloud(250, 50, 0.9, '#FFFFFF', 32)
+      + '<rect y="150" width="400" height="150" fill="#2D87C3"/>'
+      + wavePath(160, 6, 40, '#3B97D1', 'wave') + wavePath(196, 6, 48, '#2F7FB8', 'wave2')
+      + '<g transform="translate(310 168)"><g class="bob"><path d="M-24 0 H24 L16 12 H-16Z" fill="#A8322D"/><rect x="-1.5" y="-34" width="3" height="34" fill="#5B3B27"/><path d="M1.5 -32 L22 -4 H1.5Z" fill="#FFFFFF"/></g></g>'
+      + '<path d="M0 256 Q200 236 400 258 V300 H0Z" fill="#F1D9A2"/>'
+      + '<path d="M60 280 l6 -8 l6 8 z" fill="#F7A9A0"/><circle cx="330" cy="282" r="4" fill="#FFFFFF"/>'),
+    'natt': (u) => svg(skyG(u, '#0C1A3D', '#2A3C70') + stars(42, 7, 175)
+      + '<circle cx="318" cy="70" r="42" fill="#FFF1B8" opacity=".14"/><circle cx="318" cy="70" r="24" fill="#FFF1B8"/>'
+      + '<path d="M0 222 Q120 186 230 214 T400 204 V300 H0Z" fill="#1C2E57"/>'
+      + cottage(92, 214)
+      + '<path d="M0 258 Q160 234 400 260 V300 H0Z" fill="#13213F"/>'),
+    'stad': (u) => svg(skyG(u, '#FFD2A6', '#FFF0DE') + '<circle cx="64" cy="70" r="24" fill="#FFB04A"/>' + cloud(266, 46, 0.9, '#FFF8F0', 34)
+      + houses() + '<rect y="250" width="400" height="6" fill="#958E86"/><rect y="256" width="400" height="44" fill="#B8B2AA"/>'
+      + '<rect x="40" y="276" width="34" height="5" rx="2" fill="#F2EEE8"/><rect x="180" y="276" width="34" height="5" rx="2" fill="#F2EEE8"/><rect x="320" y="276" width="34" height="5" rx="2" fill="#F2EEE8"/>'),
+    'rymd': (u) => svg(skyG(u, '#090C26', '#22164A') + stars(64, 11, 230)
+      + '<g transform="translate(305 82)"><circle r="27" fill="#F2A65A"/><path d="M-27 -2 Q0 8 27 -2" stroke="#D9873C" stroke-width="5" fill="none"/><ellipse rx="48" ry="10" fill="none" stroke="#F7C873" stroke-width="4.5" transform="rotate(-16)" opacity=".9"/></g>'
+      + '<circle cx="78" cy="66" r="12" fill="#7BD3EA"/><circle cx="74" cy="62" r="3" fill="#B8EAF6"/>'
+      + '<path d="M0 244 Q200 218 400 246 V300 H0Z" fill="#9C9BB5"/>'
+      + '<ellipse cx="90" cy="270" rx="22" ry="6" fill="#86849F"/><ellipse cx="300" cy="262" rx="16" ry="4.5" fill="#86849F"/><ellipse cx="226" cy="288" rx="26" ry="6" fill="#86849F"/>'),
+    'hem': (u) => svg('<defs><pattern id="' + u + '-dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.2" fill="#C5D9EE"/><circle cx="16" cy="16" r="2.2" fill="#C5D9EE"/></pattern></defs>'
+      + '<rect width="400" height="300" fill="#DCE9F6"/><rect width="400" height="244" fill="url(#' + u + '-dots)"/>'
+      + '<rect x="262" y="36" width="104" height="92" rx="4" fill="#1C2D5A" stroke="#F7F4EC" stroke-width="7"/><line x1="314" y1="36" x2="314" y2="128" stroke="#F7F4EC" stroke-width="5"/><line x1="262" y1="82" x2="366" y2="82" stroke="#F7F4EC" stroke-width="5"/>'
+      + '<circle cx="340" cy="60" r="10" fill="#FFF1B8"/><circle class="twinkle" cx="282" cy="56" r="1.8" fill="#FFF7D6"/><circle class="twinkle" style="animation-delay:-1.4s" cx="296" cy="106" r="1.6" fill="#FFF7D6"/><circle class="twinkle" style="animation-delay:-.6s" cx="350" cy="110" r="1.6" fill="#FFF7D6"/>'
+      + '<rect y="244" width="400" height="56" fill="#C99566"/><line x1="0" y1="262" x2="400" y2="262" stroke="#B5824F" stroke-width="2"/><line x1="0" y1="282" x2="400" y2="282" stroke="#B5824F" stroke-width="2"/>'
+      + '<rect x="14" y="196" width="112" height="52" rx="8" fill="#F7F4EC"/><rect x="14" y="210" width="112" height="38" rx="6" fill="#7FA8E0"/><rect x="20" y="186" width="36" height="22" rx="8" fill="#FFFFFF"/><rect x="10" y="168" width="10" height="84" rx="4" fill="#8B5E3C"/>'
+      + '<circle cx="372" cy="200" r="36" fill="#FFE08A" opacity=".28" class="glow"/><rect x="368" y="204" width="8" height="42" fill="#6B5B4E"/><path d="M354 204 L390 204 L382 180 L362 180Z" fill="#FFC93C"/>'),
+    'berg': (u) => svg(skyG(u, '#A6D4F4', '#EAF6FF') + cloud(96, 58, 0.9, '#FFFFFF', 36)
+      + '<polygon points="-30,232 92,88 214,232" fill="#7D92B2"/><polygon points="92,88 72,114 86,110 98,122 110,110 120,116" fill="#FFFFFF"/>'
+      + '<polygon points="148,232 276,70 410,232" fill="#62779A"/><polygon points="276,70 252,100 266,96 278,108 292,96 302,102" fill="#FFFFFF"/>'
+      + '<path d="M0 232 Q200 210 400 236 V300 H0Z" fill="#8CBF79"/><path d="M0 268 Q200 250 400 270 V300 H0Z" fill="#74A963"/>'
+      + '<ellipse cx="60" cy="276" rx="14" ry="7" fill="#9AA4AE"/><ellipse cx="350" cy="284" rx="18" ry="8" fill="#8E98A3"/>'),
+    'regn': (u) => {
+      const r = mulberry32(5); let drops = '';
+      for (let i = 0; i < 46; i++) {
+        const x = r() * 420 - 10, y = r() * -30;
+        drops += '<line class="drop" style="animation-delay:-' + (r() * 0.8).toFixed(2) + 's;animation-duration:' + (0.7 + r() * 0.35).toFixed(2) + 's" x1="' + x.toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (x - 3).toFixed(1) + '" y2="' + (y + 11).toFixed(1) + '" stroke="#EEF3FA" stroke-width="1.6" stroke-linecap="round"/>';
+      }
+      return svg(skyG(u, '#8D99AE', '#C9D1DE') + cloud(90, 56, 1.4, '#A9B3C4', 40) + cloud(276, 44, 1.2, '#B5BECD', 46) + cloud(190, 72, 1, '#9EA9BC', 36)
+        + '<path d="M0 236 Q200 216 400 238 V300 H0Z" fill="#6E9161"/>' + drops
+        + '<ellipse cx="116" cy="274" rx="40" ry="7" fill="#A8BCCF"/><ellipse cx="318" cy="284" rx="30" ry="5" fill="#A8BCCF"/>');
+    },
+    'snö': (u) => {
+      const r = mulberry32(9); let flakes = '';
+      for (let i = 0; i < 40; i++) {
+        flakes += '<circle class="flake" style="animation-delay:-' + (r() * 9).toFixed(2) + 's;animation-duration:' + (7 + r() * 5).toFixed(2) + 's" cx="' + (r() * 420 - 10).toFixed(1) + '" cy="' + (r() * -20).toFixed(1) + '" r="' + (1.4 + r() * 2).toFixed(1) + '" fill="#FFFFFF"/>';
+      }
+      return svg(skyG(u, '#C9DEF1', '#F2F8FF')
+        + pine(46, 214, 1.2, '#3F7458', true) + pine(118, 204, 0.95, '#4A8263', true) + pine(300, 210, 1.15, '#3F7458', true) + pine(366, 200, 0.9, '#4A8263', true)
+        + '<path d="M0 226 Q200 204 400 230 V300 H0Z" fill="#F8FBFF"/><path d="M0 262 Q200 246 400 266 V300 H0Z" fill="#E1EDF8"/>' + flakes);
+    }
+  };
+
+  /* ---------- The example figure: a crayon drawing of Pluttan ---------- */
+  const DEMO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 340" width="600" height="680">'
+    + '<defs><filter id="k" x="-12%" y="-12%" width="124%" height="124%">'
+    + '<feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4" result="w"/>'
+    + '<feDisplacementMap in="SourceGraphic" in2="w" scale="6" xChannelSelector="R" yChannelSelector="G" result="d"/>'
+    + '<feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="9" result="g"/>'
+    + '<feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -2.2 0 0 0 2.05" result="ga"/>'
+    + '<feComposite in="d" in2="ga" operator="in"/></filter></defs>'
+    + '<g filter="url(#k)" stroke="#22264A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M122 258 L114 308" fill="none"/><path d="M182 258 L192 308" fill="none"/>'
+    + '<ellipse cx="106" cy="314" rx="21" ry="10" fill="#3FA06B"/><ellipse cx="200" cy="314" rx="21" ry="10" fill="#3FA06B"/>'
+    + '<path d="M232 166 Q262 136 268 92" fill="none"/><path d="M268 92 l-11 -13 M268 92 l2 -17 M268 92 l13 -9" fill="none"/>'
+    + '<path d="M70 182 Q46 200 42 226" fill="none"/><path d="M42 226 l-11 7 M42 226 l-3 13 M42 226 l8 10" fill="none"/>'
+    + '<path d="M150 70 C 222 70 246 132 240 186 C 234 244 196 270 150 268 C 98 266 62 238 62 182 C 62 120 90 70 150 70 Z" fill="#7B6CF0"/>'
+    + '<ellipse cx="152" cy="208" rx="46" ry="36" fill="#B9AEFF" stroke-width="4"/>'
+    + '<path d="M128 74 q-14 -30 4 -46 M150 70 q2 -34 22 -44 M172 76 q16 -26 38 -24" fill="none" stroke="#FF8A3D" stroke-width="8"/>'
+    + '<circle cx="122" cy="138" r="22" fill="#FFFFFF"/><circle cx="184" cy="132" r="28" fill="#FFFFFF"/>'
+    + '<circle cx="128" cy="142" r="8" fill="#22264A" stroke="none"/><circle cx="190" cy="138" r="10" fill="#22264A" stroke="none"/>'
+    + '<circle cx="98" cy="178" r="11" fill="#FF8FB1" stroke="none" opacity=".85"/><circle cx="214" cy="176" r="11" fill="#FF8FB1" stroke="none" opacity=".85"/>'
+    + '<path d="M128 182 Q156 204 184 180" fill="none"/>'
+    + '</g></svg>';
+  const DEMO_SRC = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(DEMO_SVG);
+
+  /* ---------- Richer scenes: birches, northern lights, a jetty, a rag rug ---------- */
+  const birch = (x, y, s) => '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><rect x="-3" y="-66" width="6" height="66" rx="2" fill="#F5F3EC"/><rect x="-3" y="-52" width="4" height="2" fill="#2B2B2B"/><rect x="-1" y="-38" width="4" height="2" fill="#2B2B2B"/><rect x="-3" y="-24" width="3" height="2" fill="#2B2B2B"/><rect x="0" y="-12" width="3" height="2" fill="#2B2B2B"/><ellipse cx="0" cy="-76" rx="19" ry="23" fill="#A9D37E"/><ellipse cx="-11" cy="-62" rx="13" ry="14" fill="#93C46A"/><ellipse cx="11" cy="-64" rx="12" ry="14" fill="#B7DC8C"/></g>';
+  const aurora = (u, a) => '<defs><linearGradient id="' + u + '-au" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8CF5C8" stop-opacity="0"/><stop offset=".55" stop-color="#4FE0A6" stop-opacity="' + a + '"/><stop offset="1" stop-color="#2AB39C" stop-opacity="0"/></linearGradient>'
+    + '<linearGradient id="' + u + '-au2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B38CF5" stop-opacity="0"/><stop offset=".6" stop-color="#8F7BF0" stop-opacity="' + (a * 0.7).toFixed(2) + '"/><stop offset="1" stop-color="#5B6BE0" stop-opacity="0"/></linearGradient></defs>'
+    + '<path class="aurora" d="M-40 92 C 40 40, 110 120, 190 70 S 330 30, 440 84 L 440 150 C 340 100, 270 160, 190 130 S 50 110, -40 160 Z" fill="url(#' + u + '-au)"/>'
+    + '<path class="aurora2" d="M-40 60 C 60 20, 150 90, 230 50 S 360 20, 440 50 L 440 100 C 360 70, 280 120, 220 96 S 60 70, -40 110 Z" fill="url(#' + u + '-au2)"/>';
+  const butterfly = (x, y, c, d) => '<g transform="translate(' + x + ' ' + y + ')"><g class="flutter" style="animation-delay:-' + d + 's"><ellipse cx="-4" cy="0" rx="4.6" ry="3.3" fill="' + c + '"/><ellipse cx="4" cy="0" rx="4.6" ry="3.3" fill="' + c + '"/><rect x="-.8" y="-3" width="1.6" height="6" rx=".8" fill="#2B2B3A"/></g></g>';
+  const gull = (y, d, s) => '<g transform="translate(0 ' + y + ') scale(' + s + ')"><path class="gull" style="animation-delay:-' + d + 's" d="M0 0 q6 -6 12 0 q6 -6 12 0" fill="none" stroke="#3A4466" stroke-width="2.2" stroke-linecap="round"/></g>';
+  const lingon = (pts) => pts.map((p) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.2" fill="#C8102E"/>').join('');
+
+  SCENE_SVG['äng'] = (u) => svg(skyG(u, '#86CBF0', '#E4F5FC') + sun(330, 60) + cloud(84, 62, 1.1, '#FFFFFF', 30) + cloud(214, 38, 0.8, '#FFFFFF', 38)
+    + '<path d="M0 200 Q100 158 210 194 T400 182 V300 H0Z" fill="#A9DA86"/>'
+    + '<g transform="translate(300 192) scale(.62)">' + cottage(0, 0) + '</g>'
+    + birch(60, 214, 0.8) + birch(356, 212, 0.7)
+    + '<path d="M0 236 Q130 204 250 230 T400 224 V300 H0Z" fill="#6DB55A"/>'
+    + [[30, 262, '#FFFFFF'], [70, 284, '#FF8FB1'], [112, 258, '#FFFFFF'], [146, 290, '#FFD447'], [262, 272, '#FF8FB1'], [300, 256, '#FFFFFF'], [342, 286, '#FFFFFF'], [374, 262, '#FF8FB1'], [24, 292, '#FFD447']].map((f) => flower(f[0], f[1], f[2])).join('')
+    + butterfly(118, 158, '#FFB13D', 1) + butterfly(250, 136, '#FF8FB1', 3.5));
+
+  SCENE_SVG['skog'] = (u) => svg(skyG(u, '#BCE4CF', '#EFF8F1')
+    + '<polygon points="120,0 160,0 250,230 190,230" fill="#FFFFFF" opacity=".2"/><polygon points="232,0 254,0 322,230 284,230" fill="#FFFFFF" opacity=".14"/>'
+    + pine(30, 188, 1.25, '#4C8B66') + birch(98, 198, 1) + pine(162, 176, 1, '#4C8B66') + pine(236, 170, 0.9, '#5E9C74') + birch(302, 202, 1.05) + pine(372, 180, 1.15, '#4C8B66')
+    + '<path d="M0 220 Q200 196 400 222 V300 H0Z" fill="#7FB069"/>'
+    + pine(14, 268, 1.55, '#2F6B4A') + pine(388, 264, 1.65, '#2F6B4A')
+    + mushroom(92, 270, 1) + mushroom(318, 278, 0.8)
+    + '<path d="M0 276 Q200 258 400 278 V300 H0Z" fill="#5E9452"/>'
+    + lingon([[56, 286], [62, 291], [69, 285], [328, 290], [335, 294], [341, 288]]));
+
+  SCENE_SVG['hav'] = (u) => svg(skyG(u, '#83CBEE', '#E2F5FC') + sun(70, 56) + cloud(250, 48, 0.9, '#FFFFFF', 32)
+    + gull(70, 2, 1) + gull(96, 9, 0.8)
+    + '<rect y="148" width="400" height="152" fill="#2D87C3"/>'
+    + '<path d="M250 150 Q320 126 400 134 V150 Z" fill="#5F8F5A"/><g transform="translate(338 140)"><rect x="-14" y="-12" width="28" height="12" fill="#A8322D"/><polygon points="-17,-12 0,-22 17,-12" fill="#2E2A2E"/><rect x="-4" y="-8" width="8" height="8" fill="#F4F1EA"/></g>'
+    + wavePath(160, 6, 40, '#3B97D1', 'wave') + wavePath(196, 6, 48, '#2F7FB8', 'wave2')
+    + '<g transform="translate(150 176)"><g class="bob"><path d="M-24 0 H24 L16 12 H-16Z" fill="#A8322D"/><rect x="-1.5" y="-34" width="3" height="34" fill="#5B3B27"/><path d="M1.5 -32 L22 -4 H1.5Z" fill="#FFFFFF"/></g></g>'
+    + '<rect x="262" y="226" width="146" height="10" fill="#8B5E3C"/><rect x="272" y="234" width="6" height="34" fill="#6B4528"/><rect x="322" y="234" width="6" height="38" fill="#6B4528"/><rect x="372" y="234" width="6" height="40" fill="#6B4528"/>'
+    + '<path d="M0 256 Q150 236 262 250 L262 300 H0Z" fill="#F1D9A2"/>'
+    + '<path d="M60 282 l6 -8 l6 8 z" fill="#F7A9A0"/><circle cx="220" cy="286" r="4" fill="#FFFFFF"/>');
+
+  SCENE_SVG['natt'] = (u) => svg(skyG(u, '#0A1636', '#273A6E') + aurora(u, 0.55) + stars(46, 7, 175)
+    + '<circle cx="318" cy="66" r="42" fill="#FFF1B8" opacity=".14"/><circle cx="318" cy="66" r="23" fill="#FFF1B8"/>'
+    + '<path d="M0 222 Q120 186 230 214 T400 204 V300 H0Z" fill="#1B2D55"/>'
+    + cottage(92, 214)
+    + '<path d="M0 258 Q160 234 400 260 V300 H0Z" fill="#12203E"/>');
+
+  const oldHem = SCENE_SVG['hem'];
+  SCENE_SVG['hem'] = (u) => oldHem(u).replace('</svg>', '<rect x="118" y="262" width="174" height="30" rx="6" fill="#E9DCC6"/>'
+    + '<rect x="126" y="266" width="158" height="5" fill="#7FA8E0"/><rect x="126" y="275" width="158" height="5" fill="#E86F5E"/><rect x="126" y="284" width="158" height="4" fill="#F2C14E"/>'
+    + '<g stroke="#D8C8AE" stroke-width="2">' + [124, 140, 156, 172, 188, 204, 220, 236, 252, 268, 284].map((x) => '<line x1="' + x + '" y1="292" x2="' + x + '" y2="297"/>').join('') + '</g></svg>');
+
+  /* Where something "up in the sky" sits in each scene (left %, top %). */
+  const SKY = { 'natt': [60, 10], 'hem': [68, 14], 'rymd': [58, 10], 'snö': [70, 10], 'regn': [72, 8] };
+
+  /* ---------- Story props, drawn in the same crayon style ---------- */
+  const PS = ' stroke="#22264A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+  const petals = [0, 72, 144, 216, 288].map((a) => '<ellipse cx="50" cy="20" rx="11" ry="15" fill="#FF8FB1" stroke="#22264A" stroke-width="4" transform="rotate(' + a + ' 50 38)"/>').join('');
+  const PROPS = {
+    'stjärna': '<svg viewBox="0 0 100 100"><polygon points="50,6 62,36 94,38 69,58 78,90 50,72 22,90 31,58 6,38 38,36" fill="#FFC93C"' + PS + '/></svg>',
+    'hjärta': '<svg viewBox="0 0 100 100"><path d="M50 88 C 18 66, 6 46, 14 28 C 22 12, 44 12, 50 30 C 56 12, 78 12, 86 28 C 94 46, 82 66, 50 88 Z" fill="#FF5A7A"' + PS + '/></svg>',
+    'boll': '<svg viewBox="0 0 100 100"><circle cx="50" cy="52" r="38" fill="#FF6B4A"' + PS + '/><path d="M16 44 Q50 62 84 44" fill="none" stroke="#FFFFFF" stroke-width="7"/><path d="M28 80 Q50 60 72 80" fill="none" stroke="#FFD447" stroke-width="7"/></svg>',
+    'ballong': '<svg viewBox="0 0 100 100"><path d="M50 70 Q46 84 54 98" fill="none" stroke="#22264A" stroke-width="3"/><ellipse cx="50" cy="38" rx="28" ry="33" fill="#E9455A"' + PS + '/><path d="M45 70 L55 70 L50 77 Z" fill="#E9455A"' + PS + '/><ellipse cx="40" cy="26" rx="6" ry="10" fill="#FFFFFF" opacity=".5"/></svg>',
+    'blomma': '<svg viewBox="0 0 100 100"><path d="M50 56 L50 96" stroke="#3FA06B" stroke-width="6" stroke-linecap="round"/><path d="M50 80 Q66 70 74 78 Q62 88 50 84" fill="#3FA06B"/>' + petals + '<circle cx="50" cy="38" r="11" fill="#FFC93C"' + PS + '/></svg>',
+    'nyckel': '<svg viewBox="0 0 100 100"><path d="M44 46 L86 88 M70 72 L78 64 M78 80 L86 72" fill="none" stroke="#22264A" stroke-width="9" stroke-linecap="round"/><path d="M44 46 L86 88 M70 72 L78 64 M78 80 L86 72" fill="none" stroke="#F2B33D" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="34" r="18" fill="#F2B33D"' + PS + '/><circle cx="30" cy="34" r="6" fill="#FFF3CF" stroke="#22264A" stroke-width="3"/></svg>',
+    'present': '<svg viewBox="0 0 100 100"><rect x="16" y="40" width="68" height="50" rx="4" fill="#5AA9E6"' + PS + '/><rect x="12" y="30" width="76" height="14" rx="3" fill="#7DBDF0"' + PS + '/><rect x="44" y="30" width="12" height="60" fill="#FF5A7A"/><path d="M50 30 C 36 10, 22 22, 36 30 M50 30 C 64 10, 78 22, 64 30" fill="none" stroke="#FF5A7A" stroke-width="6"/></svg>',
+    'fjäril': '<svg viewBox="0 0 100 100"><ellipse cx="32" cy="38" rx="22" ry="18" fill="#B07CF0"' + PS + '/><ellipse cx="68" cy="38" rx="22" ry="18" fill="#B07CF0"' + PS + '/><ellipse cx="36" cy="66" rx="14" ry="12" fill="#FF8FB1"' + PS + '/><ellipse cx="64" cy="66" rx="14" ry="12" fill="#FF8FB1"' + PS + '/><rect x="45" y="26" width="10" height="52" rx="5" fill="#22264A"/><path d="M48 26 Q40 12 34 10 M52 26 Q60 12 66 10" fill="none" stroke="#22264A" stroke-width="3"/></svg>',
+    'fågel': '<svg viewBox="0 0 100 100"><path d="M16 50 L4 42 L8 58 Z" fill="#2E8CC6" stroke="#22264A" stroke-width="3"/><ellipse cx="48" cy="56" rx="32" ry="24" fill="#4FB3E8"' + PS + '/><circle cx="70" cy="40" r="15" fill="#4FB3E8"' + PS + '/><path d="M84 40 L96 44 L84 48 Z" fill="#FFC93C" stroke="#22264A" stroke-width="3"/><circle cx="73" cy="37" r="3.5" fill="#22264A"/><path d="M30 52 Q44 70 58 54" fill="#2E8CC6" stroke="#22264A" stroke-width="4"/></svg>',
+    'fisk': '<svg viewBox="0 0 100 100"><path d="M78 50 L96 34 L96 66 Z" fill="#FF9A3D"' + PS + '/><ellipse cx="46" cy="50" rx="36" ry="24" fill="#FF9A3D"' + PS + '/><circle cx="28" cy="44" r="4" fill="#22264A"/><path d="M50 32 Q58 50 50 68" fill="none" stroke="#22264A" stroke-width="3"/></svg>',
+    'krona': '<svg viewBox="0 0 100 100"><path d="M12 76 L16 30 L34 52 L50 22 L66 52 L84 30 L88 76 Z" fill="#FFC93C"' + PS + '/><circle cx="30" cy="66" r="5" fill="#E9455A"/><circle cx="50" cy="64" r="6" fill="#4FB3E8"/><circle cx="70" cy="66" r="5" fill="#3FA06B"/></svg>',
+    'äpple': '<svg viewBox="0 0 100 100"><path d="M50 30 C 30 18, 10 32, 14 56 C 18 80, 36 92, 50 84 C 64 92, 82 80, 86 56 C 90 32, 70 18, 50 30 Z" fill="#E5383B"' + PS + '/><path d="M50 30 Q50 18 56 10" fill="none" stroke="#5B3B27" stroke-width="5" stroke-linecap="round"/><path d="M54 18 Q70 8 76 18 Q64 26 54 18 Z" fill="#4CAF50" stroke="#22264A" stroke-width="3"/><ellipse cx="34" cy="48" rx="5" ry="9" fill="#FFFFFF" opacity=".45"/></svg>'
+  };
+  const PROP_NAMES = Object.keys(PROPS);
+  const ACTIONS = ['marken', 'handen', 'svävar', 'flyger', 'himlen'];
+
+  /* ---------- The example story: the star travels from the moss, to Pluttan's hand, to the sky ---------- */
+  const DEMO_STORY = {
+    id: 'demo-story',
+    title: 'Pluttan och den trötta stjärnan',
+    desc: 'En rund lila figur med tre orange tofsar, olika stora ögon och rosa kinder.',
+    summary: 'Pluttan hjälpte en trött stjärna hem till himlen.',
+    createdAt: Date.now(),
+    ideas: ['Pluttan lär sig simma i sjön', 'Stjärnan kommer på besök en natt', 'Pluttan bakar blåbärsbullar till hela skogen'],
+    pages: [
+      { scene: 'äng', motion: 'vinka', prop: null, text: 'Det här är Pluttan. Pluttan är rund som en blåbärsbulle och har tre orange tofsar på huvudet som gungar när hon går. Varje morgon vinkar hon till solen. – Hej, sol!' },
+      { scene: 'skog', motion: 'vinka', prop: { kind: 'stjärna', act: 'marken' }, text: 'En dag hittade Pluttan en liten gul stjärna i mossan. Den blinkade alldeles trött. – Har du ramlat ner? frågade Pluttan. Stjärnan nickade. Den ville hem till himlen igen.' },
+      { scene: 'berg', motion: 'hoppa', prop: { kind: 'stjärna', act: 'handen' }, text: 'Pluttan bar stjärnan försiktigt upp mot det högsta berget. Hon hoppade över stenar, boing, boing, och över en bäck som porlade. Men himlen var fortfarande högt, högt där uppe.' },
+      { scene: 'natt', motion: 'vinka', prop: { kind: 'stjärna', act: 'flyger' }, text: 'När kvällen kom höll Pluttan upp stjärnan, tog ett jättestort andetag och blåste. Fffffff! Stjärnan seglade uppåt, förbi norrskenet, och satte sig på sin plats bland de andra stjärnorna.' },
+      { scene: 'hem', motion: 'sova', prop: { kind: 'stjärna', act: 'himlen' }, text: 'Sedan gick Pluttan hem och kröp ner under sitt täcke. Genom fönstret blinkade en liten gul stjärna. – God natt, Pluttan, viskade den. Och Pluttan somnade, rund och varm och nöjd.' }
+    ]
+  };
+  const DEMO_FIG = {
+    id: 'demo', demo: true, name: 'Pluttan', child: '', src: DEMO_SRC, whole: false, createdAt: 0,
+    traits: { trait: 'Nyfiken och snäll', power: 'Kan blåsa stjärnor ända upp till himlen', fav: 'Blåbärsbullar' },
+    stories: [DEMO_STORY]
+  };
+
+  /* ---------- Image work: cut the figure out of the photo ---------- */
+  function maxFilter(src, W, H, r) {
+    const tmp = new Float32Array(W * H), out = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      const row = y * W;
+      for (let x = 0; x < W; x++) {
+        let m = 0; const a = x - r < 0 ? 0 : x - r, b = x + r >= W ? W - 1 : x + r;
+        for (let k = a; k <= b; k++) { const v = src[row + k]; if (v > m) m = v; }
+        tmp[row + x] = m;
+      }
+    }
+    for (let x = 0; x < W; x++) {
+      for (let y = 0; y < H; y++) {
+        let m = 0; const a = y - r < 0 ? 0 : y - r, b = y + r >= H ? H - 1 : y + r;
+        for (let k = a; k <= b; k++) { const v = tmp[k * W + x]; if (v > m) m = v; }
+        out[y * W + x] = m;
+      }
+    }
+    return out;
+  }
+  function boxBlur(src, W, H, r) {
+    const tmp = new Float32Array(W * H), out = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      const row = y * W; let acc = 0, cnt = 0;
+      for (let k = 0; k <= Math.min(r, W - 1); k++) { acc += src[row + k]; cnt++; }
+      for (let x = 0; x < W; x++) {
+        tmp[row + x] = acc / cnt;
+        const add = x + r + 1, rem = x - r;
+        if (add < W) { acc += src[row + add]; cnt++; }
+        if (rem >= 0) { acc -= src[row + rem]; cnt--; }
+      }
+    }
+    for (let x = 0; x < W; x++) {
+      let acc = 0, cnt = 0;
+      for (let k = 0; k <= Math.min(r, H - 1); k++) { acc += tmp[k * W + x]; cnt++; }
+      for (let y = 0; y < H; y++) {
+        out[y * W + x] = acc / cnt;
+        const add = y + r + 1, rem = y - r;
+        if (add < H) { acc += tmp[add * W + x]; cnt++; }
+        if (rem >= 0) { acc -= tmp[rem * W + x]; cnt--; }
+      }
+    }
+    return out;
+  }
+  function otsu(values) {
+    const bins = 64, hist = new Float64Array(bins), n = values.length;
+    for (let i = 0; i < n; i++) { let b = (values[i] * bins) | 0; if (b >= bins) b = bins - 1; hist[b]++; }
+    let sum = 0; for (let i = 0; i < bins; i++) sum += i * hist[i];
+    let sumB = 0, wB = 0, best = -1, bestT = 0;
+    for (let t = 0; t < bins; t++) {
+      wB += hist[t]; if (!wB) continue;
+      const wF = n - wB; if (!wF) break;
+      sumB += t * hist[t];
+      const mB = sumB / wB, mF = (sum - sumB) / wF;
+      const between = wB * wF * (mB - mF) * (mB - mF);
+      if (between > best) { best = between; bestT = t; }
+    }
+    return (bestT + 1) / bins;
+  }
+  function dilate(mask, W, H, r) {
+    const tmp = new Uint8Array(W * H), out = new Uint8Array(W * H);
+    const pre = new Int32Array(Math.max(W, H) + 1);
+    for (let y = 0; y < H; y++) {
+      const row = y * W; pre[0] = 0;
+      for (let x = 0; x < W; x++) pre[x + 1] = pre[x] + mask[row + x];
+      for (let x = 0; x < W; x++) { const a = x - r < 0 ? 0 : x - r, b = x + r + 1 > W ? W : x + r + 1; tmp[row + x] = pre[b] - pre[a] > 0 ? 1 : 0; }
+    }
+    for (let x = 0; x < W; x++) {
+      pre[0] = 0;
+      for (let y = 0; y < H; y++) pre[y + 1] = pre[y] + tmp[y * W + x];
+      for (let y = 0; y < H; y++) { const a = y - r < 0 ? 0 : y - r, b = y + r + 1 > H ? H : y + r + 1; out[y * W + x] = pre[b] - pre[a] > 0 ? 1 : 0; }
+    }
+    return out;
+  }
+  function components(mask, W, H, val, eight) {
+    const N = W * H, labels = new Int32Array(N).fill(-1), queue = new Int32Array(N), comps = [];
+    for (let i = 0; i < N; i++) {
+      if (mask[i] !== val || labels[i] !== -1) continue;
+      const id = comps.length; let head = 0, tail = 0;
+      queue[tail++] = i; labels[i] = id;
+      let area = 0, minX = W, minY = H, maxX = 0, maxY = 0;
+      while (head < tail) {
+        const p = queue[head++]; area++;
+        const x = p % W, y = (p / W) | 0;
+        if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y;
+        for (let dy = -1; dy <= 1; dy++) {
+          const ny = y + dy; if (ny < 0 || ny >= H) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            if ((dx === 0 && dy === 0) || (!eight && dx !== 0 && dy !== 0)) continue;
+            const nx = x + dx; if (nx < 0 || nx >= W) continue;
+            const q = ny * W + nx;
+            if (mask[q] === val && labels[q] === -1) { labels[q] = id; queue[tail++] = q; }
+          }
+        }
+      }
+      comps.push({ id, area, minX, minY, maxX, maxY });
+    }
+    return { labels, comps };
+  }
+  function roundRect(x, X, Y, w, h, r) {
+    x.beginPath(); x.moveTo(X + r, Y);
+    x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r);
+    x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath();
+  }
+  function wholeCard(norm, W, H) {
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    c.getContext('2d').putImageData(new ImageData(norm, W, H), 0, 0);
+    const s = Math.min(1, 720 / Math.max(W, H));
+    const w = Math.round(W * s), h = Math.round(H * s), m = Math.max(8, Math.round(Math.max(w, h) * 0.04));
+    const o = document.createElement('canvas'); o.width = w + m * 2; o.height = h + m * 2;
+    const x = o.getContext('2d');
+    roundRect(x, 0, 0, o.width, o.height, m * 1.2); x.fillStyle = '#FFFFFF'; x.fill();
+    x.save(); roundRect(x, m, m, w, h, m * 0.6); x.clip(); x.drawImage(c, m, m, w, h); x.restore();
+    return o.toDataURL('image/png');
+  }
+  function cutOut(source) {
+    const sw = source.naturalWidth || source.width, sh = source.naturalHeight || source.height;
+    const s = Math.min(1, 900 / Math.max(sw, sh));
+    const W = Math.max(8, Math.round(sw * s)), H = Math.max(8, Math.round(sh * s));
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(source, 0, 0, W, H);
+    const src = cx.getImageData(0, 0, W, H).data;
+    const N = W * H, big = Math.max(W, H);
+    const L = new Float32Array(N), C = new Float32Array(N);
+    for (let i = 0, p = 0; i < N; i++, p += 4) {
+      const r = src[p] / 255, g = src[p + 1] / 255, b = src[p + 2] / 255;
+      const mx = r > g ? (r > b ? r : b) : (g > b ? g : b);
+      const mn = r < g ? (r < b ? r : b) : (g < b ? g : b);
+      L[i] = 0.299 * r + 0.587 * g + 0.114 * b; C[i] = mx - mn;
+    }
+    // Paper brightness everywhere (ink removed, shading kept), so uneven light does not matter.
+    const B = boxBlur(maxFilter(L, W, H, Math.max(3, Math.round(big / 110))), W, H, Math.max(8, Math.round(big / 26)));
+    const samples = [];
+    for (let i = 0; i < N; i += 5) if (L[i] > 0.9 * B[i]) samples.push(C[i]);
+    samples.sort((a, b) => a - b);
+    const cPaper = samples.length ? samples[(samples.length * 0.5) | 0] : 0.05;
+    const ink = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const bb = B[i] > 0.15 ? B[i] : 0.15;
+      const dark = (bb - L[i]) / bb;
+      const chroma = (C[i] - cPaper - 0.05) * 1.3;
+      const v = dark > chroma ? dark : chroma;
+      ink[i] = v < 0 ? 0 : v > 1 ? 1 : v;
+    }
+    const t = Math.min(0.3, Math.max(0.1, otsu(ink)));
+    const M = new Uint8Array(N);
+    for (let i = 0; i < N; i++) M[i] = ink[i] > t ? 1 : 0;
+    const Md = dilate(M, W, H, Math.max(2, Math.round(big / 240)));
+    // The biggest open area without ink is the paper around the figure.
+    const open = components(Md, W, H, 0, false);
+    let paper = -1, paperArea = 0;
+    for (const c of open.comps) if (c.area > paperArea) { paperArea = c.area; paper = c.id; }
+    const F = new Uint8Array(N);
+    for (let i = 0; i < N; i++) F[i] = open.labels[i] === paper ? 0 : 1;
+    const fg = components(F, W, H, 1, true);
+    const keep = new Uint8Array(fg.comps.length);
+    let kept = 0;
+    const minArea = N * 0.0015;
+    for (const c of fg.comps) {
+      const edges = (c.minX === 0) + (c.minY === 0) + (c.maxX === W - 1) + (c.maxY === H - 1);
+      if (c.area >= minArea && edges <= 1) { keep[c.id] = 1; kept += c.area; }
+    }
+    // Normalise colours: the paper turns white and shadows disappear, like a scan.
+    const norm = new Uint8ClampedArray(N * 4);
+    for (let i = 0, p = 0; i < N; i++, p += 4) {
+      const gain = Math.min(1.7, 0.97 / (B[i] > 0.3 ? B[i] : 0.3));
+      norm[p] = src[p] * gain; norm[p + 1] = src[p + 1] * gain; norm[p + 2] = src[p + 2] * gain; norm[p + 3] = 255;
+    }
+    const wholeURL = wholeCard(norm, W, H);
+    const failed = paper < 0 || paperArea < N * 0.12 || kept < N * 0.004 || kept > N * 0.72;
+    if (failed) return { cutURL: null, wholeURL, failed: true };
+    let mask = new Uint8Array(N);
+    for (let i = 0; i < N; i++) if (F[i] && keep[fg.labels[i]]) mask[i] = 1;
+    mask = dilate(mask, W, H, Math.max(2, Math.round(big / 190)));
+    let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (mask[y * W + x]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+    }
+    if (x1 < 0) return { cutURL: null, wholeURL, failed: true };
+    x0 = Math.max(0, x0 - 4); y0 = Math.max(0, y0 - 4); x1 = Math.min(W - 1, x1 + 4); y1 = Math.min(H - 1, y1 + 4);
+    const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+    const soft = boxBlur(Float32Array.from(mask), W, H, 1);
+    const out = new ImageData(cw, ch), od = out.data;
+    for (let y = 0; y < ch; y++) {
+      for (let x = 0; x < cw; x++) {
+        const i = (y + y0) * W + (x + x0), p = i * 4, q = (y * cw + x) * 4;
+        const a = soft[i];
+        const alpha = a <= 0.15 ? 0 : a >= 0.85 ? 1 : (a - 0.15) / 0.7;
+        od[q] = norm[p]; od[q + 1] = norm[p + 1]; od[q + 2] = norm[p + 2]; od[q + 3] = Math.round(alpha * 255);
+      }
+    }
+    const oc = document.createElement('canvas'); oc.width = cw; oc.height = ch;
+    oc.getContext('2d').putImageData(out, 0, 0);
+    return { cutURL: oc.toDataURL('image/png'), wholeURL, failed: false };
+  }
+  async function decode(file) {
+    if (typeof createImageBitmap === 'function') {
+      try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { /* fall back to <img> */ }
+    }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = url;
+    try { await img.decode(); } finally { setTimeout(() => URL.revokeObjectURL(url), 4000); }
+    return img;
+  }
+  async function toJPEGBlob(src) {
+    const img = new Image(); img.src = src; await img.decode();
+    const w0 = img.naturalWidth || 600, h0 = img.naturalHeight || 600;
+    const s = Math.min(1, 1100 / Math.max(w0, h0));
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w0 * s)); c.height = Math.max(1, Math.round(h0 * s));
+    const x = c.getContext('2d'); x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+    return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error('blob'))), 'image/jpeg', 0.9));
+  }
+
+  /* ---------- Line boil: three slightly wobbled frames make the drawing feel hand-animated ---------- */
+  function boil(base, seed, amp) {
+    const w = base.width, h = base.height, s = base.data;
+    const out = new ImageData(w, h), o = out.data;
+    const G = 14, rnd = mulberry32(seed);
+    const gx = new Float32Array((G + 1) * (G + 1)), gy = new Float32Array((G + 1) * (G + 1));
+    for (let i = 0; i < gx.length; i++) { gx[i] = rnd() * 2 - 1; gy[i] = rnd() * 2 - 1; }
+    for (let y = 0; y < h; y++) {
+      const fy = (y / Math.max(1, h - 1)) * G, iy = Math.min(G - 1, fy | 0), ty = fy - iy;
+      for (let x = 0; x < w; x++) {
+        const fx = (x / Math.max(1, w - 1)) * G, ix = Math.min(G - 1, fx | 0), tx = fx - ix;
+        const a = iy * (G + 1) + ix, b = a + 1, c = a + G + 1, d = c + 1;
+        const dx = amp * ((gx[a] * (1 - tx) + gx[b] * tx) * (1 - ty) + (gx[c] * (1 - tx) + gx[d] * tx) * ty);
+        const dy = amp * ((gy[a] * (1 - tx) + gy[b] * tx) * (1 - ty) + (gy[c] * (1 - tx) + gy[d] * tx) * ty);
+        const sx = Math.round(x + dx), sy = Math.round(y + dy);
+        if (sx < 0 || sy < 0 || sx >= w || sy >= h) continue;
+        const p = (y * w + x) * 4, q = (sy * w + sx) * 4;
+        o[p] = s[q]; o[p + 1] = s[q + 1]; o[p + 2] = s[q + 2]; o[p + 3] = s[q + 3];
+      }
+    }
+    const c2 = document.createElement('canvas'); c2.width = w; c2.height = h;
+    c2.getContext('2d').putImageData(out, 0, 0);
+    return c2.toDataURL('image/png');
+  }
+  const frameCache = new Map();
+  function getFrames(key, src) {
+    if (reducedMotion) return Promise.resolve([src, src, src]);
+    if (!frameCache.has(key)) {
+      frameCache.set(key, (async () => {
+        try {
+          const img = new Image(); img.src = src; await img.decode();
+          const nw = img.naturalWidth || 600, nh = img.naturalHeight || 600;
+          const s = Math.min(1, 640 / Math.max(nw, nh));
+          const w = Math.max(1, Math.round(nw * s)), h = Math.max(1, Math.round(nh * s));
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          const x = c.getContext('2d', { willReadFrequently: true });
+          x.drawImage(img, 0, 0, w, h);
+          const base = x.getImageData(0, 0, w, h);
+          const amp = Math.max(1.2, Math.max(w, h) / 270);
+          return [c.toDataURL('image/png'), boil(base, 11, amp), boil(base, 29, amp)];
+        } catch (e) {
+          return [src, src, src];
+        }
+      })());
+    }
+    return frameCache.get(key);
+  }
+  if (!reducedMotion) {
+    let frame = 0;
+    document.documentElement.dataset.frame = '0';
+    setInterval(() => {
+      if (document.hidden) return;
+      frame = (frame + 1) % 3;
+      document.documentElement.dataset.frame = String(frame);
+    }, 170);
+  }
+
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function bookHTML(fig, story) {
+    const pages = story.pages.map((p) => '<p>' + esc(personalize(p.text, fig)) + '</p>').join('\n');
+    let date = '';
+    try { date = new Date(story.createdAt).toLocaleDateString('sv-SE', { year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) { date = ''; }
+    return '<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(story.title) + '</title>'
+      + '<style>body{font-family:Georgia,"Times New Roman",serif;color:#1C2340;background:#FFFFFF;max-width:40rem;margin:2.5rem auto;padding:0 1.25rem;line-height:1.65;font-size:1.2rem}img{display:block;max-width:55%;max-height:22rem;margin:0 auto 1.5rem;object-fit:contain}h1{text-align:center;font-size:2rem;line-height:1.2;margin:0 0 2rem}p{margin:0 0 1.2rem}.slut{text-align:center;font-style:italic;margin-top:2rem}footer{margin-top:3rem;font-size:.9rem;color:#55607F;text-align:center}</style></head><body>'
+      + '<img src="' + fig.src + '" alt="' + esc(fig.name) + '"><h1>' + esc(story.title) + '</h1>\n' + pages + '\n<p class="slut">Slut.</p>'
+      + '<footer>' + (fig.child ? 'Figuren ritades av ' + esc(fig.child) + '. ' : '') + (date ? 'Sagan skrevs ' + esc(date) + '.' : '') + '</footer></body></html>';
+  }
+
+  /* ---------- Settings ---------- */
+  const settings = {
+    size: remember.get('size') || 'normal',
+    rate: remember.get('rate') || 'lugn',
+    voice: remember.get('voice') || '',
+    sound: remember.get('sound') !== 'av'
+  };
+  const SIZE = { 'normal': '1.3rem', 'stor': '1.5rem', 'störst': '1.75rem' };
+  function applySettings() { document.documentElement.style.setProperty('--story-size', SIZE[settings.size] || SIZE.normal); }
+  applySettings();
+
+  /* ---------- Sound: tiny synthesized effects, no audio files ---------- */
+  const sound = (() => {
+    let ctx = null;
+    function ac() {
+      if (!ctx) { try { const AC = window.AudioContext || window.webkitAudioContext; ctx = AC ? new AC() : null; } catch (e) { ctx = null; } }
+      if (ctx && ctx.state === 'suspended') { try { ctx.resume(); } catch (e) { /* ignore */ } }
+      return ctx;
+    }
+    function tone(freq, at, dur, type, peak) {
+      const c = ac(); if (!c) return;
+      const t0 = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+    function swish(peak) {
+      const c = ac(); if (!c) return;
+      const dur = 0.3, len = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / len);
+      const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = 0.8; g.gain.value = peak;
+      src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+    }
+    return {
+      unlock() { ac(); },
+      wake() { if (settings.sound) [784, 988, 1175, 1568].forEach((f, i) => tone(f, i * 0.09, 0.55, 'sine', 0.06)); },
+      page() { if (settings.sound) swish(0.05); },
+      end() { if (settings.sound) [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.8, 'triangle', 0.045)); },
+      boing() { if (settings.sound) slide(260, 720, 0.32, 0.07); }
+    };
+    function slide(f0, f1, dur, peak) {
+      const c = ac(); if (!c) return;
+      const t0 = c.currentTime, o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(f0, t0);
+      o.frequency.exponentialRampToValueAtTime(f1, t0 + dur * 0.45);
+      o.frequency.exponentialRampToValueAtTime(f0 * 1.2, t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(peak, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+    }
+  })();
+  const buzz = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* not allowed in this frame */ } };
+  document.addEventListener('pointerdown', () => sound.unlock(), { once: true });
+
+  /* ---------- Stage ---------- */
+  function initStage(el) {
+    el.innerHTML = '<div class="scene" aria-hidden="true"></div><div class="scene" aria-hidden="true"></div>'
+      + '<div class="prop free" aria-hidden="true" hidden></div>'
+      + '<div class="fig"><div class="fig-shadow"></div><div class="fig-pop"><div class="fig-move"><div class="fig-breathe">'
+      + '<img class="fig-img f0" alt="" draggable="false"><img class="fig-img f1" alt="" aria-hidden="true" draggable="false"><img class="fig-img f2" alt="" aria-hidden="true" draggable="false">'
+      + '</div><div class="prop hand" aria-hidden="true" hidden></div></div></div></div>'
+      + '<div class="zzz" aria-hidden="true"><span>z</span><span>z</span><span>Z</span></div>'
+      + '<div class="sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+      + '<div class="stage-busy" hidden></div>';
+    el.dataset.layer = '1';
+  }
+  function restart(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+  function setMotion(el, motion) { el.dataset.motion = motion; el.querySelector('.fig').dataset.motion = motion; }
+  function setProp(el, prop, force) {
+    const ok = prop && PROPS[prop.kind] ? prop : null;
+    const sig = ok ? ok.kind + ':' + ok.act : '';
+    if (!force && el.dataset.prop === sig) return;
+    el.dataset.prop = sig;
+    const free = el.querySelector('.prop.free'), hand = el.querySelector('.prop.hand');
+    [free, hand].forEach((p) => { p.hidden = true; p.innerHTML = ''; p.removeAttribute('data-act'); });
+    if (!ok) return;
+    const slot = ok.act === 'handen' ? hand : free;
+    slot.innerHTML = PROPS[ok.kind];
+    slot.dataset.act = ok.act;
+    slot.hidden = false;
+  }
+  async function setStage(el, o) {
+    const scene = SCENE_SVG[o.scene] ? o.scene : 'äng';
+    const sceneKey = o.art ? 'art:' + (o.artKey || o.art.length) : scene;
+    if (el.dataset.scene !== sceneKey) {
+      const layers = el.querySelectorAll('.scene');
+      const nextIdx = el.dataset.layer === '0' ? 1 : 0;
+      if (o.art) {
+        layers[nextIdx].textContent = '';
+        const img = document.createElement('img'); img.className = 'scene-art'; img.alt = ''; img.src = o.art;
+        layers[nextIdx].appendChild(img);
+      } else {
+        layers[nextIdx].innerHTML = SCENE_SVG[scene](el.id + '-' + nextIdx);
+      }
+      layers[nextIdx].classList.add('on');
+      layers[1 - nextIdx].classList.remove('on');
+      el.dataset.layer = String(nextIdx);
+      el.dataset.scene = sceneKey;
+      el.style.setProperty('--ground', (o.art ? 7 : GROUND[scene] != null ? GROUND[scene] : 8) + '%');
+      const sky = o.art ? [76, 9] : SKY[scene] || [76, 9];
+      el.style.setProperty('--sky-x', sky[0] + '%');
+      el.style.setProperty('--sky-y', sky[1] + '%');
+    }
+    const motion = MOTIONS.includes(o.motion) ? o.motion : 'vinka';
+    el.dataset.base = motion;
+    clearTimeout(el._tickle); delete el.dataset.tickle;
+    setMotion(el, motion);
+    setProp(el, o.prop || null, !!o.enter);
+    el.classList.toggle('waking', !!o.waking);
+    if (o.enter && !reducedMotion) restart(el, 'enter');
+    const imgs = el.querySelectorAll('.fig-img');
+    imgs[0].alt = o.alt || '';
+    if (o.src && el.dataset.figKey !== o.key) {
+      el.dataset.figKey = o.key;
+      imgs.forEach((im) => { im.src = o.src; });
+      const frames = await getFrames(o.key, o.src);
+      if (el.dataset.figKey === o.key) imgs.forEach((im, i) => { im.src = frames[i] || o.src; });
+    }
+  }
+  function stageBusy(el, text) { const b = el.querySelector('.stage-busy'); b.hidden = !text; b.textContent = text || ''; }
+  const heroStage = $('#heroStage'), prepStage = $('#prepStage'), writeStage = $('#writeStage'), playStage = $('#playStage'), figStage = $('#figStage');
+  [heroStage, prepStage, writeStage, playStage, figStage].forEach(initStage);
+
+  /* ---------- Tap the figure and it reacts ---------- */
+  const TICKLE = ['hoppa', 'snurra', 'dansa'];
+  let tickleN = 0;
+  function tickle(el) {
+    sound.boing(); buzz(12);
+    if (reducedMotion) return;
+    clearTimeout(el._tickle);
+    el.dataset.tickle = '1';
+    setMotion(el, TICKLE[tickleN++ % TICKLE.length]);
+    el._tickle = setTimeout(() => { delete el.dataset.tickle; setMotion(el, el.dataset.base || 'vinka'); }, 1300);
+  }
+  [heroStage, prepStage, writeStage, figStage].forEach((st) => st.addEventListener('click', (e) => { if (e.target.closest('.fig')) tickle(st); }));
+
+  /* ---------- Navigation ---------- */
+  let current = 'start', heroTimer = null;
+  function show(name) {
+    if (current === 'player' && name !== 'player') stopReading();
+    if (current === 'writing' && name !== 'writing' && writeCtl) { const c = writeCtl; writeCtl = null; c.abort(); }
+    const changed = current !== name;
+    current = name;
+    $$('.screen').forEach((s) => { s.hidden = s.id !== 'scr-' + name; });
+    const el = $('#scr-' + name);
+    if (changed && el && !reducedMotion) restart(el, 'in');
+    if (name === 'start') renderHome(); else { clearInterval(heroTimer); heroTimer = null; }
+    try { window.scrollTo(0, 0); } catch (e) { /* ignore */ }
+  }
+  function startHero(fig, scene, alt) {
+    const moves = ['vinka', 'hoppa', 'dansa', 'snurra', 'gunga'];
+    let i = 0;
+    setStage(heroStage, { scene: scene || 'äng', motion: moves[0], key: fig.id, src: fig.src, alt: alt || fig.name });
+    clearInterval(heroTimer); heroTimer = null;
+    if (reducedMotion) return;
+    heroTimer = setInterval(() => {
+      i = (i + 1) % moves.length;
+      heroStage.dataset.base = moves[i];
+      if (!heroStage.dataset.tickle) setMotion(heroStage, moves[i]);
+    }, 3800);
+  }
+  let toastTimer = null;
+  function toast(text) {
+    const t = $('#toast'); t.textContent = text; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3800);
+  }
+
+  /* ---------- Story format ---------- */
+  const fold = (s) => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+  function pickFrom(value, list, fallback) {
+    const f = fold(value || '');
+    if (!f) return fallback;
+    for (const it of list) if (fold(it) === f) return it;
+    for (const it of list) { const g = fold(it); if (f.startsWith(g) || (f.length >= 3 && g.startsWith(f))) return it; }
+    for (const it of list) { const g = fold(it); if (f.length >= 3 && g.length >= 3 && f.slice(0, 3) === g.slice(0, 3)) return it; }
+    return fallback;
+  }
+  function parseProp(value) {
+    const raw = String(value || '').trim();
+    if (!raw || /^[-–—]+$/.test(raw) || /^ingen/i.test(raw)) return null;
+    const bits = raw.split(/[\s:/,]+/).filter(Boolean);
+    const kind = pickFrom(bits[0], PROP_NAMES, null);
+    if (!kind) return null;
+    const act = bits.slice(1).map((b) => pickFrom(b, ACTIONS, null)).find(Boolean) || 'svävar';
+    return { kind, act };
+  }
+  function parseStory(text) {
+    const out = { name: '', title: '', desc: '', summary: '', trait: '', power: '', fav: '', ideas: [], cast: [], pages: [], done: false };
+    String(text).split('\n').forEach((raw) => {
+      const line = raw.trim().replace(/^[*#>\s-]+(?=[A-ZÅÄÖa-zåäö])/, '').replace(/\*\*/g, '');
+      if (!line) return;
+      let m;
+      if ((m = line.match(/^NAMN\s*:\s*(.+)$/i))) out.name = m[1].trim();
+      else if ((m = line.match(/^TITEL\s*:\s*(.+)$/i))) out.title = m[1].trim().replace(/^["”“]|["”“]$/g, '');
+      else if ((m = line.match(/^FIGUR\s*:\s*(.+)$/i))) out.desc = m[1].trim();
+      else if ((m = line.match(/^EGENSKAP\s*:\s*(.+)$/i))) out.trait = m[1].trim();
+      else if ((m = line.match(/^SUPERKRAFT\s*:\s*(.+)$/i))) out.power = m[1].trim();
+      else if ((m = line.match(/^FAVORIT\s*:\s*(.+)$/i))) out.fav = m[1].trim();
+      else if ((m = line.match(/^SAMMANFATTNING\s*:\s*(.+)$/i))) out.summary = m[1].trim();
+      else if ((m = line.match(/^FÖRSLAG\s*:\s*(.+)$/i))) { if (out.ideas.length < 3) out.ideas.push(m[1].trim().replace(/[.!]+$/, '')); }
+      else if ((m = line.match(/^KARAKTÄR\s*:\s*(.+)$/i))) { if (out.cast.length < 6) out.cast.push(m[1].trim()); }
+      else if (/^SLUT\b/i.test(line)) out.done = true;
+      else if (/^SIDA\b/i.test(line)) {
+        const parts = line.split('|').map((x) => x.trim());
+        const body = (parts.length >= 6 ? parts.slice(5).join(' ') : parts.length === 5 ? parts[4] : parts[3] || '').trim();
+        if (parts.length >= 4 && body) {
+          out.pages.push({ scene: pickFrom(parts[1], SCENES, 'äng'), motion: pickFrom(parts[2], MOTIONS, 'vinka'), prop: parts.length >= 5 ? parseProp(parts[3]) : null, bild: parts.length >= 6 ? parts[4] : '', text: body });
+        }
+      }
+    });
+    return out;
+  }
+  function personalize(text, fig) { return String(text).replace(/\{\s*BARN\s*\}/gi, (fig && fig.child) || 'barnet'); }
+  const KIND_TEXT = {
+    'lugn': 'en lugn godnattsaga som blir allt stillsammare och slutar med att figuren somnar gott',
+    'äventyr': 'ett spännande men tryggt äventyr med ett glatt slut',
+    'rolig': 'en tokrolig saga med upptåg som får barnet att skratta'
+  };
+  const PAGES = { 'kort': 4, 'mellan': 6, 'lång': 9 };
+  function buildPrompt(o) {
+    const L = [];
+    L.push('Du är en varm och skicklig svensk barnboksförfattare.');
+    if (o.hasImage) {
+      L.push('Bilden visar en teckning som ett barn har ritat. Figuren i teckningen ska vara huvudperson i en ny saga.');
+      L.push('Titta noga på teckningen först: färger, former, hur många ögon, armar eller ben figuren har, vad den håller i och vilka mönster som finns. Väv in två eller tre sådana detaljer i sagan så att barnet känner igen sin egen figur. Hitta inte på ett annat utseende.');
+      L.push('Teckningen syns på skärmen under hela sagan. Om figuren håller i något på teckningen har den kvar det hela sagan, och texten får aldrig säga att något som syns på teckningen försvinner.');
+      L.push('Allt i teckningen är med flit och fint. Kalla aldrig något konstigt, fult eller fel.');
+      L.push('Om bilden inte är en teckning utan ett foto av en riktig människa ska du inte beskriva personen, utan skriva om en påhittad, vänlig figur.');
+      if (o.desc) L.push('Så här har figuren beskrivits tidigare: ' + o.desc);
+    } else {
+      L.push('Huvudpersonen är en figur som ett barn har ritat. Så här ser den ut: ' + o.desc);
+    }
+    L.push('');
+    L.push('Fakta:');
+    L.push(o.name ? '- Figuren heter ' + o.name + '.' : '- Figuren har inget namn än. Hitta på ett kort, roligt namn som passar den.');
+    if (o.traits && o.traits.trait) L.push('- Figurens personlighet: ' + o.traits.trait + (o.traits.power ? '. Superkraft: ' + o.traits.power : '') + '.');
+    if (o.hasChild) L.push('- Barnet som ritade figuren skrivs som {BARN}. Skriv exakt {BARN} på de ställen där du vill nämna barnet, högst två gånger, och skriv aldrig något annat namn för barnet.');
+    L.push('- Barnet är ' + o.age + ' år. Anpassa ord och meningslängd efter det.');
+    L.push('- Sagan ska vara ' + (KIND_TEXT[o.kind] || KIND_TEXT.lugn) + '.');
+    L.push('- Längd: ' + (PAGES[o.length] || 6) + ' sidor med två till fyra meningar per sida.');
+    if (o.wish) L.push('- Barnets önskan om vad sagan ska handla om: ' + o.wish);
+    if (o.previous && o.previous.length) {
+      L.push('- Figuren har varit med i tidigare sagor. Gör ett nytt äventyr som gärna knyter an lite till det som hänt förut:');
+      o.previous.slice(-3).forEach((p) => L.push('  • ' + p.title + (p.summary ? ': ' + p.summary : '')));
+    }
+    L.push('');
+    L.push('Språk och ton:');
+    L.push('- Naturlig, levande svenska. Korta meningar. Gärna ljudord och upprepningar som är roliga att läsa högt.');
+    L.push('- Tryggt och snällt. Inget våld och inget skrämmande. Om barnet önskar något läskigt gör du det spännande men tryggt och vänder det till något fint.');
+    L.push('- Repliker skrivs med talstreck, till exempel: – Hej! sa figuren.');
+    L.push('');
+    L.push('Saker som syns i bilden:');
+    L.push('- På varje SIDA-rad anger du en sak som är viktig i handlingen, eller - om ingen särskild sak behövs.');
+    L.push('- En sak skrivs som sak:var. Sak är en av: ' + PROP_NAMES.join(', ') + '. Var är en av: marken (ligger på marken), handen (figuren bär den), svävar (svävar bredvid figuren), flyger (flyger iväg upp mot himlen), himlen (sitter uppe på himlen).');
+    L.push('- Håll ordning på sakerna mellan sidorna. Det som flugit upp till himlen är kvar på himlen, och det som figuren bär har den kvar tills den släpper det.');
+    L.push('');
+    L.push('Svara exakt i det här formatet, en uppgift per rad och ingen annan text:');
+    L.push('NAMN: <figurens namn>');
+    L.push('TITEL: <sagans titel>');
+    L.push('FIGUR: <en mening om hur figuren ser ut>');
+    L.push('EGENSKAP: <två eller tre ord om figurens personlighet>');
+    L.push('SUPERKRAFT: <en kort, rolig superkraft>');
+    L.push('FAVORIT: <figurens favoritsak>');
+    L.push('KARAKTÄR: <namn> = <hur den ser ut, färger och form>');
+    L.push('(en KARAKTÄR-rad för varje annan figur, djur eller viktig sak som förekommer i sagan, högst fem)');
+    L.push('SIDA | <scen> | <rörelse> | <sak> | <bild> | <sidans text på en enda rad>');
+    L.push('(en SIDA-rad för varje sida)');
+    L.push('SAMMANFATTNING: <en mening om vad som hände>');
+    L.push('FÖRSLAG: <idé till nästa saga, högst sju ord>');
+    L.push('(skriv tre FÖRSLAG-rader)');
+    L.push('SLUT');
+    L.push('');
+    L.push('<scen> är ett av: ' + SCENES.join(', ') + '.');
+    L.push('<rörelse> är ett av: ' + MOTIONS.join(', ') + '. Välj det som passar vad figuren gör på sidan.');
+    L.push('<bild> är en kort anvisning till illustratören om exakt vad bilden på sidan ska visa: plats, tid på dygnet, väder, andra figurer och saker och var de är. Allt viktigt som händer i texten ska synas. Huvudfiguren beskrivs inte, den läggs in separat.');
+    return L.join('\n');
+  }
+
+  /* ---------- Prepare ---------- */
+  const opts = { age: remember.get('age') || '5–7', kind: remember.get('kind') || 'lugn', length: remember.get('length') || 'mellan' };
+  const KIND_LABEL = { 'lugn': 'Lugn godnattsaga', 'äventyr': 'Äventyr', 'rolig': 'Något tokroligt' };
+  const LEN_LABEL = { 'kort': 'cirka 2 min', 'mellan': 'cirka 4 min', 'lång': 'cirka 7 min' };
+  function renderChips() {
+    $$('.chips[data-group]').forEach((group) => {
+      $$('.chip', group).forEach((chip) => chip.setAttribute('aria-pressed', String(chip.dataset.value === opts[group.dataset.group])));
+    });
+    $('#optsSummary').textContent = (KIND_LABEL[opts.kind] || KIND_LABEL.lugn) + ' · ' + opts.age + ' år · ' + (LEN_LABEL[opts.length] || LEN_LABEL.mellan);
+  }
+  $('#optsToggle').addEventListener('click', () => {
+    const panel = $('#optsPanel');
+    panel.hidden = !panel.hidden;
+    $('#optsToggle').setAttribute('aria-expanded', String(!panel.hidden));
+  });
+  $$('.chips[data-group]').forEach((group) => group.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip'); if (!chip) return;
+    opts[group.dataset.group] = chip.dataset.value;
+    remember.set(group.dataset.group, chip.dataset.value);
+    renderChips();
+  }));
+  renderChips();
+
+  let draft = null;
+  function draftSrc() { if (draft.existing) return draft.existing.src; return draft.useWhole || !draft.cut.cutURL ? draft.cut.wholeURL : draft.cut.cutURL; }
+  function draftKey() { return draft.key + (draft.existing ? '' : draft.useWhole ? ':w' : ':c'); }
+  function resetPrepForm() {
+    $('#figName').value = draft.name || '';
+    $('#childName').value = draft.child || '';
+    $('#wish').value = '';
+    $('#figDesc').value = '';
+    $('#descField').hidden = true;
+    $('#prepNotice').hidden = true;
+    $('#wakeBtn').disabled = false;
+    $('#prepTitle').textContent = draft.existing ? 'Ny saga med ' + (draft.name || 'figuren') : 'Figuren har vaknat! Berätta om den.';
+  }
+  function renderPrepStage(awaken) {
+    setStage(prepStage, { scene: 'papper', motion: 'vinka', key: draftKey(), src: draftSrc(), waking: true, alt: 'Den utklippta teckningen' });
+    if (awaken && !reducedMotion) restart(prepStage, 'awaken');
+    const toggle = $('#wholeToggle'), note = $('#cutNote');
+    if (draft.existing) { toggle.hidden = true; note.hidden = true; return; }
+    if (draft.cut.failed) {
+      toggle.hidden = true; note.hidden = false;
+      note.textContent = 'Figuren gick inte att klippa ut, så hela bilden används. Det fungerar lika bra.';
+      return;
+    }
+    note.hidden = true; toggle.hidden = false;
+    toggle.textContent = draft.useWhole ? 'Klipp ut figuren igen' : 'Blev utklippet fel? Använd hela bilden';
+  }
+  $('#wholeToggle').addEventListener('click', () => {
+    if (!draft || draft.existing) return;
+    draft.useWhole = !draft.useWhole;
+    renderPrepStage(true);
+  });
+  function figureDraft(fig) {
+    draft = {
+      key: fig.id, existing: fig, cut: null, useWhole: !!fig.whole, name: fig.name || '', child: fig.child || '',
+      previous: (fig.stories || []).filter((s) => s.title).map((s) => ({ title: s.title, summary: s.summary || '' })),
+      desc: (fig.stories && fig.stories[0] && fig.stories[0].desc) || '', traits: fig.traits || null
+    };
+  }
+  function prepareFigure(fig) { figureDraft(fig); resetPrepForm(); renderPrepStage(false); show('prepare'); }
+  /* Every "take a photo" control gets its own transparent file input on top, so the tap lands on the input itself. */
+  let pickHintTimer = null;
+  function attachPicker(host) {
+    if (!host || host.querySelector('.file-overlay')) return;
+    host.removeAttribute('for');
+    host.classList.add('file-host');
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.className = 'file-overlay';
+    inp.setAttribute('aria-label', 'Fota eller välj en teckning');
+    inp.addEventListener('click', () => {
+      sound.unlock();
+      clearTimeout(pickHintTimer);
+      pickHintTimer = setTimeout(() => {
+        if (document.visibilityState === 'visible' && document.hasFocus()) toast('Öppnades ingen kamera? Öppna länken i Safari eller Chrome i stället.');
+      }, 3000);
+    });
+    inp.addEventListener('change', () => {
+      clearTimeout(pickHintTimer);
+      const f = inp.files && inp.files[0];
+      inp.value = '';
+      if (f) handlePhotoFile(f);
+    });
+    host.appendChild(inp);
+  }
+  window.addEventListener('blur', () => clearTimeout(pickHintTimer));
+  document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(pickHintTimer); });
+  const imageIn = (list) => Array.from(list || []).find((f) => /^image\//.test(f.type));
+  document.addEventListener('paste', (e) => { const f = imageIn(e.clipboardData && e.clipboardData.files); if (f) { e.preventDefault(); handlePhotoFile(f); } });
+  document.addEventListener('dragover', (e) => { if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) e.preventDefault(); });
+  document.addEventListener('drop', (e) => { const f = imageIn(e.dataTransfer && e.dataTransfer.files); if (f) { e.preventDefault(); handlePhotoFile(f); } });
+  attachPicker($('#photoLabel'));
+  async function handlePhotoFile(file) {
+    show('prepare');
+    $('#wholeToggle').hidden = true; $('#cutNote').hidden = true;
+    prepStage.querySelectorAll('.fig-img').forEach((im) => im.removeAttribute('src'));
+    prepStage.dataset.figKey = '';
+    setProp(prepStage, null);
+    stageBusy(prepStage, 'Klipper ut figuren …');
+    await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 40)));
+    try {
+      const pic = await decode(file);
+      const cut = cutOut(pic);
+      if (pic && typeof pic.close === 'function') pic.close();
+      draft = { key: newId(), existing: null, cut, useWhole: cut.failed, name: '', child: remember.get('child') || '', previous: [], desc: '', traits: null };
+      stageBusy(prepStage, '');
+      resetPrepForm(); renderPrepStage(true);
+      sound.wake();
+    } catch (err) {
+      stageBusy(prepStage, '');
+      show('start');
+      toast('Bilden gick inte att läsa. Prova att fota igen.');
+    }
+  }
+
+  const ERR = {
+    not_granted: 'Appen saknar sin familjekod. Öppna appen en gång med länken du fick, så kommer den ihåg koden.',
+    sampling_disabled: 'Claude är inte tillgängligt för det här kontot, så sagor kan inte skrivas här.',
+    capability_disabled: 'Sagor kan inte skrivas i den här vyn.',
+    rate_limited: 'Det har blivit många sagor på kort tid. Vänta en stund och försök igen.',
+    refused: 'Claude ville inte skriva den sagan. Prova ett annat önskemål.',
+    image_rejected: 'Bilden gick inte att använda. Fota teckningen igen, gärna i bättre ljus.',
+    images_unavailable: 'Bilder kan inte skickas härifrån. Beskriv figuren med några ord så skrivs sagan ändå.',
+    session_expired: 'Appen saknar sin familjekod. Öppna appen en gång med länken du fick.',
+    empty_completion: 'Det kom ingen saga den här gången. Försök igen.',
+    upstream_error: 'Något gick fel på vägen. Försök igen om en stund.'
+  };
+  function prepError(text) { const n = $('#prepNotice'); n.textContent = text; n.hidden = false; }
+  async function submitDraft(extraWish) {
+    if (!draft) return;
+    const caps = await capReady;
+    if (!caps.sample) {
+      if (current !== 'prepare') show('prepare');
+      prepError('Sagorna skrivs av Claude, och det fungerar bara när sidan är öppen i Claude. Exempelsagan kan du prova ändå.');
+      return;
+    }
+    const name = $('#figName').value.trim();
+    const child = $('#childName').value.trim();
+    const wish = (extraWish || $('#wish').value).trim();
+    const typedDesc = $('#figDesc').value.trim();
+    let blob = null;
+    if (caps.images && !draft.forceText) { try { blob = await toJPEGBlob(draftSrc()); } catch (err) { blob = null; } }
+    const desc = typedDesc || draft.desc;
+    if (!blob && !desc) {
+      if (current !== 'prepare') show('prepare');
+      $('#descField').hidden = false;
+      prepError('Beskriv figuren med några ord, så att sagan kan handla om just den.');
+      $('#figDesc').focus();
+      return;
+    }
+    remember.set('child', child);
+    const prompt = buildPrompt({ hasImage: !!blob, desc, name, hasChild: !!child, age: opts.age, kind: opts.kind, length: opts.length, wish, previous: draft.previous, traits: draft.traits });
+    writeStory({ prompt, blob, name, child, desc });
+  }
+  $('#prepForm').addEventListener('submit', (e) => { e.preventDefault(); submitDraft(); });
+  function continueWith(fig, idea) {
+    sound.unlock();
+    figureDraft(fig); resetPrepForm(); renderPrepStage(false);
+    $('#wish').value = idea;
+    submitDraft(idea);
+  }
+
+  /* ---------- Writing ---------- */
+  function setWriteStatus(title, sub) { $('#writeTitle').textContent = title; $('#writeSub').textContent = sub; }
+  function setMeter(frac) {
+    const m = $('#meter');
+    if (frac == null) { m.classList.add('wait'); m.style.removeProperty('--p'); return; }
+    m.classList.remove('wait'); m.style.setProperty('--p', Math.round(8 + Math.min(1, frac) * 92) + '%');
+  }
+  async function writeStory(job) {
+    const caps = await capReady;
+    show('writing');
+    setStage(writeStage, { scene: 'papper', motion: 'dansa', key: draftKey(), src: draftSrc(), waking: true, alt: 'Figuren dansar medan sagan skrivs' });
+    setWriteStatus('Claude tittar på teckningen …', 'Det brukar ta mellan tio sekunder och en minut.');
+    setMeter(null);
+    const expected = PAGES[opts.length] || 6;
+    const ctl = new AbortController(); writeCtl = ctl;
+    const options = {
+      signal: ctl.signal, modelTier: 'default', cache: false,
+      onText: ({ text }) => {
+        const p = parseStory(text.slice(0, text.lastIndexOf('\n') + 1));
+        if (p.pages.length) { setWriteStatus(p.title ? '”' + p.title + '”' : 'Sagan skrivs …', 'Sida ' + p.pages.length + ' av ungefär ' + expected + ' är klar.'); setMeter(p.pages.length / expected); }
+        else if (p.title) { setWriteStatus('”' + p.title + '”', 'Första sidan skrivs …'); setMeter(0.03); }
+      }
+    };
+    if (job.blob) options.images = [job.blob];
+    let res;
+    try {
+      res = await caps.sample(job.prompt, options);
+    } catch (err) {
+      if (writeCtl === ctl) writeCtl = null;
+      const code = err && err.code;
+      if (code === 'cancelled') { if (current === 'writing') show('prepare'); return; }
+      if (current !== 'writing') return;
+      show('prepare');
+      if (code === 'images_unavailable') { draft.forceText = true; $('#descField').hidden = false; }
+      if (code === 'not_granted' || code === 'sampling_disabled' || code === 'capability_disabled') $('#wakeBtn').disabled = true;
+      prepError(ERR[code] || ERR.upstream_error);
+      return;
+    }
+    if (writeCtl === ctl) writeCtl = null;
+    if (current !== 'writing') return;
+    const parsed = parseStory(res.text);
+    if (!parsed.pages.length) { show('prepare'); prepError('Sagan blev inte färdig den här gången. Försök igen.'); return; }
+    setMeter(1);
+    const name = job.name || parsed.name || 'Figuren';
+    const story = { id: newId(), title: parsed.title || 'Sagan om ' + name, desc: parsed.desc || job.desc || '', summary: parsed.summary || '', ideas: parsed.ideas, cast: parsed.cast, pages: parsed.pages, createdAt: Date.now() };
+    const traits = { trait: parsed.trait, power: parsed.power, fav: parsed.fav };
+    let fig;
+    if (draft.existing && !draft.existing.demo) {
+      fig = draft.existing; fig.name = name; fig.child = job.child;
+      if (!fig.traits || !fig.traits.trait) fig.traits = traits;
+      fig.stories = (fig.stories || []).concat(story);
+    } else {
+      fig = { id: draft.existing ? newId() : draft.key, name, child: job.child, createdAt: Date.now(), src: draftSrc(), whole: !!draft.useWhole, traits: draft.existing && draft.existing.traits ? draft.existing.traits : traits, stories: [story] };
+    }
+    await store.put(fig);
+    refreshCount();
+    draft = null;
+    openPlayer(fig, story);
+    if (res.truncated) toast('Sagan blev lite avklippt på slutet.');
+  }
+  $('#cancelBtn').addEventListener('click', () => { if (writeCtl) writeCtl.abort(); else show('prepare'); });
+
+  /* ---------- Reading aloud, with the current word lit up ---------- */
+  const speech = {
+    ok: 'speechSynthesis' in window && typeof window.SpeechSynthesisUtterance === 'function',
+    voices: [], voice: null, token: 0, active: false,
+    load() {
+      try { this.voices = (speechSynthesis.getVoices() || []).filter((v) => /^sv/i.test(v.lang)); } catch (e) { this.voices = []; }
+      this.voice = this.voices.find((v) => v.voiceURI === settings.voice) || this.voices.find((v) => /alva|klara|sofie|hedvig|oskar/i.test(v.name)) || this.voices[0] || null;
+    },
+    utter(text) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'sv-SE'; if (this.voice) u.voice = this.voice;
+      u.rate = settings.rate === 'normal' ? 1 : 0.86; u.pitch = 1.05;
+      return u;
+    },
+    play(items, onStart, onWord, onDone) {
+      this.stop();
+      const my = ++this.token; this.active = true;
+      items.forEach((it, k) => {
+        const u = this.utter(it.text);
+        u.onstart = () => { if (my === this.token) onStart(it.idx); };
+        u.onboundary = (ev) => { if (my === this.token && (!ev.name || ev.name === 'word')) onWord(it.idx, ev.charIndex); };
+        if (k === items.length - 1) u.onend = () => { if (my === this.token) { this.active = false; onDone(); } };
+        u.onerror = (ev) => { if (my === this.token && ev.error !== 'interrupted' && ev.error !== 'canceled') { this.active = false; onDone(); } };
+        speechSynthesis.speak(u);
+      });
+    },
+    sample(text) { if (!this.ok) return; this.stop(); try { speechSynthesis.speak(this.utter(text)); } catch (e) { /* ignore */ } },
+    stop() { this.token++; this.active = false; try { speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
+  };
+  if (speech.ok) {
+    speech.load();
+    try { speechSynthesis.addEventListener('voiceschanged', () => speech.load()); } catch (e) { /* older engines */ }
+  }
+  let wakeLock = null;
+  async function keepAwake(on) {
+    try {
+      if (on && navigator.wakeLock && !wakeLock) wakeLock = await navigator.wakeLock.request('screen');
+      else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+    } catch (e) { wakeLock = null; }
+  }
+  function renderWords(el, text) {
+    el.textContent = '';
+    const re = /\S+/g; let m, last = 0;
+    while ((m = re.exec(text))) {
+      if (m.index > last) el.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const s = document.createElement('span'); s.className = 'w'; s.dataset.i = String(m.index); s.textContent = m[0];
+      el.appendChild(s); last = m.index + m[0].length;
+    }
+    if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+  }
+  function lightWord(charIndex) {
+    let target = null;
+    $$('#pageText .w').forEach((s) => { if (+s.dataset.i <= charIndex) target = s; s.classList.remove('on'); });
+    if (target) target.classList.add('on');
+  }
+
+  /* ---------- Player: cover, pages, the end ---------- */
+  const play = { fig: null, story: null, page: -1 };
+  const fmtDate = (t, opt) => { try { return new Date(t).toLocaleDateString('sv-SE', opt || { day: 'numeric', month: 'long' }); } catch (e) { return ''; } };
+  /* ---------- Illustrations: Claude draws each page from what actually happens on it ---------- */
+  const drawing = new Set();
+  function artPrompt(fig, story, i) {
+    const p = story.pages[i], prev = story.pages[i - 1];
+    const plain = (t) => String(t || '').replace(/\{\s*BARN\s*\}/gi, 'barnet');
+    const held = p.prop && p.prop.act === 'handen' ? p.prop.kind : '';
+    return [
+      'Du är illustratör för en svensk bilderbok för barn. Rita EN bild till sidan nedan, som SVG.',
+      'Bilden ska visa exakt det som händer på sidan: rätt plats, tid på dygnet och väder, och alla figurer och saker som nämns, på rätt ställen.',
+      'Sidans text: ' + plain(p.text),
+      p.bild ? 'Anvisning: ' + plain(p.bild) : '',
+      prev ? 'Föregående sida (för att platsen ska hänga ihop): ' + plain(prev.bild || prev.text) : '',
+      (story.cast && story.cast.length) ? 'Rita de här likadant varje gång de syns: ' + story.cast.join('; ') : '',
+      'Huvudfiguren ' + fig.name + ' läggs in ovanpå bilden efteråt, stående på marken mitt i nederkanten. Rita inte huvudfiguren' + (held ? ' och inte ' + held + 'n som den håller i' : '') + '. Lämna området x 140–260, y 120–285 fritt från stora saker. Marken i mitten ska ligga ungefär på y 265–300.',
+      'Stil: bilderbok i kritstil. Mjuka runda former, tydliga mörkblå konturer (#22264A, stroke-width 3 till 5, stroke-linejoin round), varma klara färger, fyll hela bakgrunden. Tryggt och vänligt, aldrig läskigt. Ingen text eller bokstäver i bilden.',
+      'Tekniskt: svara med bara ett <svg>-element med xmlns="http://www.w3.org/2000/svg" och viewBox="0 0 400 300". Använd bara rect, circle, ellipse, path, polygon, polyline, line, g, linearGradient och radialGradient. Inga bilder, skript, filter eller text. Högst cirka 70 element.'
+    ].filter(Boolean).join('\n');
+  }
+  function cleanSVG(text) {
+    const m = String(text || '').match(/<svg[\s\S]*<\/svg>/i);
+    if (!m) return null;
+    let doc;
+    try { doc = new DOMParser().parseFromString(m[0], 'image/svg+xml'); } catch (e) { return null; }
+    const root = doc && doc.documentElement;
+    if (!root || root.nodeName.toLowerCase() !== 'svg' || doc.getElementsByTagName('parsererror').length) return null;
+    Array.from(root.querySelectorAll('script, foreignObject, image, iframe, a, text, style')).forEach((n) => n.remove());
+    Array.from(root.querySelectorAll('*')).concat([root]).forEach((n) => {
+      Array.from(n.attributes).forEach((a) => {
+        const k = a.name.toLowerCase();
+        if (k.startsWith('on') || ((k === 'href' || k === 'xlink:href') && !a.value.startsWith('#'))) n.removeAttribute(a.name);
+      });
+    });
+    root.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    if (!root.getAttribute('viewBox')) root.setAttribute('viewBox', '0 0 400 300');
+    root.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    root.removeAttribute('width'); root.removeAttribute('height');
+    if (root.querySelectorAll('*').length < 4) return null;
+    const out = new XMLSerializer().serializeToString(root);
+    return out.length > 80000 ? null : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(out);
+  }
+  function updateArtStatus() {
+    const el = $('#artStatus');
+    if (!play.story || !drawing.has(play.story.id)) { el.hidden = true; return; }
+    const n = play.story.pages.length, done = play.story.pages.filter((p) => p.art).length;
+    el.hidden = false;
+    el.textContent = 'Claude ritar bilderna till sagan, ' + done + ' av ' + n + ' klara. Du kan börja läsa ändå.';
+  }
+  async function illustrate(fig, story) {
+    if (!fig || fig.demo || !story || drawing.has(story.id)) return;
+    const todo = story.pages.map((p, i) => i).filter((i) => !story.pages[i].art && !story.pages[i].artFailed);
+    if (!todo.length) return;
+    const caps = await capReady;
+    if (!caps.sample) return;
+    drawing.add(story.id); updateArtStatus();
+    let next = 0;
+    const worker = async () => {
+      while (next < todo.length) {
+        const i = todo[next++];
+        try {
+          const res = await caps.sample(artPrompt(fig, story, i), { modelTier: 'default', cache: false });
+          const art = cleanSVG(res.text);
+          if (art) {
+            story.pages[i].art = art;
+            store.put(fig);
+            if (play.story === story && current === 'player' && (play.page === i || (play.page < 0 && i === 0) || (play.page >= story.pages.length && i === story.pages.length - 1))) renderStage(false);
+          } else story.pages[i].artFailed = true;
+        } catch (e) {
+          const code = e && e.code;
+          if (code === 'not_granted' || code === 'sampling_disabled' || code === 'rate_limited' || code === 'capability_disabled') next = todo.length;
+        }
+        updateArtStatus();
+      }
+    };
+    await Promise.all([worker(), worker()]);
+    drawing.delete(story.id);
+    updateArtStatus();
+  }
+  function openPlayer(fig, story) {
+    play.fig = fig; play.story = story; play.page = -1;
+    $('#speechNotice').hidden = true;
+    show('player');
+    renderPage(false);
+    illustrate(fig, story);
+    updateArtStatus();
+    capReady.then((caps) => { $('#saveBtn').hidden = !caps.downloads; });
+  }
+  function renderIdeas(list, wrap, ideas, fig) {
+    list.textContent = '';
+    const items = (ideas || []).filter(Boolean).slice(0, 3);
+    wrap.hidden = !items.length;
+    items.forEach((idea) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'idea';
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z" fill="currentColor"/></svg>';
+      const t = document.createElement('span'); t.textContent = idea; b.appendChild(t);
+      b.addEventListener('click', () => continueWith(fig, idea));
+      list.appendChild(b);
+    });
+  }
+  function renderDots() {
+    const n = play.story.pages.length, wrap = $('#dots');
+    wrap.textContent = '';
+    for (let k = 0; k < n; k++) { const i = document.createElement('i'); if (k === play.page) i.className = 'on'; else if (k < play.page) i.className = 'done'; wrap.appendChild(i); }
+  }
+  function renderStage(turn, endProp) {
+    const { fig, story } = play; if (!fig || !story) return;
+    const n = story.pages.length, i = play.page;
+    const p = i < 0 ? story.pages[0] || {} : i >= n ? story.pages[n - 1] || {} : story.pages[i];
+    const idx = i < 0 ? 0 : i >= n ? n - 1 : i;
+    let prop = i < 0 ? null : i >= n ? endProp || null : p.prop;
+    if (p.art && prop && prop.act !== 'handen') prop = null;
+    setStage(playStage, { scene: i >= n ? p.scene || 'hem' : p.scene, art: p.art || null, artKey: story.id + '-' + idx, motion: i < 0 || i >= n ? 'vinka' : p.motion, prop, key: fig.id, src: fig.src, alt: fig.name, enter: turn });
+  }
+  function renderPage(turn) {
+    const { fig, story } = play; if (!fig || !story) return;
+    const n = story.pages.length, i = play.page, cover = i < 0, end = i >= n;
+    $('#cover').hidden = !cover; $('#reader').hidden = cover || end; $('#endCard').hidden = !end;
+    $('#subActions').hidden = cover || end; $('#coverLabel').hidden = !cover;
+    playStage.classList.toggle('is-cover', cover);
+    $('#storyTitle').hidden = cover; $('#storyTitle').textContent = story.title;
+    if (cover) {
+      const p0 = story.pages[0] || {};
+      renderStage(turn);
+      $('#coverEyebrow').textContent = 'En saga om ' + fig.name;
+      $('#coverTitle').textContent = story.title;
+      $('#coverBy').textContent = [fig.child ? 'Ritad av ' + fig.child : '', fmtDate(story.createdAt), n === 1 ? '1 sida' : n + ' sidor'].filter(Boolean).join(' · ');
+      $('#pageNo').textContent = '';
+    } else if (!end) {
+      const p = story.pages[i];
+      renderStage(turn);
+      renderWords($('#pageText'), personalize(p.text, fig));
+      $('#pageText').classList.toggle('first', i === 0);
+      if (turn && !reducedMotion) restart($('#reader'), 'turn');
+      $('#pageNo').textContent = 'Sida ' + (i + 1) + ' av ' + n;
+    } else {
+      const last = story.pages[n - 1] || {};
+      const up = last.prop && (last.prop.act === 'himlen' || last.prop.act === 'flyger') ? { kind: last.prop.kind, act: 'himlen' } : null;
+      renderStage(turn, up);
+      $('#endLine').textContent = fig.name + ' vill gärna vara med i fler sagor.';
+      renderIdeas($('#ideaList'), $('#ideasWrap'), story.ideas, fig);
+      $('#pageNo').textContent = '';
+    }
+    renderDots();
+    $('#prevBtn').disabled = cover;
+    $('#nextBtn').disabled = end;
+    setPlayState(speech.active);
+    if (!$('#bedtime').hidden) bedDots();
+  }
+  function goTo(i, viaSpeech) {
+    if (!play.story) return;
+    const n = play.story.pages.length;
+    const next = Math.max(-1, Math.min(n, i));
+    if (next === play.page) return;
+    if (!viaSpeech && speech.active) stopReading();
+    play.page = next;
+    renderPage(true);
+    if (!viaSpeech) { sound.page(); buzz(8); }
+    if (next === n) sound.end();
+  }
+  function readFrom(start, onFinished) {
+    const note = $('#speechNotice');
+    if (!speech.ok) { note.hidden = false; note.textContent = 'Den här enheten kan inte läsa upp text. Läs sagan högt själv, det är ändå finast.'; return false; }
+    if (!speech.voice) { speech.load(); if (!speech.voice) { note.hidden = false; note.textContent = 'Ingen svensk röst hittades på enheten, så uppläsningen kan låta konstig.'; } }
+    const items = play.story.pages.map((p, idx) => ({ idx, text: personalize(p.text, play.fig) })).slice(start);
+    if (!items.length) return false;
+    speech.play(items,
+      (idx) => { if (idx !== play.page) goTo(idx, true); lightWord(-1); },
+      (idx, ci) => { if (idx === play.page) lightWord(ci); },
+      () => { lightWord(-1); goTo(play.story.pages.length, true); renderPage(false); if (onFinished) onFinished(); });
+    if (play.page !== start) goTo(start, true);
+    setPlayState(true);
+    return true;
+  }
+  function stopReading() { speech.stop(); lightWord(-1); setPlayState(false); }
+  function setPlayState(on) { const b = $('#readBtn'); b.classList.toggle('on', !!on); b.setAttribute('aria-label', on ? 'Pausa uppläsningen' : 'Läs upp'); }
+  $('#prevBtn').addEventListener('click', () => goTo(play.page - 1));
+  $('#nextBtn').addEventListener('click', () => goTo(play.page + 1));
+  $('#startBtn').addEventListener('click', () => goTo(0));
+  $('#listenBtn').addEventListener('click', () => { sound.unlock(); readFrom(0); });
+  $('#readBtn').addEventListener('click', () => {
+    if (speech.active) { stopReading(); return; }
+    readFrom(play.page < 0 || play.page >= play.story.pages.length ? 0 : play.page);
+  });
+  /* Swipe, or tap the picture's edges to turn the page; tap the figure to tickle it. */
+  let swipeX = null, swiped = false;
+  playStage.addEventListener('pointerdown', (e) => { swipeX = e.clientX; swiped = false; });
+  playStage.addEventListener('pointerup', (e) => {
+    if (swipeX == null) return;
+    const dx = e.clientX - swipeX; swipeX = null;
+    if (Math.abs(dx) > 50) { swiped = true; goTo(play.page + (dx < 0 ? 1 : -1)); }
+  });
+  playStage.addEventListener('pointercancel', () => { swipeX = null; });
+  playStage.addEventListener('click', (e) => {
+    if (swiped) { swiped = false; return; }
+    if (e.target.closest('.fig')) { tickle(playStage); return; }
+    const r = playStage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+    if (x < 0.3) goTo(play.page - 1); else if (x > 0.7) goTo(play.page + 1);
+  });
+
+  /* ---------- Bedtime: dark screen, voice only ---------- */
+  let bedPaused = false;
+  function bedDots() {
+    const n = play.story ? play.story.pages.length : 0, w = $('#bedDots');
+    w.textContent = '';
+    for (let k = 0; k < n; k++) { const i = document.createElement('i'); if (k <= play.page) i.className = 'on'; w.appendChild(i); }
+  }
+  function bedFinished() {
+    $('#bedTitle').textContent = 'God natt, ' + play.fig.name + '.';
+    $('#bedSub').textContent = 'Sagan är slut. Sov gott.';
+    $('#bedPause').hidden = true;
+    $('#bedExit').textContent = 'Stäng';
+  }
+  function openBedtime() {
+    sound.unlock();
+    const start = play.page < 0 || play.page >= play.story.pages.length ? 0 : play.page;
+    $('#bedtime').hidden = false;
+    $('#bedTitle').textContent = 'Sagan läses upp';
+    $('#bedSub').textContent = 'Skärmen är mörk så att det blir lättare att somna.';
+    $('#bedPause').hidden = false; $('#bedPause').textContent = 'Pausa';
+    $('#bedExit').textContent = 'Avsluta';
+    bedPaused = false;
+    keepAwake(true);
+    const ok = readFrom(start, bedFinished);
+    if (!ok) { $('#bedTitle').textContent = 'Uppläsning saknas'; $('#bedSub').textContent = 'Den här enheten kan inte läsa upp text.'; $('#bedPause').hidden = true; }
+    bedDots();
+    $('#bedExit').focus();
+  }
+  $('#bedBtn').addEventListener('click', openBedtime);
+  $('#coverBedBtn').addEventListener('click', openBedtime);
+  $('#bedPause').addEventListener('click', () => {
+    if (!bedPaused) {
+      speech.stop(); bedPaused = true;
+      $('#bedPause').textContent = 'Fortsätt'; $('#bedTitle').textContent = 'Pausad';
+    } else {
+      bedPaused = false;
+      $('#bedPause').textContent = 'Pausa'; $('#bedTitle').textContent = 'Sagan läses upp';
+      readFrom(Math.max(0, Math.min(play.page, play.story.pages.length - 1)), bedFinished);
+    }
+  });
+  $('#bedExit').addEventListener('click', () => {
+    speech.stop(); keepAwake(false);
+    $('#bedtime').hidden = true;
+    renderPage(false);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !$('#bedtime').hidden) { wakeLock = null; keepAwake(true); }
+  });
+
+  /* ---------- Saving stories as files ---------- */
+  const fileName = (t) => String(t || 'Saga').replace(/[\\/:*?"<>|]+/g, '').slice(0, 80).trim() + '.html';
+  async function saveFile(filename, data) {
+    const caps = await capReady;
+    if (!caps.downloads) return;
+    try {
+      const r = await caps.downloads.save({ filename, data });
+      if (r && r.status === 'saved') toast('Sparat. Öppna filen för att skriva ut den.');
+    } catch (err) {
+      const code = err && err.code;
+      if (code === 'declined') return;
+      toast(code === 'rate_limited' ? 'Vänta lite och försök igen.' : 'Det gick inte att spara här.');
+    }
+  }
+  function figureBookHTML(fig) {
+    const chapters = (fig.stories || []).map((s) => '<h2>' + esc(s.title) + '</h2>' + s.pages.map((p) => '<p>' + esc(personalize(p.text, fig)) + '</p>').join('')).join('');
+    return '<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc('Sagorna om ' + fig.name) + '</title>'
+      + '<style>body{font-family:Georgia,"Times New Roman",serif;color:#1C2340;background:#FFFFFF;max-width:40rem;margin:2.5rem auto;padding:0 1.25rem;line-height:1.65;font-size:1.2rem}img{display:block;max-width:55%;max-height:22rem;margin:0 auto 1.5rem;object-fit:contain}h1{text-align:center;font-size:2.2rem;line-height:1.2;margin:0 0 .5rem}h2{font-size:1.5rem;margin:2.5rem 0 1rem;break-before:page}p{margin:0 0 1.2rem}.by{text-align:center;color:#55607F}</style></head><body>'
+      + '<img src="' + fig.src + '" alt="' + esc(fig.name) + '"><h1>' + esc('Sagorna om ' + fig.name) + '</h1>' + (fig.child ? '<p class="by">Ritad av ' + esc(fig.child) + '</p>' : '') + chapters + '</body></html>';
+  }
+  $('#saveBtn').addEventListener('click', () => { if (play.story) saveFile(fileName(play.story.title), bookHTML(play.fig, play.story)); });
+
+  /* ---------- Library and figure cards ---------- */
+  async function refreshCount() {
+    const figs = await store.all();
+    const c = $('#libCount'); c.textContent = String(figs.length); c.hidden = figs.length === 0;
+  }
+  async function openLibrary() {
+    const figs = (await store.all()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const grid = $('#libGrid'); grid.textContent = '';
+    const stories = figs.reduce((s, f) => s + (f.stories || []).length, 0);
+    $('#libSum').textContent = figs.length
+      ? figs.length + (figs.length === 1 ? ' figur' : ' figurer') + ' · ' + stories + (stories === 1 ? ' saga' : ' sagor')
+      : 'Här samlas barnens figurer med alla sagor de har varit med i. Fota en teckning så hamnar den första här.';
+    grid.appendChild(newTile());
+    figs.forEach((fig) => grid.appendChild(figTile(fig)));
+    show('library');
+  }
+  let shownFig = null, deleteArmed = false;
+  function openFigure(fig) {
+    shownFig = fig; deleteArmed = false;
+    $('#figNo').textContent = fig.demo ? 'Figurkort · exempel' : 'Figurkort';
+    if (!fig.demo) store.all().then((figs) => {
+      const idx = figs.slice().sort((x, y) => (x.createdAt || 0) - (y.createdAt || 0)).findIndex((f) => f.id === fig.id);
+      if (shownFig === fig && idx >= 0) $('#figNo').textContent = 'Figurkort · nr ' + (idx + 1);
+    });
+    $('#figDelete').textContent = 'Ta bort figuren';
+    $('#figDelete').hidden = !!fig.demo;
+    $('#figTitle').textContent = fig.name;
+    const n = (fig.stories || []).length;
+    $('#figMeta').textContent = [fig.child ? 'Ritad av ' + fig.child : '', fig.createdAt ? fmtDate(fig.createdAt, { day: 'numeric', month: 'long', year: 'numeric' }) : '', n === 1 ? '1 saga' : n + ' sagor'].filter(Boolean).join(' · ');
+    const dl = $('#figTraits'); dl.textContent = '';
+    const t = fig.traits || {};
+    [['Egenskap', t.trait], ['Superkraft', t.power], ['Favorit', t.fav]].forEach((row) => {
+      if (!row[1]) return;
+      const d = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd');
+      dt.textContent = row[0]; dd.textContent = row[1]; d.append(dt, dd); dl.appendChild(d);
+    });
+    dl.hidden = !dl.children.length;
+    const latest = (fig.stories || [])[n - 1];
+    renderIdeas($('#figIdeas'), $('#figIdeasWrap'), latest && latest.ideas, fig);
+    $('#figNewBtn').textContent = 'Ny saga med ' + fig.name;
+    const list = $('#figStories'); list.textContent = '';
+    (fig.stories || []).slice().reverse().forEach((s) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'story-item';
+      const st = document.createElement('span'); st.textContent = s.title;
+      const sd = document.createElement('span'); sd.textContent = fmtDate(s.createdAt, { day: 'numeric', month: 'short' });
+      b.append(st, sd);
+      b.addEventListener('click', () => openPlayer(fig, s));
+      li.appendChild(b); list.appendChild(li);
+    });
+    $('#figSaveAll').hidden = true;
+    capReady.then((caps) => { $('#figSaveAll').hidden = !caps.downloads || !n; });
+    show('figure');
+    setStage(figStage, { scene: 'papper', motion: 'vinka', key: fig.id, src: fig.src, alt: fig.name, enter: true });
+  }
+  $('#figNewBtn').addEventListener('click', () => { if (shownFig) prepareFigure(shownFig); });
+  $('#figSaveAll').addEventListener('click', () => { if (shownFig) saveFile(fileName('Sagorna om ' + shownFig.name), figureBookHTML(shownFig)); });
+  $('#figDelete').addEventListener('click', async () => {
+    if (!shownFig || shownFig.demo) return;
+    if (!deleteArmed) { deleteArmed = true; $('#figDelete').textContent = 'Tryck igen för att ta bort ' + shownFig.name + ' och alla sagor'; return; }
+    await store.del(shownFig.id);
+    shownFig = null; deleteArmed = false;
+    await refreshCount();
+    openLibrary();
+    toast('Figuren är borttagen.');
+  });
+
+
+  /* ---------- Home: the family's own figure says hello ---------- */
+  const DAY = {
+    morgon: { greet: 'God morgon', title: 'Vilket äventyr blir det i dag?', scene: 'äng' },
+    dag: { greet: 'Hej igen', title: 'Vilket äventyr blir det i dag?', scene: 'skog' },
+    kväll: { greet: 'God kväll', title: 'Vilken saga blir det i kväll?', scene: 'stad' },
+    natt: { greet: 'Snart dags att sova', title: 'Dags för en godnattsaga?', scene: 'natt' }
+  };
+  function dayPart() { const h = new Date().getHours(); return h >= 5 && h < 10 ? 'morgon' : h >= 10 && h < 17 ? 'dag' : h >= 17 && h < 20 ? 'kväll' : 'natt'; }
+  const lastStory = (fig) => { const st = fig.stories || []; return st[st.length - 1] || null; };
+  const lastTime = (fig) => { const st = lastStory(fig); return (st && st.createdAt) || fig.createdAt || 0; };
+  function figTile(fig) {
+    const card = document.createElement('button'); card.type = 'button'; card.className = 'fig-card';
+    const thumb = document.createElement('span'); thumb.className = 'thumb';
+    const img = document.createElement('img'); img.src = fig.src; img.alt = ''; thumb.appendChild(img);
+    const nm = document.createElement('span'); nm.className = 'fig-card-name'; nm.textContent = fig.name;
+    const meta = document.createElement('span'); meta.className = 'fig-card-meta';
+    const n = (fig.stories || []).length;
+    meta.textContent = (n === 1 ? '1 saga' : n + ' sagor') + (fig.child ? ' · ritad av ' + fig.child : '');
+    card.append(thumb, nm, meta);
+    card.addEventListener('click', () => openFigure(fig));
+    return card;
+  }
+  function newTile() {
+    const add = document.createElement('label'); add.className = 'fig-card new'; add.htmlFor = 'photo';
+    add.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></svg><span class="fig-card-name">Ny figur</span><span class="fig-card-meta">Fota en teckning</span>';
+    attachPicker(add);
+    return add;
+  }
+  let homeFig = null;
+  async function renderHome() {
+    const figs = (await store.all()).slice().sort((a, b) => lastTime(b) - lastTime(a));
+    if (current !== 'start') return;
+    const returning = figs.length > 0;
+    $('#intro').hidden = returning; $('#homeGreet').hidden = !returning; $('#homeMain').hidden = !returning;
+    if (!returning) {
+      homeFig = null;
+      $('#heroCaption').textContent = 'Exempelfigur: Pluttan, ritad med kritor. Tryck på henne!';
+      startHero(DEMO_FIG, 'äng', 'Exempelfiguren Pluttan, en lila kritfigur som vinkar');
+      return;
+    }
+    const part = dayPart(), d = DAY[part], fig = figs[0], story = lastStory(fig);
+    homeFig = fig;
+    $('#greetEyebrow').textContent = d.greet;
+    $('#greetTitle').textContent = d.title;
+    $('#heroCaption').textContent = fig.name + ' väntar på nästa saga. Tryck på figuren!';
+    $('#homeNew').textContent = 'Ny saga med ' + fig.name;
+    $('#homeRead').hidden = !story;
+    if (story) $('#homeRead').textContent = part === 'natt' ? 'Godnattsaga: ”' + story.title + '”' : 'Läs ”' + story.title + '”';
+    const shelf = $('#shelf'); shelf.textContent = '';
+    figs.forEach((f) => shelf.appendChild(figTile(f)));
+    shelf.appendChild(newTile());
+    startHero(fig, d.scene);
+  }
+  $('#homeNew').addEventListener('click', () => { if (homeFig) prepareFigure(homeFig); });
+  $('#homeRead').addEventListener('click', () => {
+    const story = homeFig && lastStory(homeFig);
+    if (!story) return;
+    sound.unlock();
+    openPlayer(homeFig, story);
+    if (dayPart() === 'natt') openBedtime();
+  });
+  $('#shelfAll').addEventListener('click', openLibrary);
+
+  /* ---------- Settings sheet ---------- */
+  function renderSettings() {
+    $$('.chips[data-setting]').forEach((g) => $$('.chip', g).forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.value === settings[g.dataset.setting]))));
+    $('#soundToggle').setAttribute('aria-checked', String(settings.sound));
+    if (speech.ok) speech.load();
+    const sel = $('#voiceSelect'); sel.textContent = '';
+    const auto = document.createElement('option'); auto.value = ''; auto.textContent = 'Automatiskt'; sel.appendChild(auto);
+    speech.voices.forEach((v) => { const o = document.createElement('option'); o.value = v.voiceURI; o.textContent = v.name; sel.appendChild(o); });
+    sel.value = speech.voices.some((v) => v.voiceURI === settings.voice) ? settings.voice : '';
+    $('#voiceHint').textContent = !speech.ok ? 'Den här enheten kan inte läsa upp text.' : speech.voices.length ? 'Svenska röster som finns på den här enheten.' : 'Ingen svensk röst hittades på enheten.';
+    $('#voiceTest').hidden = !speech.ok;
+  }
+  function openSheet() { renderSettings(); $('#sheet').hidden = false; $('#sheetClose').focus(); }
+  function closeSheet() { $('#sheet').hidden = true; }
+  $$('.chips[data-setting]').forEach((g) => g.addEventListener('click', (e) => {
+    const c = e.target.closest('.chip'); if (!c) return;
+    settings[g.dataset.setting] = c.dataset.value;
+    remember.set(g.dataset.setting, c.dataset.value);
+    applySettings(); renderSettings();
+  }));
+  $('#voiceSelect').addEventListener('change', (e) => { settings.voice = e.target.value; remember.set('voice', settings.voice); speech.load(); });
+  $('#voiceTest').addEventListener('click', () => { speech.load(); speech.sample('Det var en gång en liten figur som vaknade på ett papper.'); });
+  $('#soundToggle').addEventListener('click', () => {
+    settings.sound = !settings.sound;
+    remember.set('sound', settings.sound ? 'på' : 'av');
+    renderSettings();
+    if (settings.sound) { sound.unlock(); sound.wake(); }
+  });
+  $('#settingsBtn').addEventListener('click', openSheet);
+  $('#sheetClose').addEventListener('click', closeSheet);
+  $('#sheetBackdrop').addEventListener('click', closeSheet);
+
+  /* ---------- Wiring ---------- */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (!$('#sheet').hidden) { closeSheet(); return; }
+      if (!$('#bedtime').hidden) { $('#bedExit').click(); return; }
+    }
+    if (current !== 'player' || !$('#bedtime').hidden || !$('#sheet').hidden) return;
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (e.key === 'ArrowRight') goTo(play.page + 1);
+    if (e.key === 'ArrowLeft') goTo(play.page - 1);
+  });
+  $('#homeBtn').addEventListener('click', () => show('start'));
+  $('#libraryBtn').addEventListener('click', openLibrary);
+  $('#toFigBtn').addEventListener('click', () => { if (play.fig) openFigure(play.fig); });
+  $('#demoBtn').addEventListener('click', () => { sound.unlock(); openPlayer(DEMO_FIG, DEMO_STORY); });
+  $('#againBtn').addEventListener('click', () => { if (play.fig) prepareFigure(play.fig); });
+
+  show('start');
+  refreshCount();
+})();
+</script>
+</body>
+</html>
