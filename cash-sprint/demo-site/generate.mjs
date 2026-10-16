@@ -128,7 +128,7 @@ export function validateLead(lead) {
   const problems = [];
   if (!lead || typeof lead !== 'object') return ['lead måste vara ett objekt'];
   if (!String(lead.name ?? '').trim()) problems.push('name saknas');
-  if (!normalizePhone(lead.phone) && !String(lead.email ?? '').trim()) problems.push('phone eller email behövs');
+  if (!normalizePhone(lead.phone) && !String(lead.email ?? '').trim() && !String(lead.address ?? '').trim()) problems.push('phone, email eller address behövs');
   if (lead.category && !CATEGORIES[lead.category]) problems.push(`okänd category "${lead.category}" (välj ${Object.keys(CATEGORIES).join(', ')})`);
   return problems;
 }
@@ -146,7 +146,7 @@ export function renderSite(lead, { live = false, maker = '' } = {}) {
   const email = String(lead.email ?? '').trim();
   const address = String(lead.address ?? '').trim();
   const services = normalizeServices(lead.services, cat.services);
-  const usedDefaultServices = !(Array.isArray(lead.services) && lead.services.length);
+  const usedDefaultServices = !(Array.isArray(lead.services) && lead.services.length) || lead.servicesAreExamples === true;
   const hours = normalizeHours(lead.hours);
   const booking = safeUrl(lead.bookingUrl);
   const facebook = safeUrl(lead.facebook);
@@ -158,12 +158,13 @@ export function renderSite(lead, { live = false, maker = '' } = {}) {
   const primary = booking
     ? `<a class="btn btn-main" href="${esc(booking)}">${esc(cat.cta)}</a>`
     : tel ? `<a class="btn btn-main" href="tel:${esc(tel)}">${esc(cat.cta)}</a>`
-    : `<a class="btn btn-main" href="mailto:${esc(email)}">${esc(cat.cta)}</a>`;
-  const secondary = mapsUrl ? `<a class="btn btn-alt" href="${esc(mapsUrl)}">Hitta hit</a>` : '';
+    : email ? `<a class="btn btn-main" href="mailto:${esc(email)}">${esc(cat.cta)}</a>`
+    : `<a class="btn btn-main" href="${esc(mapsUrl)}">Hitta hit</a>`;
+  const secondary = mapsUrl && (booking || tel || email) ? `<a class="btn btn-alt" href="${esc(mapsUrl)}">Hitta hit</a>` : '';
 
   const banner = live ? '' : `
   <div class="demo-banner" role="note">
-    <strong>Förslag till ${esc(name)}.</strong> Sidan är inte publicerad.${usedDefaultServices ? ' Tjänsterna är exempel och byts mot era.' : ''}
+    <strong>Förslag till ${esc(name)}${maker ? ` från ${esc(maker)}` : ''}.</strong> Sidan är inte publicerad.${usedDefaultServices ? ' Tjänsterna är exempel och byts mot era.' : ''}
   </div>`;
 
   return `<!doctype html>
@@ -257,7 +258,7 @@ ${banner}
       ${facebook ? `<a href="${esc(facebook)}">Facebook</a>` : ''}
       ${instagram ? `<a href="${esc(instagram)}">Instagram</a>` : ''}
     </div>
-    <div class="credit">© ${year} ${esc(name)}${maker ? ` · Hemsida: ${esc(maker)}` : ''}</div>
+    <div class="credit">© ${year} ${esc(name)}${maker && live ? ` · Hemsida: ${esc(maker)}` : ''}</div>
   </footer>
 </div>
 </body>

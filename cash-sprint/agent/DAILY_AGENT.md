@@ -19,23 +19,28 @@ Appen: <https://claude.ai/artifact/9vp7Xcz7ejAa2hbr7vpMhp>. Läs och skriv dess 
 2. **Hitta tio nya leads för ”Hemsida på 24 timmar”** i Jonatans ort och grannorter (standard: Vänersborg, Trollhättan, Uddevalla). Välj branscher där en enkel hemsida gör nytta: frisör, barberare, nagelsalong, hudvård, massage, hundfrisör, målare, elektriker, rörmokare, snickare, städfirma, bilverkstad, café, pizzeria. Byt bransch varje dag.
    Ett lead räknas bara om du har kontrollerat att
    - företaget finns och är i drift (aktuella omdömen eller inlägg),
-   - det **inte** har någon egen hemsida, bara Facebook, Instagram eller en katalogsida,
+   - det **inte** har någon fungerande egen hemsida, bara Facebook, Instagram eller en katalogsida,
    - det finns ett publicerat telefonnummer eller en adress.
+
+   Så gör du: sök på hitta.se (`https://www.hitta.se/sök?vad=<bransch>+<ort>&typ=ftg`) och öppna varje företags detaljsida. Där står bolagsform, telefon (under ”Olika telefonformat”), hemsida och sociala medier. Står en hemsida listad, kontrollera att domänen svarar (`getent hosts` och `curl`). En listad hemsida som inte längre finns är det starkaste argumentet, så skriv det i `note`. Sökresultatsidan visar inte hemsidor på ett tillförlitligt sätt, öppna därför alltid detaljsidan. Hoppa över kedjor, verksamheter som drivs från en privat lägenhetsadress och sådana utan både telefon och adress.
 
 3. **Bestäm kanal.** Står ”AB” i namnet eller på en källa, sätt `formType: "ab"`. Annars `"okand"`. För `okand` och `ef` sätter du `channel: "telefon"` (eller `"besok"` om det är en butik med öppettider). Mejl bara till aktiebolag.
 
 4. **Skriv ett första meddelande** i fältet `message`, på svenska och i samma ton som manusen i appen. För telefon skriver du en öppningsreplik och för besök en öppning för butiken. Nämn en konkret, sann iakttagelse, till exempel ”ni har 4,7 i betyg men ingen egen hemsida”. Använd priset `priceSite` ur inställningarna. Lova aldrig något som Jonatan inte kan leverera.
 
-5. **Lägg in leadsen** med en `batch` i samlingen `leads`, ett dokument per lead med ett nytt id, till exempel `a-20261017-01`:
+5. **Lägg in leadsen** med en `batch` i samlingen `leads`, ett dokument per lead med ett nytt id, till exempel `a-20261017-01`. Sätt `route` i ungefärlig gångordning för besök. Sätt `demoPath` till samma slug som demosidan får:
    ```json
    {
-     "name": "…", "contact": "", "offer": "hemsida", "formType": "okand", "channel": "telefon",
-     "handle": "telefonnummer eller adress", "link": "", "value": 2900,
-     "note": "Bransch, ort, betyg, varför de passar + källa (url)",
+     "name": "…", "contact": "", "offer": "hemsida", "formType": "okand", "channel": "besok",
+     "handle": "telefonnummer · adress", "link": "", "value": 2900, "route": 1, "demoPath": "foretagets-slug",
+     "note": "Bransch, bolagsform, betyg, varför de passar + källa (url)",
      "message": "…", "status": "ny", "source": "agent",
      "createdAt": "<ISO-tid>", "updatedAt": "<ÅÅÅÅ-MM-DD>"
    }
    ```
+   Priser till företag anges alltid som ”2 900 kr plus moms”.
+
+5b. **Bygg demosidorna** om repot finns i sessionen (hämta grenen med `cash-sprint/` om den inte finns på standardgrenen). Skriv en leadsfil med `slug`, `name`, `category`, `city`, `phone`, `address` och eventuellt `instagram` eller `facebook` till scratchpad-mappen, och kör `node cash-sprint/demo-site/generate.mjs <fil> --out <scratchpad>/kassasprint-demos-<datum> --maker "Jonatan Murberger, 072-305 94 42"`. Zippa mappen och skicka den till Jonatan med `SendUserFile` (status `proactive`). Lägg **aldrig** demosidor eller leadsfiler med riktiga företagsuppgifter i repot, eftersom det är publikt.
 
 6. **Skriv dagens fokus** i `sprint/agent` (läs först och pinna versionen om dokumentet finns):
    ```json

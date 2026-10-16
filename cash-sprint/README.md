@@ -14,11 +14,12 @@ Kassasprint är Agent-OS-modulen för en enda sak: att få ihop till hyran snabb
 
 ## Sanningen om tidsplanen
 
-Pengar som kan vara på kontot före förfallodagen kommer nästan bara från **sålda saker, småjobb åt privatpersoner som betalar med Swish, och kommunen**. Företagskunder betalar fakturor efter 10–30 dagar och lön från bemanning kommer oftast månadsvis. Därför är planen:
+Huvudspåret är **Hemsida på 24 timmar** till lokala företag, eftersom det är det spår där systemet kan göra nästan allt arbete: hitta företagen, kontrollera dem, bygga demosidan och skriva manuset. Du går in, visar och tar betalt.
 
-1. **Köp tid.** Mejla hyresvärden idag med ett förslag på delbetalning. Ansök om ekonomiskt bistånd om du inte kommer att klara hela hyran.
-2. **Snabba pengar till förfallodagen.** Sälj saker och ta hemhjälpsjobb.
-3. **Fyll på efter förfallodagen.** Hemsidekunder, bemanningspass och jobbansökningar betalar restskulden och nästa månad.
+- Frilans Finans betalar ut lönen **fem bankdagar efter att fakturan godkänts**, utan att vänta på att kunden betalar (enligt deras frågor och svar). Ett ja med faktura på måndag kan alltså ge pengar före den 30:e.
+- Räkna med ungefär **hälften netto**. En hemsida för 2 900 kr plus moms ger cirka 1 300–1 400 kr efter avgift, arbetsgivaravgift och skatt. Appen räknar netto.
+- Sålda saker och småjobb åt privatpersoner som betalar med Swish går ännu snabbare. Kör dem parallellt i helgen.
+- Mejla hyresvärden idag med ett förslag på delbetalning, och ansök om ekonomiskt bistånd om du inte kommer att klara hela hyran.
 
 ## 14 dagar
 
@@ -40,9 +41,9 @@ cp demo-site/leads.example.json demo-site/leads.json   # fyll i riktiga företag
 npm run demo -- demo-site/leads.json --maker "Jonatan"
 ```
 
-Varje företag får en mapp under `demo-site/out/`. Dra mappen till <https://app.netlify.com/drop> så får du en länk att visa. Demosidorna har en gul banderoll med texten ”Förslag till …” och är spärrade för sökmotorer. När kunden säger ja kör du samma kommando med `--live`.
+Varje företag får en mapp under `demo-site/out/`. Dra hela `out`-mappen till <https://app.netlify.com/drop> så får du en adress som `https://namn.netlify.app`. Klistra in den i Kassasprint under Läge → Dina uppgifter och priser, så får varje lead med `demoPath` rätt demolänk automatiskt. Demosidorna har en gul banderoll med texten ”Förslag till … från <maker>” och är spärrade för sökmotorer. När kunden säger ja kör du samma kommando med `--live`.
 
-Fält per lead: `name`, `category` (`frisor`, `skonhet`, `hantverkare`, `stad`, `bilverkstad`, `restaurang`, `cafe`, `djur`, `ovrigt`), `city`, `phone` eller `email`, och valfritt `address`, `hours`, `services`, `about`, `tagline`, `bookingUrl`, `facebook`, `instagram`. Använd bara uppgifter som företaget självt har publicerat.
+Fält per lead: `name`, `category` (`frisor`, `skonhet`, `hantverkare`, `stad`, `bilverkstad`, `restaurang`, `cafe`, `djur`, `ovrigt`), `city`, minst ett av `phone`, `email` och `address`, och valfritt `slug`, `hours`, `services`, `servicesAreExamples`, `about`, `tagline`, `bookingUrl`, `facebook`, `instagram`. Använd bara uppgifter som företaget självt har publicerat. Saknas riktiga tjänster visar banderollen att de är exempel.
 
 `demo-site/out/` är undantagen från git, så riktiga företagsuppgifter hamnar inte i repot.
 

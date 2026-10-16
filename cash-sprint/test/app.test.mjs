@@ -47,7 +47,7 @@ test('templates fill known values and keep visible placeholders for the rest', (
   assert.match(out, /Salong X/);
   assert.match(out, /\[länk till demo\]/);
   assert.match(out, /\[ditt nummer\]/);
-  assert.match(out, /2900 kr/);
+  assert.match(out, /2\u00a0900 kr plus moms/);
   assert.doesNotMatch(out, /\{[a-z_]+\}/i);
 });
 
@@ -93,4 +93,15 @@ test('escaping and URL checks used by the pipeline', () => {
   assert.equal(run("esc('<b>\"x\"</b>')"), '&lt;b&gt;&quot;x&quot;&lt;/b&gt;');
   assert.equal(run("safeUrl('javascript:alert(1)')"), '');
   assert.equal(run("safeUrl('https://x.netlify.app')"), 'https://x.netlify.app');
+});
+
+test('demo links come from the lead or the demo base address', () => {
+  assert.equal(run("leadLink({ demoPath: 'clippers-corner' }, { demoBase: 'https://x.netlify.app/' })"), 'https://x.netlify.app/clippers-corner/');
+  assert.equal(run("leadLink({ link: 'https://own.example', demoPath: 'a' }, { demoBase: 'https://x.netlify.app' })"), 'https://own.example');
+  assert.equal(run("leadLink({ demoPath: 'a' }, {})"), '');
+});
+
+test('invoiced work counts net in the plan', () => {
+  assert.equal(run('netOf(2900)'), 1330);
+  assert.equal(run("mixTotal({ mix: { sites: 2, sell: 1000 } })"), 2 * 1330 + 1000);
 });

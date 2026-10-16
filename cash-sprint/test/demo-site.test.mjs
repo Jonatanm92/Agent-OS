@@ -52,7 +52,19 @@ test('validateLead reports missing name, contact and unknown category', () => {
   assert.deepEqual(validateLead(base), []);
   const problems = validateLead({ category: 'rymdskepp' });
   assert.equal(problems.length, 3);
-  assert.throws(() => renderSite({ name: 'Utan kontakt' }), /phone eller email/);
+  assert.throws(() => renderSite({ name: 'Utan kontakt' }), /phone, email eller address/);
+});
+
+test('an address-only lead gets a directions button and the maker in the banner', () => {
+  const html = renderSite({ name: 'Adressbolaget', category: 'cafe', city: 'Vänersborg', address: 'Edsgatan 1, Vänersborg' }, { maker: 'Jonatan, 072-000 00 00' });
+  assert.match(html, /class="btn btn-main" href="https:\/\/www\.google\.com\/maps/);
+  assert.match(html, /Förslag till Adressbolaget från Jonatan, 072-000 00 00/);
+  assert.doesNotMatch(html, /Hemsida: Jonatan/);
+});
+
+test('custom services can still be flagged as examples', () => {
+  const html = renderSite({ ...base, services: ['Klippning'], servicesAreExamples: true });
+  assert.match(html, /Tjänsterna är exempel/);
 });
 
 test('the example lead file renders', () => {

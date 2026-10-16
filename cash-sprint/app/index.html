@@ -336,7 +336,7 @@ details.fold[open] > summary { margin-bottom: 12px; }
 
     <div class="card stack">
       <div class="section-title">Plan för glappet</div>
-      <p class="small muted">Välj en mix som täcker det som saknas. Siffrorna är dina mål, inte en prognos.</p>
+      <p class="small muted">Välj en mix som täcker det som saknas. Siffrorna är dina mål, inte en prognos. Fakturerade jobb räknas netto, efter skatt och avgifter.</p>
       <div class="mix" id="mix"></div>
       <div class="mix-total"><span id="mix-total-label">Planerat</span><span class="num" id="mix-total">0 kr</span></div>
     </div>
@@ -368,6 +368,7 @@ details.fold[open] > summary { margin-bottom: 12px; }
         <div class="field"><label for="set-priceText">30 produkttexter (kr)</label><input id="set-priceText" data-setting="priceText" inputmode="numeric"></div>
         <div class="field"><label for="set-hourRate">Hemhjälp (kr/h)</label><input id="set-hourRate" data-setting="hourRate" inputmode="numeric"></div>
         <div class="field"><label for="set-techRate">Teknikhjälp (kr/h)</label><input id="set-techRate" data-setting="techRate" inputmode="numeric"></div>
+        <div class="field field-wide"><label for="set-demoBase">Adress till dina demosidor</label><input id="set-demoBase" data-setting="demoBase" inputmode="url" placeholder="https://ditt-namn.netlify.app"><span class="small muted">Klistra in adressen du får från Netlify, så får alla leads rätt demolänk.</span></div>
       </form>
     </details>
     <p class="mode-note" id="mode-note"></p>
@@ -430,7 +431,7 @@ details.fold[open] > summary { margin-bottom: 12px; }
         <div class="field"><label for="lead-form-type">Bolagsform</label>
           <select id="lead-form-type">
             <option value="okand">Vet ej</option>
-            <option value="ab">Aktiebolag (AB)</option>
+            <option value="ab">Aktiebolag eller handelsbolag</option>
             <option value="ef">Enskild firma</option>
             <option value="privat">Privatperson (de hörde av sig)</option>
           </select>
@@ -505,7 +506,7 @@ details.fold[open] > summary { margin-bottom: 12px; }
 const DEFAULTS = {
   rent: '', extra: '', startCash: '', dueDate: '',
   myName: 'Jonatan', myPhone: '', myCity: 'Vänersborg', dailyContacts: 20,
-  priceSite: 2900, priceGbp: 695, priceText: 1490, hourRate: 300, techRate: 350,
+  priceSite: 2900, priceGbp: 695, priceText: 1490, hourRate: 300, techRate: 350, demoBase: '',
   mix: { sell: 0, hours: 0, sites: 0, gbp: 0, texts: 0, other: 0 }
 };
 
@@ -600,7 +601,7 @@ const PLAYS = [
   {
     id: 'hemsida', h: 'vecka', title: 'Hemsida på 24 timmar',
     line: 'Lokala företag utan hemsida får se ett färdigt förslag innan du frågar om något. Du får betalt när de säger ja.',
-    time: '5–14 dagar', amount: '2 900 kr + 149 kr/mån', effort: '30–60 min per demo',
+    time: '7–10 dagar', amount: '2 900 kr + moms', effort: '30–60 min per demo',
     why: 'Ett färdigt förslag är mycket lättare att säga ja till än ett erbjudande på papper. Med demo-generatorn i repot tar varje förslag minuter, och varje kund kan bli en månadsintäkt.',
     steps: [
       'Sök på Google Maps, till exempel ”frisör Vänersborg”. Länkarna finns längst ner under Pipeline.',
@@ -608,10 +609,11 @@ const PLAYS = [
       'Kör demo-generatorn (cash-sprint/demo-site i repot) med namn, telefon, adress, öppettider och tjänster. Lägg upp mappen gratis på Netlify.',
       'Gå in med demon i mobilen eller ring. Mejla bara aktiebolag. Manus → Hemsida.',
       'Fakturera via Frilans Finans med halva vid ja och resten vid lansering. Kunden betalar själv sin domän.',
-      'Fakturor betalas ofta först efter 10–30 dagar. Behöver du pengarna före förfallodagen, be om förskott med kort betalningsvillkor.',
+      'Frilans Finans betalar ut lönen fem bankdagar efter att fakturan godkänts, utan att vänta på kunden. En faktura på måndag kan alltså ge pengar före den 30:e.',
+      'Räkna med ungefär hälften netto efter avgift, arbetsgivaravgift och skatt: cirka 1 300–1 400 kr per hemsida på 2 900 kr plus moms.',
       'Erbjud drift och små ändringar för 149 kr/mån. Med 20 kunder blir det 2 980 kr i månaden.'
     ],
-    scripts: ['hemsida_besok', 'hemsida_tel', 'hemsida_mejl', 'hemsida_folj', 'faktura'],
+    scripts: ['hemsida_besok', 'hemsida_tel', 'hemsida_mejl', 'hemsida_folj', 'leverans', 'faktura'],
     links: [['Netlify Drop', 'https://app.netlify.com/drop'], ['Frilans Finans', 'https://frilansfinans.se']]
   },
   {
@@ -766,13 +768,16 @@ Om du var nöjd blir jag jätteglad för några ord i gruppen där du hittade mi
 Ge dem mobilen och låt dem scrolla själva.
 
 Avslut:
-”Den kan vara uppe i morgon för {pris_hemsida} kr. Ni betalar halva nu och resten när den är uppe. Ska vi köra?”
+”Den kan vara uppe i morgon för {pris_hemsida} kr plus moms, inklusive mobilanpassning och de ändringar ni vill ha. Ska vi köra?”
+
+Om ja:
+”Toppen! Då behöver jag ert organisationsnummer och en mejladress för fakturan, och gärna era öppettider, priser och ett par bilder.” Skriv in det i Pipeline direkt.
 
 Om de säger ”Vi har ju Facebook”:
 ”Perfekt, då länkar sidan dit. Skillnaden är att ni syns när folk googlar, och att man ser telefon och öppettider direkt utan Facebook-konto.”
 
 Om de säger ”Det är för dyrt”:
-”Jag kan lägga upp den på en gratisadress för [lägre pris] kr först. Egen domän kan ni lägga till senare.”
+”Jag kan lägga upp den på en gratisadress för [lägre pris] kr plus moms först. Egen domän kan ni lägga till senare.”
 
 Om de säger ”Vi ska fundera”:
 ”Självklart. Får jag höra av mig på [dag]?” Skriv in dagen i Pipeline.` },
@@ -784,7 +789,7 @@ Om nej: ”Inga problem, tack för att du tog dig tid!”` },
   { id: 'hemsida_mejl', g: 'foretag', title: 'Hemsida: mejl eller sms med demo', when: 'Till aktiebolag, eller till den som bett dig skicka länken.', text:
 `{hej} Jag heter {namn} och bor i {ort}. Jag såg att {foretag} inte har någon egen hemsida, så jag gjorde ett förslag på hur en kan se ut: {lank}
 
-Gillar ni den kan den vara uppe inom 24 timmar för {pris_hemsida} kr. Den fungerar i mobilen, visar öppettider och karta och har en knapp för att ringa direkt. Ingen bindningstid.
+Gillar ni den kan den vara uppe inom 24 timmar för {pris_hemsida} kr plus moms. Den fungerar i mobilen, visar öppettider och karta och har en knapp för att ringa direkt. Ingen bindningstid.
 
 Vill ni ändra något i förslaget är det bara att säga till. Vill ni inte få fler meddelanden från mig räcker det att svara nej.
 
@@ -795,10 +800,18 @@ Vill ni ändra något i förslaget är det bara att säga till. Vill ni inte få
 Jag har plats för två nya kunder den här veckan. Säg till om ni vill ha den. Är det inte aktuellt går det bra att säga det också, så hör jag inte av mig igen.
 
 /{namn}` },
+  { id: 'leverans', g: 'foretag', title: 'Hemsida: leverans inom 24 timmar', when: 'Direkt efter ett ja.', text:
+`1. Skriv in organisationsnummer, fakturamejl och kontaktperson i Pipeline.
+2. Skapa fakturan i Frilans Finans samma dag: ”Hemsida enligt överenskommelse”, {pris_hemsida} kr plus moms.
+3. Samla in riktiga uppgifter: tjänster och priser, öppettider, 3–6 bilder och eventuell bokningslänk.
+4. Uppdatera demon med generatorn och kör den med --live. Då försvinner banderollen och sökmotorspärren.
+5. Lägg upp sidan på ditt Netlify-konto och skicka länken till kunden för ett ok.
+6. Egen domän: kunden köper den (cirka 100–200 kr/år) och du kopplar den i Netlify.
+7. Be om ett omdöme och erbjud drift och ändringar för 149 kr/mån.` },
   { id: 'gbp', g: 'foretag', title: 'Google-profil: erbjudande', when: 'Bäst på plats eller per telefon. Mejla bara aktiebolag.', text:
 `{hej} Jag heter {namn} och hjälper företag i {ort} att synas bättre på Google. Jag såg att Google-profilen för {foretag} [saknar bilder / visar fel öppettider / har obesvarade omdömen].
 
-För {pris_gbp} kr fixar jag profilen på en timme: rätt öppettider, kategorier, beskrivning, bilder och svar på omdömen. Ni lägger bara till mig som förvaltare, så jag behöver aldrig ert lösenord.
+För {pris_gbp} kr plus moms fixar jag profilen på en timme: rätt öppettider, kategorier, beskrivning, bilder och svar på omdömen. Ni lägger bara till mig som förvaltare, så jag behöver aldrig ert lösenord.
 
 Ska jag göra det den här veckan?
 /{namn}, {telefon}` },
@@ -813,7 +826,7 @@ Jag heter {namn} och har arbetat ungefär elva år med e-handel och systemdriven
 
 [Produkt 2, ny text]
 
-Ni får använda dem fritt. Vill ni att jag gör samma sak för 30 produkter kostar det {pris_texter} kr. Det är klart inom tre arbetsdagar och levereras i en fil som är klar att importera.
+Ni får använda dem fritt. Vill ni att jag gör samma sak för 30 produkter kostar det {pris_texter} kr plus moms. Det är klart inom tre arbetsdagar och levereras i en fil som är klar att importera.
 
 Vill ni inte få fler mejl från mig räcker det att svara nej.
 
@@ -821,7 +834,7 @@ Vänliga hälsningar
 {namn}
 {telefon}` },
   { id: 'texter_folj', g: 'foretag', title: 'Produkttexter: uppföljning', when: 'Efter tre arbetsdagar.', text:
-`{hej} Fick ni mina två produkttexter till {foretag}? Erbjudandet med 30 texter för {pris_texter} kr gäller den här veckan. Säg till om ni vill ha det, så börjar jag direkt.
+`{hej} Fick ni mina två produkttexter till {foretag}? Erbjudandet med 30 texter för {pris_texter} kr plus moms gäller den här veckan. Säg till om ni vill ha det, så börjar jag direkt.
 
 /{namn}` },
   { id: 'folj', g: 'foretag', title: 'Allmän uppföljning', when: 'När inget mer specifikt passar.', text:
@@ -846,8 +859,9 @@ Har ni uppdrag just nu? Jag skickar gärna mitt CV.
 `Så gör du:
 1. Skapa ett konto på frilansfinans.se. Cool Company är en reserv.
 2. Lägg in kunden och uppdraget. Fakturan går ut via dem.
-3. De drar skatt och avgifter och betalar ut resten som lön. Enligt deras egna frågor och svar är avgiften cirka 6 procent.
-4. Välj kort betalningsvillkor, till exempel 10 dagar, och ta halva i förskott på större jobb.
+3. De drar avgift (cirka 6 procent), arbetsgivaravgift och skatt och betalar ut resten som lön. Räkna med ungefär hälften netto.
+4. Lönen betalas fem bankdagar efter att fakturan godkänts, enligt deras frågor och svar. Du behöver inte vänta på att kunden betalar.
+5. Moms läggs på för företagskunder. Säg därför alltid ”plus moms” när du anger pris till ett företag.
 
 Text till kunden:
 ”Tack för ett bra samarbete! Fakturan kommer från Frilans Finans, som sköter min fakturering. Betalningsvillkor 10 dagar.”` }
@@ -886,9 +900,9 @@ const ONCE_TASKS = [
 const MIX_ROWS = [
   { key: 'sell', label: 'Sålda saker', hint: 'kronor totalt', unit: () => 1, step: 250 },
   { key: 'hours', label: 'Timmar hemhjälp', hint: s => `${num(s.hourRate)} kr/h`, unit: s => num(s.hourRate), step: 1 },
-  { key: 'sites', label: 'Hemsidor', hint: s => `${num(s.priceSite)} kr/st (halva i förskott)`, unit: s => num(s.priceSite), step: 1 },
-  { key: 'gbp', label: 'Google-profiler', hint: s => `${num(s.priceGbp)} kr/st`, unit: s => num(s.priceGbp), step: 1 },
-  { key: 'texts', label: 'Textpaket', hint: s => `${num(s.priceText)} kr/st`, unit: s => num(s.priceText), step: 1 },
+  { key: 'sites', label: 'Hemsidor', hint: s => `${fmt(num(s.priceSite))} kr + moms, ca ${fmt(netOf(s.priceSite))} kr netto`, unit: s => netOf(s.priceSite), step: 1 },
+  { key: 'gbp', label: 'Google-profiler', hint: s => `${fmt(num(s.priceGbp))} kr + moms, ca ${fmt(netOf(s.priceGbp))} kr netto`, unit: s => netOf(s.priceGbp), step: 1 },
+  { key: 'texts', label: 'Textpaket', hint: s => `${fmt(num(s.priceText))} kr + moms, ca ${fmt(netOf(s.priceText))} kr netto`, unit: s => netOf(s.priceText), step: 1 },
   { key: 'other', label: 'Övrigt', hint: 'kronor totalt', unit: () => 1, step: 250 }
 ];
 
@@ -927,7 +941,18 @@ function num(v) {
   const n = Number(String(v == null ? '' : v).replace(/[\s ]/g, '').replace(',', '.'));
   return Number.isFinite(n) ? n : 0;
 }
-function kr(n) { return new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' kr'; }
+function fmt(n) { return new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(Math.round(n)); }
+function kr(n) { return fmt(n) + '\u00a0kr'; }
+// Share of an invoice (ex VAT) paid out via Frilans Finans after fee, employer contributions and tax. Rough, on the safe side.
+const NET_SHARE = 0.46;
+function netOf(n) { return Math.round(num(n) * NET_SHARE / 10) * 10; }
+function leadLink(lead, settings) {
+  const own = safeUrl(lead && lead.link);
+  if (own) return own;
+  const base = safeUrl(settings && settings.demoBase);
+  if (base && lead && lead.demoPath) return base.replace(/\/+$/, '') + '/' + encodeURIComponent(lead.demoPath) + '/';
+  return '';
+}
 function svDate(s, withWeekday) {
   const d = parseYmd(s);
   if (!d) return '–';
@@ -957,9 +982,9 @@ function templateVars(settings, lead) {
   return {
     namn: s.myName, telefon: s.myPhone, ort: s.myCity, ORT: String(s.myCity || '').toUpperCase(),
     forfallodag: s.dueDate ? svDate(s.dueDate, false) : '',
-    pris_hemsida: num(s.priceSite), pris_gbp: num(s.priceGbp), pris_texter: num(s.priceText),
-    timpris: num(s.hourRate), teknikpris: num(s.techRate),
-    foretag: lead ? lead.name : '', kontakt: contact, lank: lead ? lead.link : '',
+    pris_hemsida: fmt(num(s.priceSite)), pris_gbp: fmt(num(s.priceGbp)), pris_texter: fmt(num(s.priceText)),
+    timpris: fmt(num(s.hourRate)), teknikpris: fmt(num(s.techRate)),
+    foretag: lead ? lead.name : '', kontakt: contact, lank: lead ? leadLink(lead, s) : '',
     hej: contact ? `Hej ${contact}!` : 'Hej!'
   };
 }
@@ -970,7 +995,7 @@ const PLACEHOLDER = {
 function fillTemplate(text, vars) {
   return text.replace(/\{([A-Za-z_]+)\}/g, (m, k) => {
     const v = vars[k];
-    if (v !== undefined && v !== null && v !== '' && v !== 0) return String(v);
+    if (v !== undefined && v !== null && v !== '' && v !== 0 && v !== '0') return String(v);
     return PLACEHOLDER[k] || m;
   });
 }
@@ -1468,6 +1493,7 @@ function renderLeads() {
   const list = state.leads.filter(l => leadMatches(l, today)).sort((a, b) => {
     const da = isDue(a, today) ? 0 : 1, dbb = isDue(b, today) ? 0 : 1;
     if (da !== dbb) return da - dbb;
+    if (a.route && b.route) return num(a.route) - num(b.route);
     return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
   });
   const box = $('leads');
@@ -1482,7 +1508,7 @@ function renderLeads() {
   box.innerHTML = list.map(l => {
     const offer = OFFERS[l.offer] || OFFERS.annat;
     const due = isDue(l, today);
-    const link = safeUrl(l.link);
+    const link = leadLink(l, state.settings);
     const hasFollow = l.status !== 'ny';
     return `
     <article class="lead ${due ? 'is-due' : ''}">
@@ -1495,10 +1521,11 @@ function renderLeads() {
         ${l.contact ? `<span>${esc(l.contact)}</span>` : ''}
         ${l.handle ? `<span class="num">${esc(l.handle)}</span>` : ''}
         ${l.nextAt ? `<span>${due ? '<b style="color:var(--warn)">Följ upp idag</b>' : 'Nästa steg ' + esc(svDate(l.nextAt, true))}</span>` : ''}
+        ${l.route ? `<span>Rutt ${esc(l.route)}</span>` : ''}
         ${l.source === 'agent' ? '<span>Från agenten</span>' : ''}
       </div>
       ${l.note ? `<p class="lead-note">${esc(l.note)}</p>` : ''}
-      ${link ? `<a class="small" href="${esc(link)}" target="_blank" rel="noopener">Öppna demo</a>` : ''}
+      ${link ? `<a class="small" href="${esc(link)}" target="_blank" rel="noopener">Öppna demo</a>` : (l.demoPath ? `<span class="small muted">Demon är klar (${esc(l.demoPath)}). Lägg in adressen till dina demosidor under Läge → Dina uppgifter och priser.</span>` : '')}
       <div class="btn-row">
         ${leadActions(l)}
         <button class="btn" type="button" data-copy-lead="${esc(l.id)}" data-kind="${hasFollow ? 'follow' : 'first'}">${hasFollow ? 'Kopiera uppföljning' : 'Kopiera meddelande'}</button>
