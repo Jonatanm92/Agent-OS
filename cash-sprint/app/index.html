@@ -1,0 +1,1724 @@
+<title>Kassasprint</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one 720px working column under a sticky header with five tabs; the overview is anchored by a giro-style rent slip. */
+:root {
+  --paper: #F1F4F1;
+  --card: #FFFFFF;
+  --ink: #13201B;
+  --muted: #56655E;
+  --line: #D5DDD8;
+  --soft: #E5EDE8;
+  --accent: #0D6A4D;
+  --accent-ink: #FFFFFF;
+  --giro: #F3C845;
+  --giro-ink: #2F260A;
+  --warn: #B3261E;
+  --warn-soft: #FBE8E5;
+  --ok: #1B7944;
+  --ok-soft: #E1F2E7;
+  --focus: #1F5FD1;
+  --font-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1412; --card: #151D1A; --ink: #E5EDE9; --muted: #93A29B; --line: #26332E;
+    --soft: #1B2622; --accent: #3BBC8B; --accent-ink: #04201A; --giro: #DDB43A; --giro-ink: #1C1603;
+    --warn: #FF7B6F; --warn-soft: #3A1714; --ok: #5ACF8C; --ok-soft: #143222; --focus: #7FA8FF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1412; --card: #151D1A; --ink: #E5EDE9; --muted: #93A29B; --line: #26332E;
+  --soft: #1B2622; --accent: #3BBC8B; --accent-ink: #04201A; --giro: #DDB43A; --giro-ink: #1C1603;
+  --warn: #FF7B6F; --warn-soft: #3A1714; --ok: #5ACF8C; --ok-soft: #143222; --focus: #7FA8FF;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 15px/1.5 var(--font-ui);
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--paper);
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.2; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  background: var(--paper); border-bottom: 1px solid var(--line);
+}
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px 8px; }
+.brand { display: flex; flex-direction: column; min-width: 0; }
+.brand-name { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.brand-sub { color: var(--muted); font-size: 12.5px; }
+.countdown {
+  font-family: var(--font-num); font-size: 12.5px; font-weight: 600; white-space: nowrap;
+  background: var(--giro); color: var(--giro-ink); padding: 5px 9px; border-radius: 6px;
+}
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-block: 0; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  appearance: none; border: 0; background: none; cursor: pointer;
+  padding: 10px 12px 11px; font-weight: 600; font-size: 14.5px; color: var(--muted);
+  border-bottom: 3px solid transparent; white-space: nowrap;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .badge {
+  display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 9px;
+  background: var(--warn); color: var(--card); font-size: 11px; line-height: 18px; text-align: center;
+}
+
+main.wrap { padding-block: 18px 96px; }
+.panel { display: flex; flex-direction: column; gap: 18px; }
+.section-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+
+/* Buttons */
+.btn {
+  appearance: none; cursor: pointer; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--card); padding: 8px 12px; font-weight: 600; font-size: 14px; line-height: 1.2;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { border-color: var(--muted); }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn-primary:hover { filter: brightness(1.06); border-color: var(--accent); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--accent); padding-inline: 6px; }
+.btn-danger { color: var(--warn); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Giro slip */
+.avi { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.avi-band {
+  background: var(--giro); color: var(--giro-ink); display: flex; justify-content: space-between; gap: 10px;
+  padding: 8px 16px; font-family: var(--font-num); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.avi-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.avi-main { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.avi-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.avi-big { font-family: var(--font-num); font-weight: 600; font-size: clamp(30px, 8vw, 42px); letter-spacing: -0.02em; line-height: 1.1; }
+.avi-big.is-gap { color: var(--warn); }
+.avi-big.is-ok { color: var(--ok); }
+.avi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.avi-cell { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0; }
+.avi-cell dt { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+.avi-cell dd { margin: 2px 0 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 16px; }
+.meter { height: 10px; border-radius: 5px; background: var(--soft); overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--ok); width: 0; transition: width .4s ease; }
+.ocr { font-family: var(--font-num); font-size: 12.5px; color: var(--muted); letter-spacing: 0.08em; border-top: 1px dashed var(--line); padding-top: 10px; overflow-wrap: anywhere; }
+
+/* Forms */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.field input, .field select, .field textarea {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; background: var(--paper);
+}
+.field textarea { min-height: 70px; resize: vertical; }
+.field-wide { grid-column: 1 / -1; }
+details.fold > summary { cursor: pointer; font-weight: 600; color: var(--accent); list-style: none; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::before { content: "+ "; font-family: var(--font-num); }
+details.fold[open] > summary::before { content: "– "; }
+details.fold[open] > summary { margin-bottom: 12px; }
+.hint { font-size: 13px; padding: 8px 10px; border-radius: 8px; background: var(--warn-soft); color: var(--ink); }
+
+/* Today list */
+.todo { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.todo li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-top: 1px solid var(--line); }
+.todo li:first-child { border-top: 0; padding-top: 2px; }
+.todo input[type="checkbox"] { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--accent); flex: none; }
+.todo .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.todo .t strong { font-weight: 600; }
+.todo li.done .t strong { text-decoration: line-through; color: var(--muted); }
+.todo .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; }
+.progress-inline { font-family: var(--font-num); font-size: 13px; color: var(--muted); }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px; min-width: 0; }
+.stat b { display: block; font-family: var(--font-num); font-size: 22px; font-weight: 600; line-height: 1.1; }
+.stat span { font-size: 12px; color: var(--muted); }
+@media (max-width: 460px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* Plan mixer */
+.mix { display: flex; flex-direction: column; }
+.mix-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.mix-row:first-child { border-top: 0; }
+.mix-row .lbl { min-width: 0; }
+.mix-row .lbl small { display: block; color: var(--muted); font-size: 12.5px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stepper button { appearance: none; border: 0; background: var(--soft); width: 32px; height: 32px; cursor: pointer; font-weight: 700; }
+.stepper input { width: 52px; border: 0; text-align: center; background: var(--card); height: 32px; font-family: var(--font-num); }
+.mix-row .sum { font-family: var(--font-num); font-variant-numeric: tabular-nums; min-width: 84px; text-align: right; font-weight: 600; }
+.mix-total { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-top: 10px; border-top: 2px solid var(--ink); font-weight: 700; }
+
+/* Rules */
+.rules { counter-reset: r; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.rules li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; }
+.rules li::before { counter-increment: r; content: counter(r); font-family: var(--font-num); font-weight: 600; color: var(--giro-ink); background: var(--giro); border-radius: 5px; text-align: center; height: 24px; line-height: 24px; }
+
+/* Chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  appearance: none; cursor: pointer; border: 1px solid var(--line); background: var(--card);
+  border-radius: 999px; padding: 5px 11px; font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 5px; background: var(--soft); color: var(--ink); white-space: nowrap; }
+.tag-skydd { background: var(--warn-soft); }
+.tag-nu { background: var(--giro); color: var(--giro-ink); }
+.tag-vecka { background: var(--ok-soft); }
+.tag-bygg { background: var(--soft); color: var(--muted); }
+
+/* Plays */
+.play { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.play-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.play h3 { font-size: 18px; font-weight: 700; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.facts div { min-width: 0; }
+.facts dt { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-size: 13.5px; font-weight: 600; }
+@media (max-width: 460px) { .facts { grid-template-columns: 1fr 1fr; } }
+.play ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.why { font-size: 14px; color: var(--muted); border-left: 3px solid var(--giro); padding-left: 10px; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; }
+.rejected { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rejected li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; }
+.rejected b { font-weight: 600; }
+
+/* Scripts */
+.script { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 120px; }
+.script.flash { box-shadow: 0 0 0 3px var(--giro); }
+.script-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.script h3 { font-size: 16px; font-weight: 700; }
+.script pre {
+  margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 14px/1.55 var(--font-ui);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 12px; user-select: text;
+}
+
+/* Pipeline */
+.lead { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.lead.is-due { border-color: var(--warn); }
+.lead-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.lead-name { font-weight: 700; font-size: 16px; overflow-wrap: anywhere; }
+.lead-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; color: var(--muted); }
+.lead-meta span { overflow-wrap: anywhere; }
+.status { font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 5px; white-space: nowrap; letter-spacing: 0.03em; }
+.st-ny { background: var(--soft); }
+.st-kontaktad { background: var(--giro); color: var(--giro-ink); }
+.st-svar { background: var(--ok-soft); color: var(--ok); }
+.st-ja { background: var(--ok); color: var(--card); }
+.st-betalt { background: var(--accent); color: var(--accent-ink); }
+.st-nej { background: var(--soft); color: var(--muted); }
+.lead-note { font-size: 14px; overflow-wrap: anywhere; }
+.empty { text-align: center; padding: 26px 16px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.empty strong { color: var(--ink); }
+.maplinks { display: flex; flex-wrap: wrap; gap: 6px; }
+.maplinks a { font-size: 13px; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: var(--card); color: var(--ink); }
+.maplinks a:hover { border-color: var(--accent); }
+
+/* Income */
+.ledger { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ledger td { padding: 9px 4px; border-top: 1px solid var(--line); vertical-align: top; }
+.ledger td.amt { text-align: right; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.ledger td.when { font-family: var(--font-num); font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.ledger-wrap { overflow-x: auto; }
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; font-size: 13.5px; }
+.bar-row .track { grid-column: 1 / -1; height: 8px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+.bar-row .track span { display: block; height: 100%; background: var(--accent); }
+.bar-row b { font-family: var(--font-num); font-weight: 600; }
+
+.mode-note { font-size: 12.5px; color: var(--muted); text-align: center; }
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  max-width: calc(100% - 32px); box-shadow: 0 6px 24px rgba(0,0,0,.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand">
+      <span class="brand-name">Kassasprint</span>
+      <span class="brand-sub" id="hdr-sub">Hyran först. Sedan allt annat.</span>
+    </div>
+    <div class="countdown" id="hdr-count" aria-live="polite">–</div>
+  </div>
+  <nav class="wrap tabs" role="tablist" aria-label="Flikar">
+    <button class="tab" role="tab" id="tabbtn-lage" data-tab="lage" aria-controls="tab-lage" aria-selected="true">Läge</button>
+    <button class="tab" role="tab" id="tabbtn-drag" data-tab="drag" aria-controls="tab-drag" aria-selected="false">Drag</button>
+    <button class="tab" role="tab" id="tabbtn-manus" data-tab="manus" aria-controls="tab-manus" aria-selected="false">Manus</button>
+    <button class="tab" role="tab" id="tabbtn-pipeline" data-tab="pipeline" aria-controls="tab-pipeline" aria-selected="false">Pipeline<span class="badge" id="due-badge" hidden>0</span></button>
+    <button class="tab" role="tab" id="tabbtn-kassa" data-tab="kassa" aria-controls="tab-kassa" aria-selected="false">Kassa</button>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- LÄGE -->
+  <section class="panel" id="tab-lage" role="tabpanel" aria-labelledby="tabbtn-lage">
+    <div class="avi" id="avi">
+      <div class="avi-band"><span>Inbetalning · Hyra</span><span id="avi-day">Dag –</span></div>
+      <div class="avi-body">
+        <div class="avi-main">
+          <div>
+            <div class="avi-label" id="avi-big-label">Saknas till hyran</div>
+            <div class="avi-big" id="avi-big">–</div>
+          </div>
+          <button class="btn" id="avi-edit" type="button" aria-expanded="false" aria-controls="avi-form">Ändra siffror</button>
+        </div>
+        <div class="meter" aria-hidden="true"><span id="avi-meter"></span></div>
+        <dl class="avi-grid" style="margin:0">
+          <div class="avi-cell"><dt>Att betala</dt><dd id="avi-need">–</dd></div>
+          <div class="avi-cell"><dt>Förfallodag</dt><dd id="avi-due">–</dd></div>
+          <div class="avi-cell"><dt>Har nu</dt><dd id="avi-have">–</dd></div>
+          <div class="avi-cell"><dt>Behövs per dag</dt><dd id="avi-perday">–</dd></div>
+        </dl>
+        <form id="avi-form" class="form-grid" hidden>
+          <div class="field"><label for="set-rent">Hyra (kr)</label><input id="set-rent" inputmode="numeric" data-setting="rent" placeholder="t.ex. 7450"></div>
+          <div class="field"><label for="set-extra">Andra måsten före förfallodagen (kr)</label><input id="set-extra" inputmode="numeric" data-setting="extra" placeholder="mat, el, mobil"></div>
+          <div class="field"><label for="set-startCash">Det du har till hyran nu (kr)</label><input id="set-startCash" inputmode="numeric" data-setting="startCash" placeholder="0"></div>
+          <div class="field"><label for="set-dueDate">Förfallodag</label><input id="set-dueDate" type="date" data-setting="dueDate"></div>
+          <p class="small muted field-wide">Intäkter du loggar under Kassa räknas in automatiskt. Ändra inte ”Det du har nu” när pengar kommer in, logga dem i stället.</p>
+        </form>
+        <div class="ocr" id="avi-ocr" aria-label="Sammanfattning i girorad">#&nbsp;—&nbsp;#</div>
+      </div>
+    </div>
+
+    <div class="card stack">
+      <div class="section-title">Dagens drag</div>
+      <p class="small muted" id="today-note"></p>
+      <ul class="todo" id="today-list"></ul>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat"><b id="st-contacts">0</b><span>kontakter idag</span></div>
+      <div class="stat"><b id="st-due">0</b><span>att följa upp</span></div>
+      <div class="stat"><b id="st-yes">0</b><span>ja, ej betalt</span></div>
+      <div class="stat"><b id="st-paid">0 kr</b><span>inloggat totalt</span></div>
+    </div>
+
+    <div class="card stack">
+      <div class="section-title">Plan för glappet</div>
+      <p class="small muted">Välj en mix som täcker det som saknas. Siffrorna är dina mål, inte en prognos.</p>
+      <div class="mix" id="mix"></div>
+      <div class="mix-total"><span id="mix-total-label">Planerat</span><span class="num" id="mix-total">0 kr</span></div>
+    </div>
+
+    <div class="card stack">
+      <div class="section-title">Agenten</div>
+      <div id="agent-box" class="small"></div>
+    </div>
+
+    <div class="card stack">
+      <div class="section-title">Regler för sprinten</div>
+      <ol class="rules">
+        <li><span><b>Pengar före system.</b> Inget nytt bygge förrän de första 5&nbsp;000&nbsp;kr har kommit in. Agent-OS har redan tre system och har tjänat 0&nbsp;kr. Det som saknas är meddelanden som faktiskt skickas.</span></li>
+        <li><span><b>20 kontakter om dagen.</b> Besök, samtal, annonser och svar på förfrågningar räknas. Ett meddelande som ligger osänt tjänar ingenting.</span></li>
+        <li><span><b>Ta betalt tidigt.</b> Swish direkt efter jobbet, halva i förskott på större jobb, kort betalningsvillkor på fakturor.</span></li>
+        <li><span><b>Var ärlig.</b> Lova bara det du kan leverera, och skriv aldrig att du har erfarenhet eller omdömen som du inte har.</span></li>
+      </ol>
+    </div>
+
+    <details class="card fold" id="me-fold">
+      <summary>Dina uppgifter och priser</summary>
+      <form class="form-grid" id="me-form">
+        <div class="field"><label for="set-myName">Ditt namn</label><input id="set-myName" data-setting="myName" autocomplete="name"></div>
+        <div class="field"><label for="set-myPhone">Ditt telefonnummer</label><input id="set-myPhone" data-setting="myPhone" inputmode="tel" autocomplete="tel"></div>
+        <div class="field"><label for="set-myCity">Din ort</label><input id="set-myCity" data-setting="myCity"></div>
+        <div class="field"><label for="set-dailyContacts">Kontakter per dag (mål)</label><input id="set-dailyContacts" data-setting="dailyContacts" inputmode="numeric"></div>
+        <div class="field"><label for="set-priceSite">Hemsida (kr)</label><input id="set-priceSite" data-setting="priceSite" inputmode="numeric"></div>
+        <div class="field"><label for="set-priceGbp">Google-profil (kr)</label><input id="set-priceGbp" data-setting="priceGbp" inputmode="numeric"></div>
+        <div class="field"><label for="set-priceText">30 produkttexter (kr)</label><input id="set-priceText" data-setting="priceText" inputmode="numeric"></div>
+        <div class="field"><label for="set-hourRate">Hemhjälp (kr/h)</label><input id="set-hourRate" data-setting="hourRate" inputmode="numeric"></div>
+        <div class="field"><label for="set-techRate">Teknikhjälp (kr/h)</label><input id="set-techRate" data-setting="techRate" inputmode="numeric"></div>
+      </form>
+    </details>
+    <p class="mode-note" id="mode-note"></p>
+  </section>
+
+  <!-- DRAG -->
+  <section class="panel" id="tab-drag" role="tabpanel" aria-labelledby="tabbtn-drag" hidden>
+    <div class="stack">
+      <h2 style="font-size:22px">Drag som ger pengar</h2>
+      <p class="muted">Sorterade efter hur snabbt pengarna kommer. Börja uppifrån och kör flera spår samtidigt: sälj saker i helgen, besök företag på vardagarna och ta pass via bemanning när du kan.</p>
+    </div>
+    <div class="chips" id="play-filter" role="group" aria-label="Filtrera drag">
+      <button class="chip" data-h="alla" aria-pressed="true">Alla</button>
+      <button class="chip" data-h="skydd" aria-pressed="false">Skydda hyran</button>
+      <button class="chip" data-h="nu" aria-pressed="false">Pengar inom 72 h</button>
+      <button class="chip" data-h="vecka" aria-pressed="false">Den här sprinten</button>
+      <button class="chip" data-h="bygg" aria-pressed="false">Efter hyran</button>
+    </div>
+    <div class="stack" id="plays"></div>
+    <div class="card stack">
+      <div class="section-title">Ratade idéer</div>
+      <ul class="rejected" id="rejected"></ul>
+    </div>
+  </section>
+
+  <!-- MANUS -->
+  <section class="panel" id="tab-manus" role="tabpanel" aria-labelledby="tabbtn-manus" hidden>
+    <div class="stack">
+      <h2 style="font-size:22px">Färdiga texter</h2>
+      <p class="muted">Ditt namn, nummer, ort och priser fylls i automatiskt. Byt ut allt inom [hakparentes] innan du skickar.</p>
+    </div>
+    <div class="chips" id="script-filter" role="group" aria-label="Filtrera manus"></div>
+    <div class="stack" id="scripts"></div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="panel" id="tab-pipeline" role="tabpanel" aria-labelledby="tabbtn-pipeline" hidden>
+    <div class="stack">
+      <h2 style="font-size:22px">Pipeline</h2>
+      <p class="muted">Alla du har kontaktat eller ska kontakta. Markera direkt när du har hört av dig, så kommer uppföljningen upp efter tre dagar.</p>
+    </div>
+
+    <details class="card fold" id="lead-fold">
+      <summary id="lead-fold-title">Lägg till lead</summary>
+      <form id="lead-form" class="form-grid" novalidate>
+        <input type="hidden" id="lead-id">
+        <div class="field field-wide"><label for="lead-name">Företag eller person</label><input id="lead-name" required placeholder="t.ex. Salongen på Edsgatan"></div>
+        <div class="field"><label for="lead-contact">Kontaktperson</label><input id="lead-contact" placeholder="förnamn"></div>
+        <div class="field"><label for="lead-offer">Erbjudande</label>
+          <select id="lead-offer">
+            <option value="hemsida">Hemsida på 24 h</option>
+            <option value="gbp">Google-profil</option>
+            <option value="texter">Produkttexter</option>
+            <option value="hemhjalp">Hemhjälp</option>
+            <option value="teknik">Teknikhjälp</option>
+            <option value="bemanning">Jobb / bemanning</option>
+            <option value="annat">Annat</option>
+          </select>
+        </div>
+        <div class="field"><label for="lead-form-type">Bolagsform</label>
+          <select id="lead-form-type">
+            <option value="okand">Vet ej</option>
+            <option value="ab">Aktiebolag (AB)</option>
+            <option value="ef">Enskild firma</option>
+            <option value="privat">Privatperson (de hörde av sig)</option>
+          </select>
+        </div>
+        <div class="field"><label for="lead-channel">Kanal</label>
+          <select id="lead-channel">
+            <option value="besok">Besök</option>
+            <option value="telefon">Telefon</option>
+            <option value="mejl">Mejl</option>
+            <option value="sms">SMS</option>
+            <option value="dm">Meddelande i app</option>
+          </select>
+        </div>
+        <div class="field"><label for="lead-handle">Telefon, mejl eller adress</label><input id="lead-handle"></div>
+        <div class="field"><label for="lead-link">Demo-länk</label><input id="lead-link" inputmode="url" placeholder="https://"></div>
+        <div class="field"><label for="lead-value">Värde (kr)</label><input id="lead-value" inputmode="numeric"></div>
+        <div class="field field-wide"><label for="lead-note">Anteckning</label><textarea id="lead-note" placeholder="Vad du såg: saknar hemsida, 4,7 i betyg, öppet till 18 …"></textarea></div>
+        <p class="hint field-wide" id="lead-law" hidden>Till enskilda firmor och privatpersoner: ring eller gå in i stället. Reklam via mejl och sms till fysiska personer, även enskilda näringsidkare, kräver i regel samtycke i förväg enligt marknadsföringslagen. Har de bett dig skicka något går det bra.</p>
+        <div class="btn-row field-wide">
+          <button class="btn btn-primary" type="submit" id="lead-submit">Lägg till</button>
+          <button class="btn" type="button" id="lead-cancel" hidden>Avbryt</button>
+        </div>
+      </form>
+    </details>
+
+    <div class="chips" id="lead-filter" role="group" aria-label="Filtrera pipeline">
+      <button class="chip" data-f="todo" aria-pressed="true">Att göra</button>
+      <button class="chip" data-f="active" aria-pressed="false">Alla aktiva</button>
+      <button class="chip" data-f="won" aria-pressed="false">Ja och betalt</button>
+      <button class="chip" data-f="lost" aria-pressed="false">Nej</button>
+    </div>
+    <div class="stack" id="leads"></div>
+
+    <details class="card fold">
+      <summary>Hitta leads på Google Maps</summary>
+      <div class="stack">
+        <p class="small">Öppna en sökning, och leta efter företag med bra betyg som saknar knappen <b>Webbplats</b> eller bara länkar till Facebook. Lägg in dem här direkt.</p>
+        <div class="maplinks" id="maplinks"></div>
+      </div>
+    </details>
+  </section>
+
+  <!-- KASSA -->
+  <section class="panel" id="tab-kassa" role="tabpanel" aria-labelledby="tabbtn-kassa" hidden>
+    <div class="stack">
+      <h2 style="font-size:22px">Kassa</h2>
+      <p class="muted">Logga varje krona som kommer in. Den räknas av mot hyran direkt.</p>
+    </div>
+    <form id="inc-form" class="card form-grid" novalidate>
+      <div class="field"><label for="inc-amount">Belopp (kr)</label><input id="inc-amount" inputmode="numeric" required placeholder="0"></div>
+      <div class="field"><label for="inc-source">Källa</label><select id="inc-source"></select></div>
+      <div class="field"><label for="inc-date">Datum</label><input id="inc-date" type="date"></div>
+      <div class="field"><label for="inc-note">Notering</label><input id="inc-note" placeholder="t.ex. gitarrpedal, Blocket"></div>
+      <div class="btn-row field-wide"><button class="btn btn-primary" type="submit">Logga intäkt</button></div>
+    </form>
+    <div class="card stack">
+      <div class="section-title">Per källa</div>
+      <div class="bars" id="inc-bars"></div>
+    </div>
+    <div class="card stack">
+      <div class="section-title">Alla intäkter</div>
+      <div class="ledger-wrap"><table class="ledger"><tbody id="inc-list"></tbody></table></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ===================== Content ===================== */
+
+const DEFAULTS = {
+  rent: '', extra: '', startCash: '', dueDate: '',
+  myName: 'Jonatan', myPhone: '', myCity: 'Vänersborg', dailyContacts: 20,
+  priceSite: 2900, priceGbp: 695, priceText: 1490, hourRate: 300, techRate: 350,
+  mix: { sell: 0, hours: 0, sites: 0, gbp: 0, texts: 0, other: 0 }
+};
+
+const PLAYS = [
+  {
+    id: 'skydda', h: 'skydd', title: 'Köp tid på hyran',
+    line: 'Prata med hyresvärden före förfallodagen och föreslå en delbetalning med konkreta datum.',
+    time: 'Idag', amount: 'Tid, inte pengar', effort: '15 min',
+    why: 'Hyresvärdar går ofta med på en plan när du hör av dig i tid. Det som brukar leda till uppsägning är att ingen hör av sig.',
+    steps: [
+      'Räkna ut under Läge vad du kan betala på förfallodagen och när resten kommer.',
+      'Skicka mejlet under Manus → Hyresvärd. Föreslå två konkreta datum.',
+      'Be om bekräftelse skriftligt och spara den.',
+      'Får du en uppsägning för obetald hyra har du enligt jordabalken normalt tre veckor från att du tagit emot den på dig att betala och behålla lägenheten. Kontakta Hyresgästföreningen eller kommunen samma dag.'
+    ],
+    scripts: ['hyresvard'],
+    links: [['Hyresgästföreningen', 'https://www.hyresgastforeningen.se']]
+  },
+  {
+    id: 'soc', h: 'skydd', title: 'Ekonomiskt bistånd till hyran',
+    line: 'Klarar du inte hyran ska du ansöka hos socialtjänsten innan den förfaller. Det är precis det skyddsnätet är till för.',
+    time: 'Dagar till veckor', amount: 'Kan täcka hyran', effort: '1 h + underlag',
+    why: 'Hyra räknas som en nödvändig kostnad. Du får ett skriftligt beslut och kan överklaga ett nej. Budget- och skuldrådgivningen i kommunen är gratis och har tystnadsplikt.',
+    steps: [
+      'Ring kommunens kontaktcenter (numret står på vanersborg.se) och be om mottagningen för ekonomiskt bistånd.',
+      'Säg att hyran förfaller snart och att det är akut. Använd Manus → Socialtjänsten.',
+      'Ta fram hyresavi, kontoutdrag, besked om inkomster och legitimation.',
+      'Var öppen med att du samtidigt försöker tjäna pengar. Inkomster påverkar biståndet, och det är bättre att fråga än att gissa.',
+      'Boka också en tid hos budget- och skuldrådgivningen.'
+    ],
+    scripts: ['soc'],
+    links: [['Vänersborgs kommun', 'https://www.vanersborg.se'], ['Socialstyrelsen om ekonomiskt bistånd', 'https://www.socialstyrelsen.se/kunskapsstod-och-regler/omraden/ekonomiskt-bistand/ekonomiskt-bistand-for-privatpersoner/']]
+  },
+  {
+    id: 'salja', h: 'nu', title: 'Sälj det du inte behöver',
+    line: 'Den snabbaste vägen till pengar på kontot. Fem annonser idag kan bli pengar redan i helgen.',
+    time: '1–3 dagar', amount: '500–5 000 kr', effort: '1–2 h',
+    why: 'Du behöver ingen kund som godkänner dig, ingen faktura och ingen väntan på lön. Elektronik, musikutrustning, verktyg och möbler säljer snabbast.',
+    steps: [
+      'Gå runt hemma i 20 minuter. Allt du inte använt på ett halvår är en kandidat.',
+      'Jämför med liknande annonser och sätt priset 10–15 % lägre för att sälja snabbt.',
+      'Fota i dagsljus, minst fem bilder, och var ärlig om skavanker.',
+      'Lägg upp på Blocket och Facebook Marketplace samtidigt, och på Tradera för saker som passar budgivning.',
+      'Ta betalt med Swish när köparen hämtar. Skicka aldrig något innan pengarna kommit in, och klicka aldrig på betallänkar som en köpare skickar.'
+    ],
+    scripts: ['blocket'],
+    links: [['Blocket', 'https://www.blocket.se'], ['Tradera', 'https://www.tradera.com']]
+  },
+  {
+    id: 'hemhjalp', h: 'nu', title: 'Höst- och hemhjälp',
+    line: 'Krattning, trädgårdsstädning, bärhjälp och tömning av förråd. Oktober och november är högsäsong i trädgården.',
+    time: '1–3 dagar', amount: '300 kr/h', effort: 'Kroppsarbete',
+    why: 'Privatpersoner betalar med Swish direkt efter jobbet och behöver ingen faktura. Helgen är bästa tiden att posta.',
+    steps: [
+      'Posta inlägget under Manus → Lokalt inlägg i 2–3 lokala Facebook-grupper för din ort och grannorterna.',
+      'Skapa en profil i Tiptapp-appen för bär- och flytthjälp.',
+      'Svara inom en timme och föreslå en konkret tid. Lägg in dem i Pipeline som privatperson.',
+      'Ta betalt direkt efter jobbet. Skicka tackmeddelandet och be om några ord i gruppen.',
+      'Deklarera inkomsten. Skatteverket har information om ersättning från privatpersoner.'
+    ],
+    scripts: ['fb', 'bokning', 'tack'],
+    links: [['Skatteverket', 'https://www.skatteverket.se']]
+  },
+  {
+    id: 'teknik', h: 'nu', title: 'Teknikhjälp hemma',
+    line: 'Hjälp äldre med mobil, surfplatta, wifi, skrivare och tv. Det handlar mest om att vara lugn och pedagogisk, och det klarar du.',
+    time: '2–5 dagar', amount: '350 kr/h', effort: 'Låg',
+    why: 'Många som behöver hjälpen finns inte på Facebook. En lapp på anslagstavlan och kontakt med pensionärsföreningar når dem.',
+    steps: [
+      'Sätt upp lappen under Manus → Teknikhjälp på anslagstavlor i mataffärer och på biblioteket.',
+      'Hör av dig till de lokala PRO- och SPF-föreningarna och fråga om du får sätta upp lappen eller hålla en gratis frågestund.',
+      'Ta fast pris för första timmen och därefter per halvtimme.',
+      'Kunden skriver alltid in sina egna koder och lösenord själv. Du tar aldrig emot dem.'
+    ],
+    scripts: ['teknik', 'bokning', 'tack'],
+    links: []
+  },
+  {
+    id: 'bemanning', h: 'nu', title: 'Lager- och e-handelsjobb via bemanning',
+    line: 'Inför Black Friday och julen tar lager och e-handel in extra folk. Din erfarenhet av WM6, SAP och M3 sticker ut.',
+    time: '1–4 veckor (lön)', amount: 'Lön, ofta månadsvis', effort: 'Heltid eller pass',
+    why: 'Det här är den säkraste inkomsten i listan. Startar du idag kan du ha lön i november, och korta pass går att kombinera med allt annat.',
+    steps: [
+      'Registrera dig idag hos tre bemanningsföretag som rekryterar i Trollhättan, Vänersborg eller Göteborg, och i jobbappar som Gigstr och Instajobs.',
+      'Ring dem måndag förmiddag med Manus → Bemanning och säg att du kan börja direkt.',
+      'Fråga vilken dag lönen betalas ut och om de har veckovis utbetalning eller förskott.',
+      'Skriv in dig på Arbetsförmedlingen om du inte redan har gjort det.'
+    ],
+    scripts: ['bemanning', 'folj_bemanning'],
+    links: [['Platsbanken', 'https://arbetsformedlingen.se/platsbanken']]
+  },
+  {
+    id: 'hemsida', h: 'vecka', title: 'Hemsida på 24 timmar',
+    line: 'Lokala företag utan hemsida får se ett färdigt förslag innan du frågar om något. Du får betalt när de säger ja.',
+    time: '5–14 dagar', amount: '2 900 kr + 149 kr/mån', effort: '30–60 min per demo',
+    why: 'Ett färdigt förslag är mycket lättare att säga ja till än ett erbjudande på papper. Med demo-generatorn i repot tar varje förslag minuter, och varje kund kan bli en månadsintäkt.',
+    steps: [
+      'Sök på Google Maps, till exempel ”frisör Vänersborg”. Länkarna finns längst ner under Pipeline.',
+      'Välj företag med bra betyg som saknar knappen Webbplats eller bara länkar till Facebook. Lägg in dem i Pipeline.',
+      'Kör demo-generatorn (cash-sprint/demo-site i repot) med namn, telefon, adress, öppettider och tjänster. Lägg upp mappen gratis på Netlify.',
+      'Gå in med demon i mobilen eller ring. Mejla bara aktiebolag. Manus → Hemsida.',
+      'Fakturera via Frilans Finans med halva vid ja och resten vid lansering. Kunden betalar själv sin domän.',
+      'Fakturor betalas ofta först efter 10–30 dagar. Behöver du pengarna före förfallodagen, be om förskott med kort betalningsvillkor.',
+      'Erbjud drift och små ändringar för 149 kr/mån. Med 20 kunder blir det 2 980 kr i månaden.'
+    ],
+    scripts: ['hemsida_besok', 'hemsida_tel', 'hemsida_mejl', 'hemsida_folj', 'faktura'],
+    links: [['Netlify Drop', 'https://app.netlify.com/drop'], ['Frilans Finans', 'https://frilansfinans.se']]
+  },
+  {
+    id: 'gbp', h: 'vecka', title: 'Google-profil på en timme',
+    line: 'Rätta öppettider, lägg in bilder och kategorier och svara på omdömen. Ett litet första ja som ofta leder till en hemsida.',
+    time: '3–10 dagar', amount: '695 kr per företag', effort: '45–60 min',
+    why: 'Lågt pris gör beslutet lätt, och resultatet syns direkt när kunden googlar sig själv.',
+    steps: [
+      'Leta efter profiler med fel öppettider, få bilder eller obesvarade omdömen.',
+      'Erbjud ett fast pris med Manus → Google-profil, helst på plats eller per telefon.',
+      'Ägaren lägger till dig som förvaltare av profilen. Du behöver aldrig deras lösenord.',
+      'Leverera samma dag och skicka en bild på före och efter.'
+    ],
+    scripts: ['gbp', 'folj'],
+    links: []
+  },
+  {
+    id: 'texter', h: 'vecka', title: 'Produkttexter för webbshoppar',
+    line: 'Du har drygt tio år inom e-handel. Skicka två omskrivna texter gratis och erbjud resten av sortimentet.',
+    time: '5–14 dagar', amount: '1 490 kr per 30 texter', effort: '2–3 h per paket',
+    why: 'Gratisprovet visar kvaliteten direkt, och små butiker använder ofta leverantörens tunna texter.',
+    steps: [
+      'Hitta små svenska webbshoppar i nischer du förstår: musik, elektronik, kläder, hem.',
+      'Kolla bolagsformen i sidfoten eller köpvillkoren. Mejla aktiebolag och ring enskilda firmor.',
+      'Skriv om två produkttexter med AI och din e-handelsblick. Kontrollera alla fakta mot produktsidan.',
+      'Skicka mejlet under Manus → Produkttexter. Tio om dagen räcker.',
+      'Leverera i ett kalkylark som är klart att importera.'
+    ],
+    scripts: ['texter_mejl', 'texter_folj'],
+    links: []
+  },
+  {
+    id: 'jobb', h: 'bygg', title: 'Fast jobb inom AI-drift eller e-handel',
+    line: 'Den största hävstången på sikt: en lön löser hyran varje månad. Fem riktade ansökningar i veckan.',
+    time: '3–8 veckor', amount: 'Månadslön', effort: '1 h per ansökan',
+    why: 'Agent-OS och din driftbakgrund passar roller där verksamhet möter teknik: AI Operations, implementation, support och kvalitetssäkring.',
+    steps: [
+      'Utgå från CAREER_PORTFOLIO.md i repot.',
+      'Anpassa de tre första meningarna efter varje annons.',
+      'Följ upp varje ansökan efter en vecka.'
+    ],
+    scripts: [],
+    links: [['Platsbanken', 'https://arbetsformedlingen.se/platsbanken']]
+  },
+  {
+    id: 'drift', h: 'bygg', title: 'Månadsintäkt från dina kunder',
+    line: 'Varje hemsidekund kan betala 149 kr/mån för drift, ändringar och små uppdateringar.',
+    time: 'Varje månad', amount: '149 kr per kund', effort: 'Låg',
+    why: 'Engångsjobben blir en intäkt som kommer tillbaka varje månad.',
+    steps: ['Erbjud det vid leverans.', 'Fakturera kvartalsvis så att du sparar tid.'],
+    scripts: [],
+    links: []
+  },
+  {
+    id: 'bidsprint', h: 'bygg', title: 'BidSprint 48 och ForgeHQ',
+    line: 'Pausa båda tills hyran är betald, och ta sedan upp de 30 prospekten igen.',
+    time: 'Veckor', amount: '1 900 kr per pilot', effort: 'Hög per leverans',
+    why: 'Idéerna är bra, men säljcykeln är för lång för att hinna före den här förfallodagen.',
+    steps: ['Prospektlistan finns i revenue-os/work-products/bidsprint48.'],
+    scripts: [],
+    links: []
+  }
+];
+
+const REJECTED = [
+  ['SMS-lån och snabbkrediter', 'Räntan gör nästa månad värre än den här.'],
+  ['Fiverr och Upwork från noll', 'Det tar veckor innan de första omdömena kommer.'],
+  ['Dropshipping, print-on-demand, AI-kanaler på YouTube', 'Kräver kapital eller flera månader innan det ger något.'],
+  ['Trading, krypto och betting', 'Du kan förlora hyran på en dag.'],
+  ['Att bygga ännu ett system', 'Ett system tjänar inga pengar förrän någon får ett erbjudande.']
+];
+
+const SCRIPT_GROUPS = [
+  ['hyran', 'Hyran'], ['salja', 'Sälja saker'], ['lokalt', 'Lokala tjänster'],
+  ['foretag', 'Företag'], ['jobb', 'Jobb'], ['betalt', 'Få betalt']
+];
+
+const SCRIPTS = [
+  { id: 'hyresvard', g: 'hyran', title: 'Hyresvärd: förslag på delbetalning', when: 'Skicka före förfallodagen, gärna idag.', text:
+`Ämne: Hyran med förfallodag {forfallodag}, förslag på delbetalning
+
+Hej!
+
+Jag heter {namn} och hyr [adress och lägenhetsnummer]. Jag hör av mig i god tid eftersom jag har ett tillfälligt glapp i ekonomin och inte kan betala hela hyran på förfallodagen {forfallodag}.
+
+Mitt förslag:
+– [belopp] kr betalar jag senast {forfallodag}
+– resterande [belopp] kr betalar jag senast [datum]
+
+Går det bra? Jag bekräftar gärna överenskommelsen skriftligt och hör av mig direkt om något ändras.
+
+Vänliga hälsningar
+{namn}
+{telefon}` },
+  { id: 'soc', g: 'hyran', title: 'Socialtjänsten: vad du säger när du ringer', when: 'Ring en vardag förmiddag.', text:
+`Säg så här:
+”Hej, jag heter {namn} och bor i {ort}. Jag behöver ansöka om ekonomiskt bistånd till hyran, som förfaller {forfallodag}. Det är akut. Hur ansöker jag, och vilka underlag behöver ni?”
+
+Ha det här framme:
+– hyresavi eller hyreskontrakt
+– kontoutdrag för de senaste månaderna
+– besked om inkomster (lön, a-kassa, andra ersättningar)
+– legitimation
+
+Fråga också:
+– ”Kan jag få en tid hos budget- och skuldrådgivningen?”
+– ”Hur påverkas biståndet om jag tjänar pengar under tiden?”` },
+  { id: 'blocket', g: 'salja', title: 'Annons för Blocket och Marketplace', when: 'En annons per sak. Fem bilder i dagsljus.', text:
+`Rubrik: [Sak, märke och modell], [skick]
+
+Säljer [sak, märke och modell]. [En mening om varför den är bra, t.ex. ”Fungerar felfritt och är sparsamt använd.”]
+
+Skick: [ärlig beskrivning, nämn skavanker]
+Ingår: [tillbehör, laddare, kartong, kvitto]
+Nypris cirka [belopp] kr.
+
+Pris: [belopp] kr. Hämtas i {ort}, betalning med Swish vid hämtning.
+Jag svarar snabbt.` },
+  { id: 'fb', g: 'lokalt', title: 'Lokalt inlägg: höst- och hemhjälp', when: 'Posta i lokala Facebook-grupper. Bäst på helgen och på kvällen.', text:
+`Hej {ort}!
+
+Jag heter {namn} och tar småjobb de närmaste veckorna:
+– krattning och höststädning i trädgården
+– bära och flytta möbler
+– tömma förråd och källare
+– teknikhjälp hemma (mobil, wifi, skrivare, tv)
+
+{timpris} kr i timmen, betalning med Swish efteråt. Jag kan ofta komma samma vecka.
+
+Skicka ett meddelande så bokar vi en tid!` },
+  { id: 'teknik', g: 'lokalt', title: 'Lapp: teknikhjälp hemma', when: 'Anslagstavlor i mataffärer och på biblioteket. Skriv ut i stor stil.', text:
+`TEKNIKHJÄLP HEMMA I {ORT}
+
+Krånglar mobilen, surfplattan, wifi, skrivaren eller tv:n? Vill du komma igång med videosamtal eller Swish?
+
+Jag kommer hem till dig och hjälper dig i lugn takt. Jag skriver också ner hur du gör, så att du klarar det själv nästa gång.
+
+{teknikpris} kr för första timmen. Swish eller kontant.
+Ring eller sms:a {namn}: {telefon}` },
+  { id: 'bokning', g: 'lokalt', title: 'Svar till någon som hört av sig', when: 'Svara inom en timme.', text:
+`{hej} Tack för att du hörde av dig. Jag kan komma [dag] klockan [tid]. Det kostar {timpris} kr i timmen och du betalar med Swish efteråt. Passar det?
+
+/{namn}, {telefon}` },
+  { id: 'tack', g: 'lokalt', title: 'Tack och betalning efter jobbet', when: 'Skicka direkt när du är klar.', text:
+`Tack för idag! Det blev [antal] timmar × {timpris} kr = [summa] kr. Swisha gärna till {telefon}.
+
+Om du var nöjd blir jag jätteglad för några ord i gruppen där du hittade mig. Det hjälper mig mycket!` },
+  { id: 'hemsida_besok', g: 'foretag', title: 'Hemsida: besök i butiken', when: 'Vardagar, när det är lugnt i butiken. Ha demon öppen i mobilen.', text:
+`Öppning:
+”Hej! Jag heter {namn}. Jag bor här i {ort} och gör hemsidor åt lokala företag. Jag har redan gjort ett förslag åt er. Får jag visa det på 30 sekunder?”
+
+Ge dem mobilen och låt dem scrolla själva.
+
+Avslut:
+”Den kan vara uppe i morgon för {pris_hemsida} kr. Ni betalar halva nu och resten när den är uppe. Ska vi köra?”
+
+Om de säger ”Vi har ju Facebook”:
+”Perfekt, då länkar sidan dit. Skillnaden är att ni syns när folk googlar, och att man ser telefon och öppettider direkt utan Facebook-konto.”
+
+Om de säger ”Det är för dyrt”:
+”Jag kan lägga upp den på en gratisadress för [lägre pris] kr först. Egen domän kan ni lägga till senare.”
+
+Om de säger ”Vi ska fundera”:
+”Självklart. Får jag höra av mig på [dag]?” Skriv in dagen i Pipeline.` },
+  { id: 'hemsida_tel', g: 'foretag', title: 'Hemsida: telefonsamtal', when: 'Fungerar till alla bolagsformer. Ring 9–11 eller 13–15.', text:
+`”Hej, är det [förnamn]? Jag heter {namn} och bor i {ort}. Jag gör hemsidor åt lokala företag och har redan gjort ett förslag åt {foretag}. Får jag skicka en länk så att du kan titta? Vilket nummer eller vilken mejladress passar?”
+
+Om ja: skicka länken direkt efter samtalet. De har bett om den, så det är okej att sms:a eller mejla.
+Om nej: ”Inga problem, tack för att du tog dig tid!”` },
+  { id: 'hemsida_mejl', g: 'foretag', title: 'Hemsida: mejl eller sms med demo', when: 'Till aktiebolag, eller till den som bett dig skicka länken.', text:
+`{hej} Jag heter {namn} och bor i {ort}. Jag såg att {foretag} inte har någon egen hemsida, så jag gjorde ett förslag på hur en kan se ut: {lank}
+
+Gillar ni den kan den vara uppe inom 24 timmar för {pris_hemsida} kr. Den fungerar i mobilen, visar öppettider och karta och har en knapp för att ringa direkt. Ingen bindningstid.
+
+Vill ni ändra något i förslaget är det bara att säga till. Vill ni inte få fler meddelanden från mig räcker det att svara nej.
+
+/{namn}, {telefon}` },
+  { id: 'hemsida_folj', g: 'foretag', title: 'Hemsida: uppföljning efter tre dagar', when: 'En uppföljning, sedan släpper du det.', text:
+`{hej} Jag ville bara höra om ni hann titta på hemsideförslaget till {foretag}: {lank}
+
+Jag har plats för två nya kunder den här veckan. Säg till om ni vill ha den. Är det inte aktuellt går det bra att säga det också, så hör jag inte av mig igen.
+
+/{namn}` },
+  { id: 'gbp', g: 'foretag', title: 'Google-profil: erbjudande', when: 'Bäst på plats eller per telefon. Mejla bara aktiebolag.', text:
+`{hej} Jag heter {namn} och hjälper företag i {ort} att synas bättre på Google. Jag såg att Google-profilen för {foretag} [saknar bilder / visar fel öppettider / har obesvarade omdömen].
+
+För {pris_gbp} kr fixar jag profilen på en timme: rätt öppettider, kategorier, beskrivning, bilder och svar på omdömen. Ni lägger bara till mig som förvaltare, så jag behöver aldrig ert lösenord.
+
+Ska jag göra det den här veckan?
+/{namn}, {telefon}` },
+  { id: 'texter_mejl', g: 'foretag', title: 'Produkttexter: mejl med gratisprov', when: 'Till webbshoppar som drivs som aktiebolag.', text:
+`Ämne: Två nya produkttexter till {foretag}, gratis
+
+{hej}
+
+Jag heter {namn} och har arbetat ungefär elva år med e-handel och systemdriven drift, bland annat på Komplett och Varner. Jag tittade på {foretag} och skrev om två av era produktbeskrivningar så att de blir tydligare för kunden och lättare att hitta på Google:
+
+[Produkt 1, ny text]
+
+[Produkt 2, ny text]
+
+Ni får använda dem fritt. Vill ni att jag gör samma sak för 30 produkter kostar det {pris_texter} kr. Det är klart inom tre arbetsdagar och levereras i en fil som är klar att importera.
+
+Vill ni inte få fler mejl från mig räcker det att svara nej.
+
+Vänliga hälsningar
+{namn}
+{telefon}` },
+  { id: 'texter_folj', g: 'foretag', title: 'Produkttexter: uppföljning', when: 'Efter tre arbetsdagar.', text:
+`{hej} Fick ni mina två produkttexter till {foretag}? Erbjudandet med 30 texter för {pris_texter} kr gäller den här veckan. Säg till om ni vill ha det, så börjar jag direkt.
+
+/{namn}` },
+  { id: 'folj', g: 'foretag', title: 'Allmän uppföljning', when: 'När inget mer specifikt passar.', text:
+`{hej} Jag ville bara följa upp mitt förslag till {foretag}. Är det intressant? Om inte går det bra att säga det, så hör jag inte av mig igen.
+
+/{namn}` },
+  { id: 'bemanning', g: 'jobb', title: 'Bemanningsföretag: första kontakt', when: 'Ring eller mejla måndag förmiddag.', text:
+`{hej} Jag heter {namn}, bor i {ort} och söker jobb med start så snart som möjligt, gärna inom lager, logistik eller e-handel.
+
+Jag har ungefär elva års erfarenhet av e-handel och lager- och affärssystem (SAP, M3, WM6) och har arbetat ett år som Operations Lead. Jag kan börja direkt och är flexibel med tider, även kvällar och helger.
+
+Har ni uppdrag just nu? Jag skickar gärna mitt CV.
+
+/{namn}, {telefon}` },
+  { id: 'folj_bemanning', g: 'jobb', title: 'Bemanningsföretag: uppföljning', when: 'Efter två till tre dagar.', text:
+`{hej} Jag hörde av mig i [dag] om jobb. Jag är fortfarande tillgänglig från och med direkt. Finns det något pass jag kan ta?
+
+/{namn}, {telefon}` },
+  { id: 'swish', g: 'betalt', title: 'Swish-förfrågan', when: 'Samma dag som jobbet är klart.', text:
+`Hej! Här kommer betalningen för [jobbet]: [summa] kr. Swisha gärna till {telefon} och märk betalningen ”[jobbet]”. Tack!` },
+  { id: 'faktura', g: 'betalt', title: 'Fakturera ett företag utan egen firma', when: 'Gör kontot klart innan första ja.', text:
+`Så gör du:
+1. Skapa ett konto på frilansfinans.se. Cool Company är en reserv.
+2. Lägg in kunden och uppdraget. Fakturan går ut via dem.
+3. De drar skatt och avgifter och betalar ut resten som lön. Enligt deras egna frågor och svar är avgiften cirka 6 procent.
+4. Välj kort betalningsvillkor, till exempel 10 dagar, och ta halva i förskott på större jobb.
+
+Text till kunden:
+”Tack för ett bra samarbete! Fakturan kommer från Frilans Finans, som sköter min fakturering. Betalningsvillkor 10 dagar.”` }
+];
+
+const OFFERS = {
+  hemsida: { label: 'Hemsida', income: 'Hemsida', first: { besok: 'hemsida_besok', telefon: 'hemsida_tel', _: 'hemsida_mejl' }, follow: 'hemsida_folj' },
+  gbp: { label: 'Google-profil', income: 'Google-profil', first: { _: 'gbp' }, follow: 'folj' },
+  texter: { label: 'Produkttexter', income: 'Produkttexter', first: { _: 'texter_mejl' }, follow: 'texter_folj' },
+  hemhjalp: { label: 'Hemhjälp', income: 'Hemhjälp', first: { _: 'bokning' }, follow: 'tack' },
+  teknik: { label: 'Teknikhjälp', income: 'Teknikhjälp', first: { _: 'bokning' }, follow: 'tack' },
+  bemanning: { label: 'Jobb', income: 'Lön och bemanning', first: { _: 'bemanning' }, follow: 'folj_bemanning' },
+  annat: { label: 'Annat', income: 'Övrigt', first: { _: 'folj' }, follow: 'folj' }
+};
+
+const INCOME_SOURCES = ['Sålt (Blocket m.fl.)', 'Hemhjälp', 'Teknikhjälp', 'Hemsida', 'Google-profil', 'Produkttexter', 'Lön och bemanning', 'Bistånd och stöd', 'Övrigt'];
+
+const STATUS = {
+  ny: 'Ny', kontaktad: 'Kontaktad', svar: 'Svar', ja: 'Ja', betalt: 'Betalt', nej: 'Nej'
+};
+
+const ONCE_TASKS = [
+  { id: 'hyresvard', text: 'Mejla eller ring hyresvärden och föreslå en delbetalning', script: 'hyresvard', needsGap: true },
+  { id: 'soc', text: 'Ring socialtjänsten om du inte kommer att klara hyran', script: 'soc', needsGap: true, weekday: true },
+  { id: 'salja5', text: 'Fota och lägg ut fem saker på Blocket och Marketplace', script: 'blocket' },
+  { id: 'fbpost', text: 'Posta hemhjälp-inlägget i 2–3 lokala Facebook-grupper', script: 'fb' },
+  { id: 'bemanning3', text: 'Registrera dig hos tre bemanningsföretag eller jobbappar', script: 'bemanning' },
+  { id: 'frilans', text: 'Skapa konto hos Frilans Finans så att du kan fakturera företag', script: 'faktura' },
+  { id: 'leads20', text: 'Lägg in 20 lokala företag utan hemsida i Pipeline', play: 'hemsida' },
+  { id: 'demo3', text: 'Gör tre demosidor med generatorn och visa dem', play: 'hemsida' },
+  { id: 'teknikLapp', text: 'Sätt upp teknikhjälp-lappen på två anslagstavlor', script: 'teknik' },
+  { id: 'shops10', text: 'Mejla tio webbshoppar som är aktiebolag med två gratis produkttexter', script: 'texter_mejl' },
+  { id: 'jobb5', text: 'Skicka fem riktade jobbansökningar', play: 'jobb' }
+];
+
+const MIX_ROWS = [
+  { key: 'sell', label: 'Sålda saker', hint: 'kronor totalt', unit: () => 1, step: 250 },
+  { key: 'hours', label: 'Timmar hemhjälp', hint: s => `${num(s.hourRate)} kr/h`, unit: s => num(s.hourRate), step: 1 },
+  { key: 'sites', label: 'Hemsidor', hint: s => `${num(s.priceSite)} kr/st (halva i förskott)`, unit: s => num(s.priceSite), step: 1 },
+  { key: 'gbp', label: 'Google-profiler', hint: s => `${num(s.priceGbp)} kr/st`, unit: s => num(s.priceGbp), step: 1 },
+  { key: 'texts', label: 'Textpaket', hint: s => `${num(s.priceText)} kr/st`, unit: s => num(s.priceText), step: 1 },
+  { key: 'other', label: 'Övrigt', hint: 'kronor totalt', unit: () => 1, step: 250 }
+];
+
+const MAP_TERMS = ['frisör', 'barberare', 'nagelsalong', 'hudvård', 'massage', 'hundfrisör', 'målare', 'elektriker', 'rörmokare', 'snickare', 'städfirma', 'bilverkstad', 'däckverkstad', 'café', 'pizzeria', 'flyttfirma'];
+const NEARBY = { 'vänersborg': ['Trollhättan', 'Uddevalla'], 'trollhättan': ['Vänersborg', 'Lilla Edet'], 'uddevalla': ['Vänersborg', 'Trollhättan'] };
+
+/* ===================== Pure helpers ===================== */
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function ymd(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function parseYmd(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s || '')) return null;
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function addDays(s, n) { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); }
+function daysUntil(from, to) {
+  const a = parseYmd(from), b = parseYmd(to);
+  if (!a || !b) return null;
+  return Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
+}
+function lastWeekdayOfMonth(y, m) {
+  const d = new Date(y, m + 1, 0);
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+  return d;
+}
+function defaultDueDate(today) {
+  const t = parseYmd(today);
+  let d = lastWeekdayOfMonth(t.getFullYear(), t.getMonth());
+  if (ymd(d) < today) d = lastWeekdayOfMonth(t.getFullYear(), t.getMonth() + 1);
+  return ymd(d);
+}
+function isWeekend(s) { const d = parseYmd(s); return d.getDay() === 0 || d.getDay() === 6; }
+function num(v) {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+  const n = Number(String(v == null ? '' : v).replace(/[\s ]/g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+}
+function kr(n) { return new Intl.NumberFormat('sv-SE', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' kr'; }
+function svDate(s, withWeekday) {
+  const d = parseYmd(s);
+  if (!d) return '–';
+  const opts = withWeekday ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' };
+  return new Intl.DateTimeFormat('sv-SE', opts).format(d);
+}
+function withDefaults(settings) {
+  const s = Object.assign({}, DEFAULTS, settings || {});
+  s.mix = Object.assign({}, DEFAULTS.mix, (settings && settings.mix) || {});
+  return s;
+}
+function computeGap(settings, incomeTotal, today) {
+  const need = num(settings.rent) + num(settings.extra);
+  const have = num(settings.startCash) + num(incomeTotal);
+  const gap = Math.max(0, need - have);
+  const daysLeft = daysUntil(today, settings.dueDate);
+  const perDay = daysLeft == null ? null : Math.ceil(gap / Math.max(1, daysLeft));
+  return { need, have, gap, daysLeft, perDay, pct: need > 0 ? Math.min(1, have / need) : 0 };
+}
+function mixTotal(settings) {
+  const s = withDefaults(settings);
+  return MIX_ROWS.reduce((sum, r) => sum + num(s.mix[r.key]) * r.unit(s), 0);
+}
+function templateVars(settings, lead) {
+  const s = withDefaults(settings);
+  const contact = lead && lead.contact ? String(lead.contact).trim() : '';
+  return {
+    namn: s.myName, telefon: s.myPhone, ort: s.myCity, ORT: String(s.myCity || '').toUpperCase(),
+    forfallodag: s.dueDate ? svDate(s.dueDate, false) : '',
+    pris_hemsida: num(s.priceSite), pris_gbp: num(s.priceGbp), pris_texter: num(s.priceText),
+    timpris: num(s.hourRate), teknikpris: num(s.techRate),
+    foretag: lead ? lead.name : '', kontakt: contact, lank: lead ? lead.link : '',
+    hej: contact ? `Hej ${contact}!` : 'Hej!'
+  };
+}
+const PLACEHOLDER = {
+  foretag: '[företag]', kontakt: '[kontaktperson]', lank: '[länk till demo]', telefon: '[ditt nummer]',
+  namn: '[ditt namn]', ort: '[ort]', ORT: '[ORT]', forfallodag: '[förfallodag]', hej: 'Hej!'
+};
+function fillTemplate(text, vars) {
+  return text.replace(/\{([A-Za-z_]+)\}/g, (m, k) => {
+    const v = vars[k];
+    if (v !== undefined && v !== null && v !== '' && v !== 0) return String(v);
+    return PLACEHOLDER[k] || m;
+  });
+}
+function scriptFor(lead, kind) {
+  const offer = OFFERS[lead.offer] || OFFERS.annat;
+  if (kind === 'follow') return offer.follow;
+  return offer.first[lead.channel] || offer.first._;
+}
+function isDue(lead, today) {
+  return ['kontaktad', 'svar', 'ja'].includes(lead.status) && !!lead.nextAt && lead.nextAt <= today;
+}
+function statusPatch(to, today) {
+  const p = { status: to, updatedAt: today };
+  if (to === 'kontaktad') { p.contactedAt = today; p.nextAt = addDays(today, 3); }
+  if (to === 'svar') p.nextAt = addDays(today, 1);
+  if (to === 'ja') p.nextAt = addDays(today, 2);
+  if (to === 'betalt') { p.paidAt = today; p.nextAt = ''; }
+  if (to === 'nej') p.nextAt = '';
+  if (to === 'ny') p.nextAt = '';
+  return p;
+}
+function needsConsentWarning(formType, channel) {
+  return (formType === 'ef' || formType === 'okand') && ['mejl', 'sms', 'dm'].includes(channel);
+}
+function defaultValue(offer, settings) {
+  const s = withDefaults(settings);
+  return ({ hemsida: num(s.priceSite), gbp: num(s.priceGbp), texter: num(s.priceText), hemhjalp: num(s.hourRate) * 3, teknik: num(s.techRate) })[offer] || 0;
+}
+function ocrLine(calc, settings, day) {
+  const amount = String(Math.round(calc.need)).padStart(6, '0');
+  const due = (settings.dueDate || '00000000').replace(/-/g, '');
+  const gap = String(Math.round(calc.gap)).padStart(6, '0');
+  return `# ${amount} 00 # ${due} # ${gap} > ${pad2(Math.max(0, day))} #`;
+}
+function shortTitle(title) {
+  const i = title.indexOf(': ');
+  if (i < 0) return title;
+  const rest = title.slice(i + 2);
+  return rest.charAt(0).toUpperCase() + rest.slice(1);
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+function safeUrl(u) {
+  const s = String(u || '').trim();
+  return /^https?:\/\//i.test(s) ? s : '';
+}
+function newId() {
+  try { if (crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, '').slice(0, 20); } catch (e) {}
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+}
+
+/* ===================== Storage: artifact db, else this browser ===================== */
+
+const LS_KEY = 'kassasprint.v1';
+const state = { mode: 'loading', loaded: false, settings: {}, checks: {}, agent: null, leads: [], income: [] };
+const listeners = [];
+function emit() { listeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } }); }
+
+let resolveLoaded;
+const loadedPromise = new Promise(r => { resolveLoaded = r; });
+function markLoaded() { if (!state.loaded) { state.loaded = true; resolveLoaded(); } }
+
+const Store = {
+  db: null,
+  chains: {},
+  local: { settings: {}, checks: {}, agent: null, leads: {}, income: {} },
+
+  async start() {
+    let db = null;
+    if (typeof window !== 'undefined' && window.claude && typeof window.claude.use === 'function') {
+      try { db = await window.claude.use('db'); } catch (e) { db = null; }
+    }
+    if (db) {
+      this.db = db;
+      state.mode = 'db';
+      this.subscribe();
+    } else {
+      state.mode = 'local';
+      this.loadLocal();
+    }
+    emit();
+  },
+
+  subscribe() {
+    const db = this.db;
+    const fail = e => toast(e && e.code === 'revoked' ? 'Åtkomsten till sparad data har ändrats.' : 'Kunde inte läsa sparad data just nu.');
+    const seen = new Set();
+    const ready = key => { seen.add(key); if (seen.size === 5) markLoaded(); emit(); };
+    const onErr = key => e => { fail(e); ready(key); };
+    db.doc('sprint/settings').onSnapshot(s => { state.settings = s.exists ? s.data() : {}; ready('settings'); }, onErr('settings'));
+    db.doc('sprint/checks').onSnapshot(s => { state.checks = s.exists ? s.data() : {}; ready('checks'); }, onErr('checks'));
+    db.doc('sprint/agent').onSnapshot(s => { state.agent = s.exists ? s.data() : null; ready('agent'); }, onErr('agent'));
+    db.collection('leads').onSnapshot(q => { state.leads = q.docs.map(d => Object.assign({ id: d.id }, d.data())); ready('leads'); }, onErr('leads'));
+    db.collection('income').onSnapshot(q => { state.income = q.docs.map(d => Object.assign({ id: d.id }, d.data())); ready('income'); }, onErr('income'));
+  },
+
+  loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) this.local = Object.assign(this.local, JSON.parse(raw));
+    } catch (e) {}
+    this.syncLocal();
+    markLoaded();
+  },
+  syncLocal() {
+    const l = this.local;
+    state.settings = l.settings || {};
+    state.checks = l.checks || {};
+    state.agent = l.agent || null;
+    state.leads = Object.entries(l.leads || {}).map(([id, v]) => Object.assign({ id }, v));
+    state.income = Object.entries(l.income || {}).map(([id, v]) => Object.assign({ id }, v));
+  },
+  persistLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(this.local)); } catch (e) {}
+    this.syncLocal();
+    emit();
+  },
+
+  queue(path, fn) {
+    const prev = this.chains[path] || loadedPromise;
+    const next = prev.then(fn, fn);
+    this.chains[path] = next.catch(() => {});
+    return next.catch(e => { toast('Kunde inte spara: ' + ((e && e.message) || 'okänt fel')); throw e; });
+  },
+
+  // Every write waits for the first load, so nothing replaces data that has not arrived yet.
+  saveSettings(patch) {
+    return this.queue('sprint/settings', () => {
+      const merged = Object.assign({}, state.settings, patch);
+      if (!merged.startDate) merged.startDate = todayStr();
+      if (state.mode === 'db') return this.db.doc('sprint/settings').set(merged);
+      this.local.settings = merged; this.persistLocal();
+    });
+  },
+  saveChecks(checks) {
+    return this.queue('sprint/checks', () => {
+      if (state.mode === 'db') return this.db.doc('sprint/checks').set(checks);
+      this.local.checks = checks; this.persistLocal();
+    });
+  },
+  putLead(id, data) {
+    return this.queue('leads/' + id, () => {
+      if (state.mode === 'db') return this.db.collection('leads').doc(id).set(data);
+      this.local.leads[id] = data; this.persistLocal();
+    });
+  },
+  removeLead(id) {
+    return this.queue('leads/' + id, () => {
+      if (state.mode === 'db') return this.db.collection('leads').doc(id).delete();
+      delete this.local.leads[id]; this.persistLocal();
+    });
+  },
+  putIncome(id, data) {
+    return this.queue('income/' + id, () => {
+      if (state.mode === 'db') return this.db.collection('income').doc(id).set(data);
+      this.local.income[id] = data; this.persistLocal();
+    });
+  },
+  removeIncome(id) {
+    return this.queue('income/' + id, () => {
+      if (state.mode === 'db') return this.db.collection('income').doc(id).delete();
+      delete this.local.income[id]; this.persistLocal();
+    });
+  }
+};
+
+/* ===================== UI ===================== */
+
+function todayStr() { return ymd(new Date()); }
+function $(id) { return document.getElementById(id); }
+function S() { return withDefaults(state.settings); }
+function incomeTotal() { return state.income.reduce((a, i) => a + num(i.amount), 0); }
+function cleanLead(l) { const c = Object.assign({}, l); delete c.id; return c; }
+
+let toastTimer = null;
+function toast(msg) {
+  if (typeof document === 'undefined') return;
+  const t = $('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+}
+
+function copyText(text, label) {
+  const done = () => toast((label || 'Texten') + ' är kopierad');
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    ok ? done() : toast('Markera texten och kopiera den manuellt');
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  } catch (e) { fallback(); }
+}
+
+/* ---- Tabs ---- */
+const TABS = ['lage', 'drag', 'manus', 'pipeline', 'kassa'];
+function showTab(name, focusId) {
+  if (!TABS.includes(name)) name = 'lage';
+  TABS.forEach(t => {
+    $('tab-' + t).hidden = t !== name;
+    $('tabbtn-' + t).setAttribute('aria-selected', String(t === name));
+  });
+  try { localStorage.setItem('kassasprint.tab', name); } catch (e) {}
+  if (focusId) {
+    requestAnimationFrame(() => {
+      const el = $(focusId);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 1600);
+    });
+  } else {
+    window.scrollTo({ top: 0 });
+  }
+}
+function gotoScript(id) {
+  scriptFilter = 'alla';
+  renderScripts();
+  showTab('manus', 's-' + id);
+}
+
+/* ---- Settings inputs ---- */
+let settingsTimer = null;
+let settingsPatch = {};
+function bindSettings() {
+  document.querySelectorAll('[data-setting]').forEach(el => {
+    el.addEventListener('input', () => {
+      settingsPatch[el.dataset.setting] = el.type === 'date' ? el.value : el.value.trim();
+      clearTimeout(settingsTimer);
+      settingsTimer = setTimeout(flushSettings, 500);
+    });
+    el.addEventListener('change', flushSettings);
+  });
+}
+function flushSettings() {
+  clearTimeout(settingsTimer);
+  const patch = settingsPatch; settingsPatch = {};
+  if (!Object.keys(patch).length) return;
+  Store.saveSettings(patch).catch(() => {});
+}
+function syncSettingInputs() {
+  const s = S();
+  document.querySelectorAll('[data-setting]').forEach(el => {
+    if (document.activeElement === el) return;
+    const v = s[el.dataset.setting];
+    el.value = v == null ? '' : String(v);
+  });
+}
+
+/* ---- Läge ---- */
+function renderOverview() {
+  const s = S();
+  const today = todayStr();
+  const total = incomeTotal();
+  const calc = computeGap(s, total, today);
+  const start = s.startDate || today;
+  const day = (daysUntil(start, today) || 0) + 1;
+  const sprintLen = s.dueDate ? Math.max(1, (daysUntil(start, s.dueDate) || 0) + 1) : null;
+
+  $('avi-day').textContent = sprintLen ? `Dag ${day} av ${sprintLen}` : `Dag ${day}`;
+  const big = $('avi-big');
+  big.classList.remove('is-gap', 'is-ok');
+  if (!state.loaded) {
+    $('avi-big-label').textContent = 'Laddar dina siffror';
+    big.textContent = '…';
+  } else if (!calc.need) {
+    $('avi-big-label').textContent = 'Börja här';
+    big.textContent = 'Fyll i hyran';
+    $('avi-form').hidden = false; $('avi-edit').setAttribute('aria-expanded', 'true');
+  } else if (calc.gap > 0) {
+    $('avi-big-label').textContent = 'Saknas till hyran';
+    big.textContent = kr(calc.gap); big.classList.add('is-gap');
+  } else {
+    $('avi-big-label').textContent = 'Hyran är täckt';
+    big.textContent = '+' + kr(calc.have - calc.need); big.classList.add('is-ok');
+  }
+  $('avi-meter').style.width = Math.round(calc.pct * 100) + '%';
+  $('avi-need').textContent = calc.need ? kr(calc.need) : '–';
+  $('avi-have').textContent = kr(calc.have);
+  $('avi-due').textContent = s.dueDate ? svDate(s.dueDate, true) : '–';
+  $('avi-perday').textContent = calc.perDay == null || !calc.need ? '–' : (calc.daysLeft < 0 ? 'Passerad' : kr(calc.perDay));
+  $('avi-ocr').textContent = ocrLine(calc, s, calc.daysLeft == null ? 0 : calc.daysLeft);
+
+  let count = '–';
+  if (calc.daysLeft != null) {
+    if (calc.daysLeft > 1) count = `${calc.daysLeft} dagar kvar`;
+    else if (calc.daysLeft === 1) count = 'Förfaller i morgon';
+    else if (calc.daysLeft === 0) count = 'Förfaller idag';
+    else count = `${-calc.daysLeft} dagar sen`;
+  }
+  $('hdr-count').textContent = count;
+
+  // Stats
+  const due = state.leads.filter(l => isDue(l, today)).length;
+  $('st-contacts').textContent = `${state.leads.filter(l => l.contactedAt === today).length}/${num(s.dailyContacts) || 20}`;
+  $('st-due').textContent = String(due);
+  $('st-yes').textContent = String(state.leads.filter(l => l.status === 'ja').length);
+  $('st-paid').textContent = kr(total);
+  const badge = $('due-badge');
+  badge.hidden = due === 0; badge.textContent = String(due);
+
+  renderToday(calc, today);
+  renderMix(calc);
+  renderAgent();
+
+  $('mode-note').textContent = state.mode === 'db'
+    ? 'Allt du skriver sparas i Kassasprint och syns på alla dina enheter.'
+    : state.mode === 'local' ? 'Sparas bara i den här webbläsaren. Öppna Kassasprint via din Claude-länk för att spara på alla enheter.' : '';
+}
+
+function renderToday(calc, today) {
+  const s = S();
+  const checks = state.checks || {};
+  const weekend = isWeekend(today);
+  const target = num(s.dailyContacts) || 20;
+  const contacted = state.leads.filter(l => l.contactedAt === today).length;
+  const due = state.leads.filter(l => isDue(l, today)).length;
+  const items = [];
+
+  const once = ONCE_TASKS.filter(t => !(t.needsGap && calc.need && calc.gap <= 0));
+  const open = once.filter(t => !checks[t.id]);
+  const closedToday = once.filter(t => checks[t.id] === today);
+  open.slice(0, 4).forEach(t => items.push({ key: t.id, text: t.text, script: t.script, play: t.play, done: false,
+    note: t.weekday && weekend ? 'Ring på måndag förmiddag. Förbered underlagen nu.' : '' }));
+  closedToday.forEach(t => items.push({ key: t.id, text: t.text, script: t.script, play: t.play, done: true }));
+
+  const dkey = id => `${id}@${today}`;
+  items.push({ key: dkey('contacts'), text: `Kontakta ${target} företag eller personer`, progress: `${contacted}/${target}`, done: contacted >= target || !!checks[dkey('contacts')], tab: 'pipeline' });
+  if (due > 0) items.push({ key: dkey('follow'), text: `Följ upp ${due} ${due === 1 ? 'lead' : 'leads'} som väntar`, done: !!checks[dkey('follow')], tab: 'pipeline' });
+  items.push({ key: dkey('log'), text: 'Logga dagens intäkter och planera morgondagen', done: !!checks[dkey('log')], tab: 'kassa' });
+
+  $('today-note').textContent = weekend
+    ? 'Helg: sälj saker, ta hemhjälpsjobb och bygg demosidor. Spara företagskontakterna till måndag förmiddag.'
+    : 'Vardag: besök och ring företag på förmiddagen, leverera på eftermiddagen och svara köpare på kvällen.';
+
+  const ul = $('today-list');
+  ul.innerHTML = items.map(it => `
+    <li class="${it.done ? 'done' : ''}">
+      <input type="checkbox" id="chk-${esc(it.key)}" data-check="${esc(it.key)}" ${it.done ? 'checked' : ''} aria-label="${esc(it.text)}">
+      <div class="t">
+        <strong>${esc(it.text)}</strong>
+        <div class="meta">
+          ${it.progress ? `<span class="progress-inline">${esc(it.progress)}</span>` : ''}
+          ${it.note ? `<span class="muted">${esc(it.note)}</span>` : ''}
+          ${it.script ? `<button class="btn btn-ghost" type="button" data-goto-script="${esc(it.script)}">Visa manus</button>` : ''}
+          ${it.play ? `<button class="btn btn-ghost" type="button" data-goto-play="${esc(it.play)}">Visa draget</button>` : ''}
+          ${it.tab ? `<button class="btn btn-ghost" type="button" data-goto-tab="${esc(it.tab)}">Öppna</button>` : ''}
+        </div>
+      </div>
+    </li>`).join('');
+}
+
+function toggleCheck(key, on) {
+  const today = todayStr();
+  const next = {};
+  Object.entries(state.checks || {}).forEach(([k, v]) => {
+    if (k.includes('@') && !k.endsWith('@' + today)) return; // drop old daily ticks
+    next[k] = v;
+  });
+  if (on) next[key] = today; else delete next[key];
+  Store.saveChecks(next).catch(() => {});
+}
+
+let mixBuilt = false;
+function renderMix(calc) {
+  const s = S();
+  const box = $('mix');
+  if (!mixBuilt) {
+    box.innerHTML = MIX_ROWS.map(r => `
+      <div class="mix-row">
+        <div class="lbl"><label for="mix-${r.key}">${esc(r.label)}</label><small id="mixhint-${r.key}"></small></div>
+        <div class="stepper">
+          <button type="button" data-mix="${r.key}" data-d="-1" aria-label="Minska ${esc(r.label)}">−</button>
+          <input id="mix-${r.key}" inputmode="numeric" data-mixinput="${r.key}">
+          <button type="button" data-mix="${r.key}" data-d="1" aria-label="Öka ${esc(r.label)}">+</button>
+        </div>
+        <div class="sum" id="mixsum-${r.key}">0 kr</div>
+      </div>`).join('');
+    mixBuilt = true;
+  }
+  MIX_ROWS.forEach(r => {
+    const input = $('mix-' + r.key);
+    if (document.activeElement !== input) input.value = String(num(s.mix[r.key]));
+    $('mixhint-' + r.key).textContent = typeof r.hint === 'function' ? r.hint(s) : r.hint;
+    $('mixsum-' + r.key).textContent = kr(num(s.mix[r.key]) * r.unit(s));
+  });
+  const total = mixTotal(s);
+  $('mix-total').textContent = kr(total);
+  const label = $('mix-total-label');
+  if (!calc.gap) label.textContent = 'Planerat';
+  else if (total >= calc.gap) label.textContent = `Planerat · täcker glappet på ${kr(calc.gap)}`;
+  else label.textContent = `Planerat · ${kr(calc.gap - total)} kvar att planera`;
+}
+function setMix(key, value) {
+  const s = S();
+  const mix = Object.assign({}, s.mix, { [key]: Math.max(0, Math.round(num(value))) });
+  Store.saveSettings({ mix }).catch(() => {});
+}
+
+function renderAgent() {
+  const a = state.agent;
+  const box = $('agent-box');
+  if (!a || !a.lastRun) {
+    box.innerHTML = `<p>Ingen daglig agent är påslagen än. När den är det fyller den Pipeline varje morgon med kontrollerade leads och färdiga meddelanden. Du väljer själv vad som skickas.</p>
+      <p class="muted" style="margin-top:6px">Säg ”slå på den dagliga agenten” till Claude för att koppla in den.</p>`;
+    return;
+  }
+  const when = new Date(a.lastRun);
+  const whenTxt = isNaN(when) ? esc(a.lastRun) : new Intl.DateTimeFormat('sv-SE', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(when);
+  box.innerHTML = `<p><b>Senaste körning:</b> <span class="num">${whenTxt}</span>${a.added ? ` · ${esc(a.added)} nya leads` : ''}</p>
+    ${a.summary ? `<p class="muted" style="margin-top:6px">${esc(a.summary)}</p>` : ''}`;
+}
+
+/* ---- Drag ---- */
+let playFilter = 'alla';
+const H_LABEL = { skydd: 'Skydda hyran', nu: '0–3 dagar', vecka: 'Den här sprinten', bygg: 'Efter hyran' };
+function renderPlays() {
+  const list = PLAYS.filter(p => playFilter === 'alla' || p.h === playFilter);
+  $('plays').innerHTML = list.map(p => `
+    <article class="play" id="p-${p.id}">
+      <div class="play-head"><h3>${esc(p.title)}</h3><span class="tag tag-${p.h}">${esc(H_LABEL[p.h])}</span></div>
+      <p>${esc(p.line)}</p>
+      <dl class="facts">
+        <div><dt>Tid till pengar</dt><dd>${esc(p.time)}</dd></div>
+        <div><dt>Typiskt</dt><dd>${esc(p.amount)}</dd></div>
+        <div><dt>Insats</dt><dd>${esc(p.effort)}</dd></div>
+      </dl>
+      <details class="fold">
+        <summary>Så gör du</summary>
+        <div class="stack">
+          <ol>${p.steps.map(st => `<li>${esc(st)}</li>`).join('')}</ol>
+          <p class="why">${esc(p.why)}</p>
+          ${p.links.length ? `<div class="links">${p.links.map(([t, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`).join('')}</div>` : ''}
+        </div>
+      </details>
+      ${p.scripts.length ? `<div class="btn-row">${p.scripts.map(id => {
+        const sc = SCRIPTS.find(x => x.id === id);
+        return sc ? `<button class="btn" type="button" data-goto-script="${id}">${esc(shortTitle(sc.title))}</button>` : '';
+      }).join('')}</div>` : ''}
+    </article>`).join('');
+  $('rejected').innerHTML = REJECTED.map(([t, r]) => `<li><b>${esc(t)}</b><span class="muted small">${esc(r)}</span></li>`).join('');
+}
+
+/* ---- Manus ---- */
+let scriptFilter = 'alla';
+function renderScriptFilter() {
+  const chips = [['alla', 'Alla']].concat(SCRIPT_GROUPS);
+  $('script-filter').innerHTML = chips.map(([k, l]) => `<button class="chip" data-g="${k}" aria-pressed="${k === scriptFilter}">${esc(l)}</button>`).join('');
+}
+function renderScripts() {
+  renderScriptFilter();
+  const vars = templateVars(state.settings, null);
+  const list = SCRIPTS.filter(s => scriptFilter === 'alla' || s.g === scriptFilter);
+  $('scripts').innerHTML = list.map(s => `
+    <article class="script" id="s-${s.id}">
+      <div class="script-head">
+        <div class="stack" style="gap:2px"><h3>${esc(s.title)}</h3><span class="small muted">${esc(s.when)}</span></div>
+        <button class="btn" type="button" data-copy-script="${s.id}">Kopiera</button>
+      </div>
+      <pre>${esc(fillTemplate(s.text, vars))}</pre>
+    </article>`).join('');
+}
+
+/* ---- Pipeline ---- */
+let leadFilter = 'todo';
+let confirmDelete = null;
+function leadMatches(l, today) {
+  if (leadFilter === 'todo') return l.status === 'ny' || isDue(l, today);
+  if (leadFilter === 'active') return ['ny', 'kontaktad', 'svar', 'ja'].includes(l.status);
+  if (leadFilter === 'won') return l.status === 'ja' || l.status === 'betalt';
+  if (leadFilter === 'lost') return l.status === 'nej';
+  return true;
+}
+function leadActions(l) {
+  const b = (to, label, primary) => `<button class="btn ${primary ? 'btn-primary' : ''}" type="button" data-lead="${esc(l.id)}" data-to="${to}">${label}</button>`;
+  switch (l.status) {
+    case 'ny': return b('kontaktad', 'Jag har hört av mig', true);
+    case 'kontaktad': return b('svar', 'Fick svar', true) + b('ja', 'Ja!') + b('nej', 'Nej');
+    case 'svar': return b('ja', 'Ja!', true) + b('nej', 'Nej') + b('kontaktad', 'Följde upp');
+    case 'ja': return b('betalt', 'Betalt', true);
+    case 'nej': return b('ny', 'Öppna igen');
+    default: return '';
+  }
+}
+function renderLeads() {
+  const today = todayStr();
+  document.querySelectorAll('#lead-filter .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.f === leadFilter)));
+  const list = state.leads.filter(l => leadMatches(l, today)).sort((a, b) => {
+    const da = isDue(a, today) ? 0 : 1, dbb = isDue(b, today) ? 0 : 1;
+    if (da !== dbb) return da - dbb;
+    return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+  });
+  const box = $('leads');
+  if (!state.loaded) { box.innerHTML = `<div class="empty">Laddar din pipeline …</div>`; return; }
+  if (!list.length) {
+    const msg = state.leads.length
+      ? { todo: 'Inget att göra just nu. Lägg till fler leads eller kolla Alla aktiva.', active: 'Inga aktiva leads.', won: 'Inga ja ännu. Det första kommer efter 15–30 riktiga kontakter.', lost: 'Inga nej. Bra!' }[leadFilter]
+      : 'Tomt än så länge. Lägg till ditt första lead ovanför, eller öppna Hitta leads längst ner.';
+    box.innerHTML = `<div class="empty"><strong>${state.leads.length ? 'Klart här' : 'Inga leads ännu'}</strong><span>${esc(msg)}</span></div>`;
+    return;
+  }
+  box.innerHTML = list.map(l => {
+    const offer = OFFERS[l.offer] || OFFERS.annat;
+    const due = isDue(l, today);
+    const link = safeUrl(l.link);
+    const hasFollow = l.status !== 'ny';
+    return `
+    <article class="lead ${due ? 'is-due' : ''}">
+      <div class="lead-head">
+        <div class="lead-name">${esc(l.name)}</div>
+        <span class="status st-${esc(l.status)}">${esc(STATUS[l.status] || l.status)}</span>
+      </div>
+      <div class="lead-meta">
+        <span>${esc(offer.label)}${num(l.value) ? ' · ' + kr(num(l.value)) : ''}</span>
+        ${l.contact ? `<span>${esc(l.contact)}</span>` : ''}
+        ${l.handle ? `<span class="num">${esc(l.handle)}</span>` : ''}
+        ${l.nextAt ? `<span>${due ? '<b style="color:var(--warn)">Följ upp idag</b>' : 'Nästa steg ' + esc(svDate(l.nextAt, true))}</span>` : ''}
+        ${l.source === 'agent' ? '<span>Från agenten</span>' : ''}
+      </div>
+      ${l.note ? `<p class="lead-note">${esc(l.note)}</p>` : ''}
+      ${link ? `<a class="small" href="${esc(link)}" target="_blank" rel="noopener">Öppna demo</a>` : ''}
+      <div class="btn-row">
+        ${leadActions(l)}
+        <button class="btn" type="button" data-copy-lead="${esc(l.id)}" data-kind="${hasFollow ? 'follow' : 'first'}">${hasFollow ? 'Kopiera uppföljning' : 'Kopiera meddelande'}</button>
+        <button class="btn btn-ghost" type="button" data-edit-lead="${esc(l.id)}">Ändra</button>
+        <button class="btn btn-ghost btn-danger" type="button" data-del-lead="${esc(l.id)}">${confirmDelete === l.id ? 'Ja, ta bort' : 'Ta bort'}</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+function renderMapLinks() {
+  const s = S();
+  const city = String(s.myCity || 'Vänersborg').trim();
+  const others = NEARBY[city.toLowerCase()] || [];
+  const cities = [city].concat(others);
+  $('maplinks').innerHTML = cities.map(c => MAP_TERMS.map(t =>
+    `<a href="https://www.google.com/maps/search/${encodeURIComponent(t + ' ' + c)}" target="_blank" rel="noopener">${esc(t)} ${esc(c)}</a>`
+  ).join('')).join('');
+}
+function updateLawHint() {
+  $('lead-law').hidden = !needsConsentWarning($('lead-form-type').value, $('lead-channel').value);
+}
+function resetLeadForm() {
+  $('lead-form').reset();
+  $('lead-id').value = '';
+  $('lead-value').value = String(defaultValue($('lead-offer').value, state.settings) || '');
+  $('lead-submit').textContent = 'Lägg till';
+  $('lead-fold-title').textContent = 'Lägg till lead';
+  $('lead-cancel').hidden = true;
+  updateLawHint();
+}
+function editLead(id) {
+  const l = state.leads.find(x => x.id === id);
+  if (!l) return;
+  $('lead-id').value = l.id;
+  $('lead-name').value = l.name || '';
+  $('lead-contact').value = l.contact || '';
+  $('lead-offer').value = l.offer || 'annat';
+  $('lead-form-type').value = l.formType || 'okand';
+  $('lead-channel').value = l.channel || 'besok';
+  $('lead-handle').value = l.handle || '';
+  $('lead-link').value = l.link || '';
+  $('lead-value').value = l.value ? String(l.value) : '';
+  $('lead-note').value = l.note || '';
+  $('lead-submit').textContent = 'Spara ändringar';
+  $('lead-fold-title').textContent = 'Ändra lead';
+  $('lead-cancel').hidden = false;
+  $('lead-fold').open = true;
+  updateLawHint();
+  $('lead-fold').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function submitLead(e) {
+  e.preventDefault();
+  const name = $('lead-name').value.trim();
+  if (!name) { toast('Skriv namnet på företaget eller personen'); $('lead-name').focus(); return; }
+  const id = $('lead-id').value || newId();
+  const existing = state.leads.find(x => x.id === id);
+  const today = todayStr();
+  const data = Object.assign(existing ? cleanLead(existing) : { status: 'ny', createdAt: new Date().toISOString(), source: 'manuell' }, {
+    name, contact: $('lead-contact').value.trim(), offer: $('lead-offer').value, formType: $('lead-form-type').value,
+    channel: $('lead-channel').value, handle: $('lead-handle').value.trim(), link: $('lead-link').value.trim(),
+    value: num($('lead-value').value), note: $('lead-note').value.trim(), updatedAt: today
+  });
+  Store.putLead(id, data).then(() => toast(existing ? 'Ändringarna är sparade' : 'Leadet är tillagt')).catch(() => {});
+  resetLeadForm();
+  if (!existing) $('lead-name').focus();
+}
+function moveLead(id, to) {
+  const l = state.leads.find(x => x.id === id);
+  if (!l) return;
+  const today = todayStr();
+  const data = Object.assign(cleanLead(l), statusPatch(to, today));
+  Store.putLead(id, data).catch(() => {});
+  if (to === 'betalt' && num(l.value) > 0) {
+    const offer = OFFERS[l.offer] || OFFERS.annat;
+    Store.putIncome(newId(), { amount: num(l.value), source: offer.income, date: today, note: l.name, leadId: id, createdAt: new Date().toISOString() })
+      .then(() => toast(`${kr(num(l.value))} är loggat i Kassa. Ändra beloppet där om det blev annat.`)).catch(() => {});
+  } else if (to === 'kontaktad') {
+    toast('Bra. Uppföljningen kommer upp om tre dagar.');
+  } else if (to === 'ja') {
+    toast('Snyggt! Skicka faktura eller Swish-förfrågan idag.');
+  }
+}
+
+/* ---- Kassa ---- */
+function renderIncome() {
+  const sel = $('inc-source');
+  if (!sel.options.length) sel.innerHTML = INCOME_SOURCES.map(s => `<option>${esc(s)}</option>`).join('');
+  const dateEl = $('inc-date');
+  if (!dateEl.value) dateEl.value = todayStr();
+
+  const list = state.income.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const tbody = $('inc-list');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty"><strong>Inget loggat ännu</strong><span>Första Swishen från en Blocket-affär eller ett hemhjälpsjobb hamnar här.</span></div></td></tr>`;
+  } else {
+    tbody.innerHTML = list.map(i => `
+      <tr>
+        <td class="when">${esc(svDate(i.date, false))}</td>
+        <td>${esc(i.source)}${i.note ? `<div class="small muted">${esc(i.note)}</div>` : ''}</td>
+        <td class="amt">${kr(num(i.amount))}</td>
+        <td style="text-align:right"><button class="btn btn-ghost btn-danger" type="button" data-del-inc="${esc(i.id)}">${confirmDelete === i.id ? 'Ja, ta bort' : 'Ta bort'}</button></td>
+      </tr>`).join('') + `<tr><td></td><td><b>Totalt</b></td><td class="amt">${kr(incomeTotal())}</td><td></td></tr>`;
+  }
+  const by = {};
+  state.income.forEach(i => { by[i.source] = (by[i.source] || 0) + num(i.amount); });
+  const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  const max = rows.length ? rows[0][1] : 0;
+  $('inc-bars').innerHTML = rows.length
+    ? rows.map(([k, v]) => `<div class="bar-row"><span>${esc(k)}</span><b>${kr(v)}</b><div class="track"><span style="width:${max ? Math.round(v / max * 100) : 0}%"></span></div></div>`).join('')
+    : `<p class="small muted">När du har loggat intäkter ser du här vilka drag som faktiskt ger pengar. Satsa mer på dem.</p>`;
+}
+function submitIncome(e) {
+  e.preventDefault();
+  const amount = num($('inc-amount').value);
+  if (amount <= 0) { toast('Skriv ett belopp större än 0'); $('inc-amount').focus(); return; }
+  const data = { amount, source: $('inc-source').value, date: $('inc-date').value || todayStr(), note: $('inc-note').value.trim(), createdAt: new Date().toISOString() };
+  Store.putIncome(newId(), data).then(() => toast(`${kr(amount)} är loggat`)).catch(() => {});
+  $('inc-amount').value = ''; $('inc-note').value = '';
+}
+
+/* ---- Wiring ---- */
+let settingsSig = null;
+function renderAll() {
+  syncSettingInputs();
+  renderOverview();
+  const sig = JSON.stringify(state.settings || {});
+  if (sig !== settingsSig) { settingsSig = sig; renderScripts(); renderMapLinks(); }
+  renderLeads();
+  renderIncome();
+}
+
+function boot() {
+  bindSettings();
+  renderPlays();
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button, [data-goto-tab]');
+    if (!t) return;
+    if (t.dataset.tab) { showTab(t.dataset.tab); try { history.replaceState(null, '', '#' + t.dataset.tab); } catch (err) {} return; }
+    if (t.dataset.gotoScript) { gotoScript(t.dataset.gotoScript); return; }
+    if (t.dataset.gotoPlay) { playFilter = 'alla'; renderPlays(); document.querySelectorAll('#play-filter .chip').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.h === 'alla'))); showTab('drag', 'p-' + t.dataset.gotoPlay); return; }
+    if (t.dataset.gotoTab) { showTab(t.dataset.gotoTab); return; }
+    if (t.dataset.h) { playFilter = t.dataset.h; document.querySelectorAll('#play-filter .chip').forEach(c => c.setAttribute('aria-pressed', String(c === t))); renderPlays(); return; }
+    if (t.dataset.g) { scriptFilter = t.dataset.g; renderScripts(); return; }
+    if (t.dataset.f) { leadFilter = t.dataset.f; renderLeads(); return; }
+    if (t.dataset.copyScript) {
+      const sc = SCRIPTS.find(x => x.id === t.dataset.copyScript);
+      if (sc) copyText(fillTemplate(sc.text, templateVars(state.settings, null)), 'Manuset');
+      return;
+    }
+    if (t.dataset.copyLead) {
+      const l = state.leads.find(x => x.id === t.dataset.copyLead);
+      if (!l) return;
+      const sc = SCRIPTS.find(x => x.id === scriptFor(l, t.dataset.kind));
+      const text = l.message && t.dataset.kind === 'first' ? l.message : fillTemplate(sc ? sc.text : '', templateVars(state.settings, l));
+      copyText(text, 'Meddelandet');
+      return;
+    }
+    if (t.dataset.lead && t.dataset.to) { moveLead(t.dataset.lead, t.dataset.to); return; }
+    if (t.dataset.editLead) { editLead(t.dataset.editLead); return; }
+    if (t.dataset.delLead) {
+      const id = t.dataset.delLead;
+      if (confirmDelete === id) { confirmDelete = null; Store.removeLead(id).then(() => toast('Leadet är borttaget')).catch(() => {}); }
+      else { confirmDelete = id; renderLeads(); setTimeout(() => { if (confirmDelete === id) { confirmDelete = null; renderLeads(); } }, 4000); }
+      return;
+    }
+    if (t.dataset.delInc) {
+      const id = t.dataset.delInc;
+      if (confirmDelete === id) { confirmDelete = null; Store.removeIncome(id).then(() => toast('Intäkten är borttagen')).catch(() => {}); }
+      else { confirmDelete = id; renderIncome(); setTimeout(() => { if (confirmDelete === id) { confirmDelete = null; renderIncome(); } }, 4000); }
+      return;
+    }
+    if (t.dataset.mix) {
+      const key = t.dataset.mix;
+      const row = MIX_ROWS.find(r => r.key === key);
+      setMix(key, num(S().mix[key]) + Number(t.dataset.d) * row.step);
+      return;
+    }
+    if (t.id === 'avi-edit') {
+      const f = $('avi-form'); f.hidden = !f.hidden; t.setAttribute('aria-expanded', String(!f.hidden));
+      if (!f.hidden) $('set-rent').focus();
+      return;
+    }
+    if (t.id === 'lead-cancel') { resetLeadForm(); $('lead-fold').open = false; return; }
+  });
+
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (t.dataset && t.dataset.check) toggleCheck(t.dataset.check, t.checked);
+    if (t.dataset && t.dataset.mixinput) setMix(t.dataset.mixinput, t.value);
+  });
+
+  $('lead-form').addEventListener('submit', submitLead);
+  $('lead-offer').addEventListener('change', () => {
+    if (!$('lead-id').value) $('lead-value').value = String(defaultValue($('lead-offer').value, state.settings) || '');
+  });
+  $('lead-form-type').addEventListener('change', updateLawHint);
+  $('lead-channel').addEventListener('change', updateLawHint);
+  $('inc-form').addEventListener('submit', submitIncome);
+  $('avi-form').addEventListener('submit', e => { e.preventDefault(); flushSettings(); });
+  $('me-form').addEventListener('submit', e => { e.preventDefault(); flushSettings(); });
+
+  let initialTab = (location.hash || '').replace('#', '');
+  if (!TABS.includes(initialTab)) { try { initialTab = localStorage.getItem('kassasprint.tab') || 'lage'; } catch (e) { initialTab = 'lage'; } }
+  showTab(initialTab);
+
+  listeners.push(renderAll);
+  renderAll();
+  resetLeadForm();
+
+  // Set a default due date (last weekday of the month) once saved data has loaded.
+  loadedPromise.then(() => {
+    if (!(state.settings || {}).dueDate) Store.saveSettings({ dueDate: defaultDueDate(todayStr()) }).catch(() => {});
+  });
+  Store.start();
+
+  // Keep "today" correct if the page stays open past midnight.
+  let lastDay = todayStr();
+  setInterval(() => { const d = todayStr(); if (d !== lastDay) { lastDay = d; renderAll(); } }, 60000);
+}
+
+if (typeof document !== 'undefined') boot();
+</script>

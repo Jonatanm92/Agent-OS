@@ -1,0 +1,17 @@
+{
+  "name": "cash-sprint",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Kassasprint: rent-first cash plan, sales scripts, pipeline and demo-site generator",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check demo-site/generate.mjs && node --check scripts/standalone.mjs",
+    "demo": "node demo-site/generate.mjs",
+    "demo:example": "node demo-site/generate.mjs demo-site/leads.example.json",
+    "standalone": "node scripts/standalone.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

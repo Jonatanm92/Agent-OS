@@ -1,0 +1,24 @@
+{
+  "leads": [
+    {
+      "name": "Exempelsalongen",
+      "category": "frisor",
+      "city": "Vänersborg",
+      "phone": "0521-00 00 00",
+      "address": "Exempelgatan 1, 462 30 Vänersborg",
+      "hours": [["Mån–Fre", "09–18"], ["Lör", "10–14"], ["Sön", "Stängt"]],
+      "services": [
+        { "name": "Klippning", "price": "från 450 kr" },
+        { "name": "Färg", "price": "från 900 kr" },
+        { "name": "Barnklippning", "price": "300 kr", "note": "upp till 12 år" }
+      ]
+    },
+    {
+      "name": "Exempelmålarna AB",
+      "category": "hantverkare",
+      "city": "Trollhättan",
+      "email": "info@example.com",
+      "about": "Vi målar inomhus och utomhus och hjälper till med tapetsering. Offert är alltid gratis."
+    }
+  ]
+}

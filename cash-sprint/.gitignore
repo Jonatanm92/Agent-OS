@@ -1,0 +1,3 @@
+# Generated demo sites contain real business details; host them, don't commit them.
+demo-site/out/
+dist/

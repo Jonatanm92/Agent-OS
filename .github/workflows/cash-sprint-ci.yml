@@ -1,0 +1,41 @@
+name: Kassasprint CI
+
+on:
+  pull_request:
+    paths:
+      - "cash-sprint/**"
+      - ".github/workflows/cash-sprint-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "cash-sprint/**"
+      - ".github/workflows/cash-sprint-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Test and check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: cash-sprint
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run syntax checks
+        run: npm run check
+
+      - name: Generate example demo sites
+        run: npm run demo:example
