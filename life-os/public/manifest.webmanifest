@@ -1,0 +1,25 @@
+{
+  "name": "Life OS",
+  "short_name": "Life OS",
+  "description": "Din dag, din familj och din ekonomi – i en app.",
+  "lang": "sv-SE",
+  "start_url": "./#/idag",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f5f1",
+  "theme_color": "#2f6f5e",
+  "categories": ["lifestyle", "productivity", "finance"],
+  "icons": [
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Idag", "url": "./#/idag" },
+    { "name": "Fokuspass", "url": "./#/fokus" },
+    { "name": "Pappa", "url": "./#/pappa" },
+    { "name": "Pengar", "url": "./#/pengar" }
+  ]
+}

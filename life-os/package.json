@@ -1,0 +1,16 @@
+{
+  "name": "life-os",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first daily companion: check-in, dad missions, money steps, focus and weekly review. Part of Agent OS.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

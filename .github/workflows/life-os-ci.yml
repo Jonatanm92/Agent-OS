@@ -1,0 +1,61 @@
+name: Life OS CI
+
+on:
+  pull_request:
+    paths:
+      - "life-os/**"
+      - ".github/workflows/life-os-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "life-os/**"
+      - ".github/workflows/life-os-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: life-os-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Test, check, and smoke-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: life-os
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run deterministic tests
+        run: npm test
+
+      - name: Run syntax checks
+        run: npm run check
+
+      - name: Smoke-test the server
+        shell: bash
+        run: |
+          set -euo pipefail
+          node server.mjs > /tmp/life-os.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true; cat /tmp/life-os.log' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3020/api/health > /tmp/life-os-health.json; then
+              cat /tmp/life-os-health.json
+              curl --fail --silent http://127.0.0.1:3020/ | grep -q "<title>Life OS</title>"
+              curl --fail --silent http://127.0.0.1:3020/sw.js > /dev/null
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "Life OS did not become healthy."
+          exit 1

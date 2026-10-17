@@ -47,6 +47,17 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md), and
 
 ---
 
+## Life OS — the daily companion
+
+[`life-os/`](./life-os/README.md) is a local-first, installable phone app (PWA, Swedish UI)
+for the whole day: morning check-in, *today's three* (family · money · self), daily dad
+missions, presence mode, age-matched activities and a memory bank, a sales pipeline with
+kronor-per-hour per income stream, focus sessions and a weekly review. It works fully
+offline; its optional coach talks to Agent OS, and weekly reviews can be saved into the
+shared Obsidian memory. Zero dependencies — `cd life-os && npm start` (port 3020).
+
+---
+
 ## Quick start
 
 ### Windows (one command)

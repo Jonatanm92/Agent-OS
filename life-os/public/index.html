@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Life OS</title>
+  <meta name="description" content="Din dag, din familj och din ekonomi – i en app. Check-in, pappa-uppdrag, pengasteg, fokus och veckogenomgång.">
+  <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Life OS">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./js/theme.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#view">Hoppa till innehållet</a>
+  <header class="app-header" id="app-header"></header>
+  <main id="view" class="view" tabindex="-1">
+    <noscript><p class="card">Life OS behöver JavaScript för att fungera.</p></noscript>
+    <p class="boot">Laddar Life OS…</p>
+  </main>
+  <button class="fab" id="fab" type="button" data-action="sheet.capture" aria-label="Snabbanteckning" hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <nav class="bottom-nav" id="nav" aria-label="Huvudmeny" hidden></nav>
+  <dialog id="sheet" class="sheet" aria-labelledby="sheet-title"><div id="sheet-body" class="sheet-body"></div></dialog>
+  <div id="overlay-root"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
