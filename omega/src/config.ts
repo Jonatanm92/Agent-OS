@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import type { SandboxLimits, SandboxMode } from './sandbox/sandbox.ts';
 
 /**
  * Runtime configuration. Every value can be overridden with an OMEGA_* environment
@@ -30,6 +31,13 @@ export interface OmegaConfig {
   maxFixIterations: number;
   /** Read-only roots scanned by the inventory (path.delimiter separated in env). */
   projectRoots: string[];
+  /** Isolation for running generated code: auto | bwrap | docker | none. */
+  sandbox: SandboxMode;
+  /** Must be explicitly true before generated code may run without isolation. */
+  allowUnsandboxed: boolean;
+  /** Image for the docker driver (must be pulled beforehand; pin a digest in production). */
+  sandboxImage: string;
+  sandboxLimits: Partial<SandboxLimits>;
 }
 
 /**
@@ -71,12 +79,27 @@ export function loadConfig(overrides: Partial<OmegaConfig> = {}): OmegaConfig {
     autoApproveSpendUnderUsd: num('OMEGA_AUTO_APPROVE_UNDER_USD', 0),
     maxFixIterations: num('OMEGA_MAX_FIX_ITERATIONS', 1),
     projectRoots: (process.env.OMEGA_PROJECT_ROOTS ?? '').split(path.delimiter).filter(Boolean),
+    sandbox: sandboxMode(process.env.OMEGA_SANDBOX),
+    allowUnsandboxed: process.env.OMEGA_ALLOW_UNSANDBOXED === '1',
+    sandboxImage: process.env.OMEGA_SANDBOX_IMAGE ?? 'node:22-alpine',
+    sandboxLimits: {
+      ...(process.env.OMEGA_SANDBOX_CPU_SECONDS ? { cpuSeconds: num('OMEGA_SANDBOX_CPU_SECONDS', 60) } : {}),
+      ...(process.env.OMEGA_SANDBOX_MEMORY_MB ? { memoryMb: num('OMEGA_SANDBOX_MEMORY_MB', 1024) } : {}),
+      ...(process.env.OMEGA_SANDBOX_WALL_MS ? { wallMs: num('OMEGA_SANDBOX_WALL_MS', 180_000) } : {}),
+      ...(process.env.OMEGA_SANDBOX_PIDS ? { pids: num('OMEGA_SANDBOX_PIDS', 64) } : {}),
+    },
     ...overrides,
   };
   if (overrides.home && !overrides.workspaceRoot && !process.env.OMEGA_WORKSPACE) {
     cfg.workspaceRoot = path.join(cfg.home, 'projects');
   }
   return cfg;
+}
+
+function sandboxMode(raw: string | undefined): SandboxMode {
+  const v = raw ?? 'auto';
+  if (v === 'auto' || v === 'bwrap' || v === 'docker' || v === 'none') return v;
+  throw new Error(`OMEGA_SANDBOX must be auto, bwrap, docker or none (got "${v}")`);
 }
 
 export function isLoopback(host: string): boolean {

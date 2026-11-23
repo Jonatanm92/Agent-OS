@@ -1,6 +1,5 @@
-import { runControlled } from '../core/exec.ts';
+import { createWorkspace, disposeWorkspace, type Sandbox } from '../sandbox/sandbox.ts';
 import type { Mission, TestSummary } from '../core/types.ts';
-import { getRole } from './registry.ts';
 import { treeDigest } from './files.ts';
 
 /**
@@ -43,17 +42,40 @@ export interface TestRun {
   integrity: { expected?: string; actual: string; ok: boolean };
 }
 
-export async function runAcceptanceTests(mission: Mission): Promise<TestRun> {
+export interface TestRunOptions {
+  sandbox: Sandbox;
+  home: string;
+  runId: string;
+  signal?: AbortSignal;
+  limits?: Parameters<Sandbox['run']>[0]['limits'];
+}
+
+export const TEST_ARGS = ['--test', '--test-reporter=tap', '--test-timeout=20000', 'test/**/*.test.js'];
+
+/**
+ * Run the acceptance tests in a disposable copy of the project, inside the sandbox.
+ * The mission repo is never touched by generated code; the copy is always removed.
+ */
+export async function runAcceptanceTests(mission: Mission, opts: TestRunOptions): Promise<TestRun> {
   const actual = treeDigest(mission.projectDir, 'test').digest;
   const integrity = { expected: mission.testDigest, actual, ok: !mission.testDigest || mission.testDigest === actual };
-  const res = await runControlled({
-    policy: getRole('tester').policy,
-    cwd: mission.projectDir,
-    cmd: 'node',
-    args: ['--test', '--test-reporter=tap', '--test-timeout=20000', 'test/**/*.test.js'],
-    timeoutMs: 180_000,
-  });
-  const log = `$ node ${res.args.join(' ')}\n# exit=${res.code} signal=${res.signal} timedOut=${res.timedOut} wall_ms=${res.durationMs}\n${res.stdout}${res.stderr ? '\n# stderr\n' + res.stderr : ''}`;
+  const ws = createWorkspace(opts.home, opts.runId, mission.projectDir);
+  let res;
+  let workspaceRemoved = false;
+  try {
+    res = await opts.sandbox.run({ runId: opts.runId, workspace: ws.dir, args: TEST_ARGS, signal: opts.signal, limits: opts.limits });
+  } finally {
+    disposeWorkspace(opts.home, ws);
+    workspaceRemoved = true;
+  }
+  const e = res.enforcement;
+  const log = [
+    `$ node ${TEST_ARGS.join(' ')}`,
+    `# sandbox=${e.driver} exit=${res.code} signal=${res.signal} timedOut=${res.timedOut} aborted=${res.aborted} killedBy=${res.killedBy} wall_ms=${res.durationMs}`,
+    ...Object.entries(e).filter(([k]) => k !== 'driver').map(([k, v]) => `# isolation.${k}: ${v}`),
+    ws.skippedSymlinks.length ? `# symlinks NOT copied into the sandbox: ${ws.skippedSymlinks.join(', ')}` : '# symlinks: none',
+    res.stdout + (res.stderr ? '\n# stderr\n' + res.stderr : ''),
+  ].join('\n');
   const tap = parseTap(res.stdout);
   const coverage = coverageFor(mission, tap.results);
   const failures = tap.results.filter((r) => !r.ok).map((r) => r.name);
@@ -61,8 +83,19 @@ export async function runAcceptanceTests(mission: Mission): Promise<TestRun> {
   const uncovered = coverage.filter((c) => !c.covered).map((c) => c.id);
   if (uncovered.length) failures.push(`UNCOVERED: ${uncovered.join(', ')}`);
   const ok = integrity.ok && res.code === 0 && !res.timedOut && tap.tests > 0 && tap.fail === 0 && coverage.every((c) => c.passing);
+  if (res.killedBy) failures.push(`KILLED: ${res.killedBy}`);
   return {
-    summary: { ok, tests: tap.tests, pass: tap.pass, fail: tap.fail, durationMs: tap.durationMs, failures, coverage, exitCode: res.code },
+    summary: {
+      ok: ok && !res.killedBy,
+      tests: tap.tests,
+      pass: tap.pass,
+      fail: tap.fail,
+      durationMs: tap.durationMs,
+      failures,
+      coverage,
+      exitCode: res.code,
+      isolation: { driver: e.driver, enforcement: { ...e }, skippedSymlinks: ws.skippedSymlinks, killedBy: res.killedBy, workspaceRemoved },
+    },
     log,
     integrity,
   };

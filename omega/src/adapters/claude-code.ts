@@ -29,6 +29,8 @@ export interface ClaudeRunRequest {
   maxBudgetUsd: number;
   maxTurns: number;
   timeoutMs: number;
+  /** Aborting kills the agent process (mission cancelled). */
+  signal?: AbortSignal;
   jsonSchema?: object;
 }
 
@@ -105,11 +107,11 @@ export async function runClaude(req: ClaudeRunRequest): Promise<ClaudeRunResult>
   const args = buildClaudeArgs(req);
   const prefix = req.binArgs ?? [];
   const policy: RolePolicy = { ...req.policy, capabilities: [...req.policy.capabilities, 'exec'], exec: [{ cmd: req.bin, argsPrefix: [...prefix, '-p'] }] };
-  const res = await runControlled({ policy, cwd: req.cwd, cmd: req.bin, args: [...prefix, ...args], stdin: req.prompt, timeoutMs: req.timeoutMs });
+  const res = await runControlled({ policy, cwd: req.cwd, cmd: req.bin, args: [...prefix, ...args], stdin: req.prompt, timeoutMs: req.timeoutMs, signal: req.signal });
   const parsed = parseClaudeOutput(res.stdout);
   return {
     ok: Boolean(parsed.parsed && parsed.ok && res.code === 0 && !res.timedOut),
-    subtype: parsed.parsed ? (parsed.subtype ?? 'unknown') : res.timedOut ? 'timeout' : 'unparseable_output',
+    subtype: res.aborted ? 'aborted' : parsed.parsed ? (parsed.subtype ?? 'unknown') : res.timedOut ? 'timeout' : 'unparseable_output',
     text: parsed.text ?? '',
     structured: parsed.structured,
     costUsd: parsed.costUsd ?? 0,

@@ -14,6 +14,7 @@ import { DEFAULT_PLAN, getRole, type RoleDef } from '../roles/registry.ts';
 import { writeReadme, writeScaffold } from '../roles/scaffold.ts';
 import { scanProject } from '../roles/security.ts';
 import { runAcceptanceTests } from '../roles/tester.ts';
+import { resolveSandbox, sweepCgroups, sweepWorkspaces, SandboxUnavailableError, type Sandbox } from '../sandbox/sandbox.ts';
 import { listFiles, treeDigest } from '../roles/files.ts';
 import { getEngine, type Engine } from './engines.ts';
 
@@ -60,6 +61,8 @@ export class Omega {
   readonly store: Store;
   readonly audit: AuditLog;
   #busy = false;
+  /** One controller per mission with a stage in flight; cancel() aborts it. */
+  #inFlight = new Map<string, AbortController>();
 
   constructor(cfg: OmegaConfig) {
     this.cfg = cfg;
@@ -68,6 +71,10 @@ export class Omega {
     this.store = new Store(cfg.home);
     this.audit = new AuditLog(cfg.home);
     const { requeued, failed } = this.store.mutate((d) => recoverInterrupted(d));
+    // Leftovers from a crash: run workspaces and sandbox cgroups are disposable by design.
+    const sweptWorkspaces = sweepWorkspaces(cfg.home);
+    const sweptCgroups = sweepCgroups();
+    if (sweptWorkspaces || sweptCgroups) this.audit.append('omega', 'sandbox.swept', { workspaces: sweptWorkspaces, cgroups: sweptCgroups });
     for (const t of requeued) this.audit.append('omega', 'task.recovered', { taskId: t.id, role: t.role }, t.missionId);
     for (const t of failed) this.audit.append('omega', 'task.abandoned', { taskId: t.id, role: t.role }, t.missionId);
   }
@@ -250,6 +257,11 @@ export class Omega {
       }
     });
     this.#setState(id, 'cancelled', `cancelled by ${actor}`, `human:${actor}`);
+    const inFlight = this.#inFlight.get(id);
+    if (inFlight) {
+      inFlight.abort();
+      this.audit.append('omega', 'task.aborted', { reason: 'mission cancelled' }, id);
+    }
     return this.getMission(id);
   }
 
@@ -274,7 +286,7 @@ export class Omega {
     const m = this.getMission(id);
     if (!['awaiting_review', 'approved', 'rejected'].includes(m.state)) throw new OmegaError(409, 'Re-verification is for finished missions');
     const runId = this.#nextRunId(m);
-    const run = await runAcceptanceTests(m);
+    const run = await runAcceptanceTests(m, { sandbox: this.sandbox(), home: this.cfg.home, runId: `${m.id}-verify-${runId}`, limits: this.cfg.sandboxLimits });
     const logEv = this.#artifact(m, `verify-${runId}.tap`, 'test-log', run.log, `Re-verification run ${runId} requested by ${actor}`);
     const summary: TestSummary = { ...run.summary, runId, logEvidence: logEv.name };
     this.#artifact(m, `verify-${runId}.json`, 'test-report', JSON.stringify({ ...summary, integrity: run.integrity }, null, 2), `Re-verification ${summary.pass}/${summary.tests}`);
@@ -337,6 +349,11 @@ export class Omega {
     return n;
   }
 
+  /** The isolation used for generated code. Throws SandboxUnavailableError rather than degrade silently. */
+  sandbox(): Sandbox {
+    return resolveSandbox({ mode: this.cfg.sandbox, allowUnsandboxed: this.cfg.allowUnsandboxed, dockerImage: this.cfg.sandboxImage });
+  }
+
   // ── internals ─────────────────────────────────────────────────────────────
 
   #setState(id: string, to: MissionState, reason: string, actor = 'omega'): void {
@@ -383,7 +400,14 @@ export class Omega {
 
     let outcome: StageOutcome;
     try {
-      outcome = await this.#execute(this.getMission(task.missionId), task, role);
+      const ctl = new AbortController();
+      this.#inFlight.set(task.missionId, ctl);
+      try {
+        outcome = await this.#execute(this.getMission(task.missionId), task, role, ctl.signal);
+      } finally {
+        this.#inFlight.delete(task.missionId);
+      }
+      if (ctl.signal.aborted) outcome = { ...outcome, ok: false, retryable: false, error: 'aborted: mission cancelled while this stage ran' };
     } catch (err) {
       outcome = { ok: false, summary: 'Stage crashed', costUsd: 0, evidence: [], error: err instanceof Error ? err.message : String(err), retryable: true };
     }
@@ -512,13 +536,14 @@ export class Omega {
     this.#setState(id, 'awaiting_review', 'all stages complete');
   }
 
-  async #execute(m: Mission, task: Task, role: RoleDef): Promise<StageOutcome> {
+  async #execute(m: Mission, task: Task, role: RoleDef, signal: AbortSignal): Promise<StageOutcome> {
     const engine: Engine = getEngine(m.engine);
     const ctxFor = (maxBudgetUsd: number) => ({
       cfg: this.cfg,
       mission: m,
       role,
       maxBudgetUsd,
+      signal,
       artifact: (name: string, kind: Evidence['kind'], content: string, summary: string) => this.#artifact(m, name, kind, content, summary),
     });
     let maxBudgetUsd = 0;
@@ -575,11 +600,19 @@ export class Omega {
       }
       case 'tester': {
         const runId = this.#nextRunId(m);
-        const run = await runAcceptanceTests(m);
+        let sandbox: Sandbox;
+        try {
+          sandbox = this.sandbox();
+        } catch (err) {
+          if (!(err instanceof SandboxUnavailableError)) throw err;
+          this.audit.append('omega', 'sandbox.unavailable', { reason: err.message }, m.id);
+          return { ok: false, summary: 'No sandbox available for running generated code', costUsd: 0, evidence: [], error: err.message, retryable: false };
+        }
+        const run = await runAcceptanceTests(m, { sandbox, home: this.cfg.home, runId: `${m.id}-run-${runId}`, signal, limits: this.cfg.sandboxLimits });
         const logEv = this.#artifact(m, `test-run-${runId}.tap`, 'test-log', run.log, `Raw TAP output of test run ${runId}`);
         const summary: TestSummary = { ...run.summary, runId, logEvidence: logEv.name };
         const repEv = this.#artifact(m, `test-report-${runId}.json`, 'test-report', JSON.stringify({ ...summary, integrity: run.integrity }, null, 2), `${summary.pass}/${summary.tests} passed; ${summary.coverage.filter((c) => c.passing).length}/${summary.coverage.length} criteria verified`);
-        const text = `Run ${runId}: ${summary.pass}/${summary.tests} passed, ${summary.coverage.filter((c) => c.passing).length}/${summary.coverage.length} acceptance criteria verified`;
+        const text = `Run ${runId} (sandbox: ${summary.isolation?.driver}): ${summary.pass}/${summary.tests} passed, ${summary.coverage.filter((c) => c.passing).length}/${summary.coverage.length} acceptance criteria verified`;
         const patch = (mm: Mission) => (mm.tests = summary);
         if (summary.ok) return { ok: true, summary: text, costUsd: 0, evidence: [logEv, repEv], patch };
         return { ok: false, summary: text, costUsd: 0, evidence: [logEv, repEv], error: `tests failed: ${summary.failures.slice(0, 5).join('; ')}`, testsFailed: summary, patch };

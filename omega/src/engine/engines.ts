@@ -20,6 +20,7 @@ export interface EngineContext {
   mission: Mission;
   role: RoleDef;
   maxBudgetUsd: number;
+  signal?: AbortSignal;
   artifact: (name: string, kind: Evidence['kind'], content: string, summary: string) => Evidence;
 }
 
@@ -174,6 +175,7 @@ async function invoke(ctx: EngineContext, label: string, systemAppend: string, p
     systemAppend,
     model: ctx.mission.model,
     maxBudgetUsd: ctx.maxBudgetUsd,
+    signal: ctx.signal,
     maxTurns: opts.maxTurns,
     timeoutMs: opts.timeoutMs,
     jsonSchema: opts.jsonSchema,

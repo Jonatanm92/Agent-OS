@@ -9,7 +9,9 @@ export function tempHome(prefix = 'omega-test-'): string {
 
 export function testConfig(overrides: Partial<OmegaConfig> = {}): OmegaConfig {
   const home = overrides.home ?? tempHome();
-  return loadConfig({ home, workspaceRoot: path.join(home, 'projects'), port: 0, ...overrides });
+  // Tests use the strongest sandbox available on the machine and fall back to an
+  // explicit, recorded 'none' (e.g. Windows CI has neither bubblewrap nor Linux containers).
+  return loadConfig({ home, workspaceRoot: path.join(home, 'projects'), port: 0, sandbox: 'auto', allowUnsandboxed: true, ...overrides });
 }
 
 /**

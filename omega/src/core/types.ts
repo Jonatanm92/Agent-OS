@@ -92,6 +92,8 @@ export interface TestSummary {
   coverage: { id: string; covered: boolean; passing: boolean; tests: string[] }[];
   exitCode: number | null;
   logEvidence: string;
+  /** How the run was isolated, as actually enforced (see src/sandbox). */
+  isolation?: { driver: string; enforcement: Record<string, string>; skippedSymlinks: string[]; killedBy: string | null; workspaceRemoved: boolean };
 }
 
 export interface SecurityFinding {

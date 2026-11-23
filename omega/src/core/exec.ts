@@ -19,6 +19,12 @@ export interface ExecRequest {
   timeoutMs?: number;
   maxOutputBytes?: number;
   extraEnv?: Record<string, string>;
+  /** Replace the scrubbed env entirely (sandbox drivers build their own). */
+  env?: Record<string, string>;
+  /** Aborting kills the process (group) like a timeout does. */
+  signal?: AbortSignal;
+  /** Extra teardown on timeout/abort, e.g. `docker kill` or killing a cgroup. */
+  onKill?: () => void | Promise<void>;
 }
 
 export interface ExecResult {
@@ -31,6 +37,7 @@ export interface ExecResult {
   stderr: string;
   durationMs: number;
   timedOut: boolean;
+  aborted: boolean;
   truncated: boolean;
 }
 
@@ -84,7 +91,7 @@ export function runControlled(req: ExecRequest): Promise<ExecResult> {
     try {
       child = spawn(resolveBinary(req.cmd), req.args, {
         cwd: req.cwd,
-        env: { ...buildEnv(req.policy.envPassthrough), ...(req.extraEnv ?? {}) },
+        env: req.env ?? { ...buildEnv(req.policy.envPassthrough), ...(req.extraEnv ?? {}) },
         shell: false,
         windowsHide: true,
         detached: !isWin,
@@ -98,6 +105,7 @@ export function runControlled(req: ExecRequest): Promise<ExecResult> {
     let stderr = '';
     let truncated = false;
     let timedOut = false;
+    let aborted = false;
     const take = (current: string, chunk: Buffer): string => {
       if (current.length >= cap) {
         truncated = true;
@@ -119,17 +127,26 @@ export function runControlled(req: ExecRequest): Promise<ExecResult> {
       } catch {
         /* already gone */
       }
+      if (req.onKill) Promise.resolve(req.onKill()).catch(() => {});
     };
     const timer = setTimeout(() => {
       timedOut = true;
       kill();
     }, timeoutMs);
+    const onAbort = () => {
+      aborted = true;
+      kill();
+    };
+    if (req.signal?.aborted) onAbort();
+    else req.signal?.addEventListener('abort', onAbort, { once: true });
     child.on('error', (err) => {
       clearTimeout(timer);
+      req.signal?.removeEventListener('abort', onAbort);
       reject(err);
     });
     child.on('close', (code, signal) => {
       clearTimeout(timer);
+      req.signal?.removeEventListener('abort', onAbort);
       resolve({
         cmd: req.cmd,
         args: req.args,
@@ -140,6 +157,7 @@ export function runControlled(req: ExecRequest): Promise<ExecResult> {
         stderr,
         durationMs: Date.now() - started,
         timedOut,
+        aborted,
         truncated,
       });
     });
