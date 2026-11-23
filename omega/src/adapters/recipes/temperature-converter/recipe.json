@@ -1,0 +1,34 @@
+{
+  "id": "temperature-converter",
+  "keywords": ["temperatur", "temperature", "celsius", "fahrenheit", "kelvin"],
+  "spec": {
+    "title": "Temperaturomvandlare",
+    "slug": "temperature-converter",
+    "summary": "A zero-dependency Node.js library and CLI that converts temperatures between Celsius, Fahrenheit and Kelvin.",
+    "requirements": [
+      "Convert Celsius to Fahrenheit and back",
+      "Convert Celsius to Kelvin and back",
+      "Round results to two decimals",
+      "Reject non-numeric input and temperatures below absolute zero",
+      "Offer a command line interface"
+    ],
+    "acceptanceCriteria": [
+      { "id": "AC1", "text": "celsiusToFahrenheit(0) returns 32 and celsiusToFahrenheit(100) returns 212" },
+      { "id": "AC2", "text": "fahrenheitToCelsius(98.6) returns 37" },
+      { "id": "AC3", "text": "convert(25, 'C', 'K') returns 298.15 and convert(0, 'K', 'C') returns -273.15" },
+      { "id": "AC4", "text": "Non-numeric input throws a TypeError" },
+      { "id": "AC5", "text": "A temperature below absolute zero throws a RangeError" },
+      { "id": "AC6", "text": "`node src/cli.js 100 C F` prints `212 F` and exits 0; invalid arguments print usage and exit 1" }
+    ],
+    "module": {
+      "path": "src/index.js",
+      "exports": [
+        { "name": "celsiusToFahrenheit", "signature": "(c: number) => number", "description": "Celsius to Fahrenheit, 2 decimals" },
+        { "name": "fahrenheitToCelsius", "signature": "(f: number) => number", "description": "Fahrenheit to Celsius, 2 decimals" },
+        { "name": "convert", "signature": "(value: number, from: 'C'|'F'|'K', to: 'C'|'F'|'K') => number", "description": "Generic conversion between units" }
+      ]
+    },
+    "cli": { "path": "src/cli.js", "usage": "node src/cli.js <value> <C|F|K> <C|F|K>", "examples": ["node src/cli.js 100 C F"] },
+    "outOfScope": ["Graphical interface", "Other units (Rankine, Réaumur)"]
+  }
+}

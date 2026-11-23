@@ -1,0 +1,30 @@
+{
+  "id": "word-stats",
+  "keywords": ["ordräknare", "räkna ord", "word count", "word counter", "textstatistik", "text statistics"],
+  "spec": {
+    "title": "Textstatistik",
+    "slug": "word-stats",
+    "summary": "A zero-dependency Node.js library and CLI that reports word, character and line counts and the most frequent words in a text.",
+    "requirements": [
+      "Count words, characters and lines",
+      "List the most frequent words, case-insensitive",
+      "Offer a command line interface that reads the text from its arguments"
+    ],
+    "acceptanceCriteria": [
+      { "id": "AC1", "text": "textStats('Hej hej världen') returns words: 3" },
+      { "id": "AC2", "text": "characters counts all characters and lines counts newline-separated lines" },
+      { "id": "AC3", "text": "topWords(text, 1) returns [{ word: 'hej', count: 2 }] for 'Hej hej världen'" },
+      { "id": "AC4", "text": "Empty text returns zero words and zero lines; non-string input throws TypeError" },
+      { "id": "AC5", "text": "`node src/cli.js hej hej du` prints JSON containing \"words\":3 and exits 0; no arguments exits 1" }
+    ],
+    "module": {
+      "path": "src/index.js",
+      "exports": [
+        { "name": "textStats", "signature": "(text: string) => { words: number, characters: number, lines: number }", "description": "Basic counts" },
+        { "name": "topWords", "signature": "(text: string, n: number) => { word: string, count: number }[]", "description": "Most frequent words, lower-cased, ties alphabetical" }
+      ]
+    },
+    "cli": { "path": "src/cli.js", "usage": "node src/cli.js <text...>", "examples": ["node src/cli.js hej hej du"] },
+    "outOfScope": ["Reading files", "Language detection"]
+  }
+}

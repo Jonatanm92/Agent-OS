@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115">
+  <title>OMEGA</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/overview" aria-label="OMEGA start">
+      <img src="/icon.svg" alt="" width="24" height="24"><span>OMEGA</span>
+    </a>
+    <span id="status" class="status" role="status" aria-live="polite"></span>
+  </header>
+  <main id="view" tabindex="-1"></main>
+  <nav class="tabs" aria-label="Huvudmeny">
+    <a href="#/overview" data-tab="overview"><span class="ico" aria-hidden="true">◎</span><span>Översikt</span></a>
+    <a href="#/new" data-tab="new"><span class="ico" aria-hidden="true">＋</span><span>Beställ</span></a>
+    <a href="#/missions" data-tab="missions"><span class="ico" aria-hidden="true">▤</span><span>Uppdrag</span></a>
+    <a href="#/approvals" data-tab="approvals"><span class="ico" aria-hidden="true">✓</span><span>Godkänn</span><b id="badge" class="badge" hidden></b></a>
+    <a href="#/audit" data-tab="audit"><span class="ico" aria-hidden="true">⛓</span><span>Logg</span></a>
+    <a href="#/system" data-tab="system"><span class="ico" aria-hidden="true">⚙</span><span>System</span></a>
+  </nav>
+  <dialog id="modal">
+    <div class="modal-head"><strong id="modal-title"></strong><button type="button" id="modal-close" class="btn ghost">Stäng</button></div>
+    <pre id="modal-body"></pre>
+  </dialog>
+  <script src="/app.js"></script>
+</body>
+</html>

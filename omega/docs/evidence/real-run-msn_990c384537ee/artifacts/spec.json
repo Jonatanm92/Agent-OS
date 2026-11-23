@@ -1,0 +1,90 @@
+{
+  "title": "Dricksräknare och notadelare",
+  "slug": "dricks-och-notadelning",
+  "summary": "Ett litet Node.js-bibliotek med kommandoradsverktyg. Det räknar ut dricks på ett belopp, avrundar till hela kronor och delar totalen mellan flera personer. Andelarna är hela kronor och summerar exakt till totalen.",
+  "requirements": [
+    "Projektet är ett Node.js 22 ESM-projekt (\"type\": \"module\") utan externa beroenden. Det använder bara Node:s inbyggda moduler.",
+    "src/index.js exporterar roundKronor, calculateTip och splitBill.",
+    "roundKronor(value) avrundar ett icke-negativt tal till närmaste hela krona. Exakt ,5 avrundas uppåt. Funktionen tål flyttalsfel, så att t.ex. 1.005*100/100-liknande värden nära x,5 avrundas uppåt.",
+    "calculateTip(amount, tipPercent) returnerar roundKronor(amount * tipPercent / 100).",
+    "splitBill({ amount, tipPercent = 10, people = 1 }) returnerar { tip, total, shares }. tip = calculateTip(amount, tipPercent) och total = roundKronor(amount + tip). shares är en array med people heltal som summerar exakt till total. Varje andel är floor(total/people) eller en krona mer, och de som får den extra kronan står först i arrayen.",
+    "Ogiltig indata ger RangeError. Det gäller när amount inte är ett ändligt tal >= 0, när tipPercent inte är ett ändligt tal >= 0 och när people inte är ett heltal >= 1.",
+    "src/cli.js tas emot som: node src/cli.js <belopp> [--dricks <procent>] [--personer <antal>]. Standardvärdet för dricks är 10 och för personer 1.",
+    "CLI:t skriver tre rader till stdout och avslutar med kod 0. Raderna är 'Dricks: <tip> kr', 'Totalt: <total> kr' och 'Per person: <andelar kommaseparerade med ', '> kr'.",
+    "Vid ogiltig eller saknad indata skriver CLI:t ett felmeddelande till stderr och avslutar med kod 1.",
+    "Biblioteket använder inte nätverk, eval, new Function eller child_process. Testerna i test/*.test.js använder node:test."
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": "AC1",
+      "text": "roundKronor(2.5) === 3, roundKronor(2.49) === 2, roundKronor(0) === 0 och roundKronor(34.7) === 35."
+    },
+    {
+      "id": "AC2",
+      "text": "calculateTip(347, 10) === 35 och calculateTip(200, 15) === 30."
+    },
+    {
+      "id": "AC3",
+      "text": "splitBill({ amount: 347, tipPercent: 10, people: 3 }) deepStrictEqual { tip: 35, total: 382, shares: [128, 127, 127] }."
+    },
+    {
+      "id": "AC4",
+      "text": "splitBill({ amount: 100 }) deepStrictEqual { tip: 10, total: 110, shares: [110] } (standardvärden 10 % och 1 person)."
+    },
+    {
+      "id": "AC5",
+      "text": "För flera kombinationer, minst amount i {0, 1, 99.9, 347, 1000} × people i {1, 2, 3, 7}, gäller följande: shares har längden people, alla andelar är heltal, summan av shares är lika med total och största minus minsta andel är högst 1."
+    },
+    {
+      "id": "AC6",
+      "text": "splitBill kastar RangeError för amount: -1, amount: NaN, tipPercent: -5, people: 0 och people: 2.5."
+    },
+    {
+      "id": "AC7",
+      "text": "Kommandot 'node src/cli.js 347 --dricks 10 --personer 3' avslutar med kod 0. Det skriver exakt raderna 'Dricks: 35 kr', 'Totalt: 382 kr' och 'Per person: 128, 127, 127 kr' till stdout."
+    },
+    {
+      "id": "AC8",
+      "text": "Kommandona 'node src/cli.js abc' och 'node src/cli.js 100 --personer 0' avslutar båda med kod 1 och skriver en icke-tom text till stderr."
+    }
+  ],
+  "module": {
+    "path": "src/index.js",
+    "exports": [
+      {
+        "name": "roundKronor",
+        "signature": "roundKronor(value: number): number",
+        "description": "Avrundar till närmaste hela krona. Exakt ,5 avrundas uppåt och små flyttalsfel hanteras."
+      },
+      {
+        "name": "calculateTip",
+        "signature": "calculateTip(amount: number, tipPercent: number): number",
+        "description": "Räknar ut dricksen i hela kronor: roundKronor(amount * tipPercent / 100)."
+      },
+      {
+        "name": "splitBill",
+        "signature": "splitBill({ amount: number, tipPercent?: number = 10, people?: number = 1 }): { tip: number, total: number, shares: number[] }",
+        "description": "Räknar ut dricks och total och delar totalen i heltalsandelar som summerar exakt till totalen. Kastar RangeError vid ogiltig indata."
+      }
+    ]
+  },
+  "outOfScope": [
+    "Ojämn fördelning, där personer betalar olika andelar eller för egna rätter",
+    "Andra valutor än kronor och valutaomräkning",
+    "Avrundning till annat än hela kronor, t.ex. närmaste 5 eller 10 kr",
+    "Moms- eller kvittoberäkningar",
+    "Grafiskt gränssnitt eller webbgränssnitt",
+    "Lokalisering till andra språk",
+    "Att spara historik eller tidigare notor",
+    "JSON-utdata från CLI:t"
+  ],
+  "cli": {
+    "path": "src/cli.js",
+    "usage": "node src/cli.js <belopp> [--dricks <procent>] [--personer <antal>]",
+    "examples": [
+      "node src/cli.js 347 --dricks 10 --personer 3",
+      "node src/cli.js 100",
+      "node src/cli.js 250 --personer 4"
+    ]
+  }
+}

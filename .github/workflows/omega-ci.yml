@@ -1,0 +1,62 @@
+name: OMEGA CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['omega/**', '.github/workflows/omega-ci.yml']
+  pull_request:
+    paths: ['omega/**', '.github/workflows/omega-ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# CI never calls a paid model and uses no secrets: the Claude adapter is exercised
+# against a fake CLI in tests, and the demo uses the offline template engine.
+concurrency:
+  group: omega-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: omega
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install sandbox drivers (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y bubblewrap
+          # Ubuntu 24.04 restricts unprivileged user namespaces via AppArmor; allow them on this throwaway runner.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+          docker pull node:22-alpine
+      - run: npm ci
+      - run: npm run typecheck
+      - name: npm test
+        run: npm test
+        env:
+          # Linux must really run the adversarial tests on both drivers; a missing driver fails CI.
+          OMEGA_REQUIRE_SANDBOX: ${{ runner.os == 'Linux' && 'bwrap,docker' || '' }}
+      - name: Sandbox tests as root with a delegated cgroup v2 subtree (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo mkdir -p /sys/fs/cgroup/omega
+          echo "+pids +memory" | sudo tee /sys/fs/cgroup/omega/cgroup.subtree_control
+          sudo env "PATH=$PATH" OMEGA_CGROUP_PARENT=/sys/fs/cgroup/omega OMEGA_REQUIRE_SANDBOX=bwrap,docker OMEGA_REQUIRE_CGROUP=1 node --test --test-concurrency=1 test/sandbox.test.ts
+      - run: node scripts/verify-evidence.ts docs/evidence/real-run-msn_990c384537ee
+      - name: Offline demo
+        run: node src/cli.ts demo --home ./.omega-home
+        env:
+          # Windows runners have neither bubblewrap nor Linux containers: accept (and record) no isolation there.
+          OMEGA_ALLOW_UNSANDBOXED: ${{ runner.os == 'Windows' && '1' || '' }}

@@ -1,0 +1,25 @@
+{
+  "name": "omega",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OMEGA — personal AI operating system: governed multi-agent missions with verifiable evidence.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "bin": {
+    "omega": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "node src/cli.ts serve",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.ts\"",
+    "demo": "node src/cli.ts demo",
+    "inventory": "node src/cli.ts inventory",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.2"
+  }
+}
