@@ -19,6 +19,8 @@ import type { RolePolicy } from '../core/policy.ts';
  */
 export interface ClaudeRunRequest {
   bin: string;
+  /** Fixed leading args (e.g. path to cli.js when bin is node). Never shell-interpreted. */
+  binArgs?: string[];
   policy: RolePolicy;
   cwd: string;
   prompt: string;
@@ -101,8 +103,9 @@ export function parseClaudeOutput(stdout: string): Partial<ClaudeRunResult> & { 
 
 export async function runClaude(req: ClaudeRunRequest): Promise<ClaudeRunResult> {
   const args = buildClaudeArgs(req);
-  const policy: RolePolicy = { ...req.policy, capabilities: [...req.policy.capabilities, 'exec'], exec: [{ cmd: req.bin, argsPrefix: ['-p'] }] };
-  const res = await runControlled({ policy, cwd: req.cwd, cmd: req.bin, args, stdin: req.prompt, timeoutMs: req.timeoutMs });
+  const prefix = req.binArgs ?? [];
+  const policy: RolePolicy = { ...req.policy, capabilities: [...req.policy.capabilities, 'exec'], exec: [{ cmd: req.bin, argsPrefix: [...prefix, '-p'] }] };
+  const res = await runControlled({ policy, cwd: req.cwd, cmd: req.bin, args: [...prefix, ...args], stdin: req.prompt, timeoutMs: req.timeoutMs });
   const parsed = parseClaudeOutput(res.stdout);
   return {
     ok: Boolean(parsed.parsed && parsed.ok && res.code === 0 && !res.timedOut),

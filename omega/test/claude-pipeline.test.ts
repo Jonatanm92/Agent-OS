@@ -40,14 +40,14 @@ if (sys.includes('Product Lead')) {
 }
 `;
 
-// The fake CLI is a shebang script; Windows cannot spawn that without a shell.
-const POSIX_ONLY = { skip: process.platform === 'win32' ? 'fake claude binary needs a POSIX shebang executable' : false };
+// The fake CLI runs as `node fake-claude.mjs` (claudeArgs), so this also works on Windows.
+const ANY_OS = {};
 
 function setup(mode: Record<string, unknown>, cfgOverrides = {}) {
   const binDir = tempHome('omega-fakebin-');
   fs.writeFileSync(path.join(binDir, 'mode.json'), JSON.stringify(mode));
   const bin = writeFakeClaude(binDir, FAKE);
-  const omega = new Omega(testConfig({ claudeBin: bin, ...cfgOverrides }));
+  const omega = new Omega(testConfig({ claudeBin: process.execPath, claudeArgs: [bin], ...cfgOverrides }));
   const calls = () => fs.readFileSync(path.join(binDir, 'calls.log'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
   return { omega, calls };
 }
@@ -75,7 +75,7 @@ test('claude output parsing tolerates warnings before the JSON line', () => {
   assert.equal(parseClaudeOutput('not json').parsed, false);
 });
 
-test('claude-code mission (fake CLI): spend gate blocks until a human approves', POSIX_ONLY, async () => {
+test('claude-code mission (fake CLI): spend gate blocks until a human approves', ANY_OS, async () => {
   const { omega } = setup({});
   const m = await omega.createMission({ idea: 'En funktion som adderar två tal', engine: 'claude-code', budgetUsd: 1 });
   assert.equal(m.state, 'blocked');
@@ -85,7 +85,7 @@ test('claude-code mission (fake CLI): spend gate blocks until a human approves',
   assert.equal(omega.getMission(m.id).state, 'cancelled');
 });
 
-test('claude-code mission (fake CLI): failing tests trigger one fix iteration, then pass; cost is ledgered', POSIX_ONLY, async () => {
+test('claude-code mission (fake CLI): failing tests trigger one fix iteration, then pass; cost is ledgered', ANY_OS, async () => {
   process.env.GH_TOKEN = 'must-not-reach-agents';
   const { omega, calls } = setup({ buggyFirst: true });
   const m = await omega.createMission({ idea: 'En funktion som adderar två tal', engine: 'claude-code', budgetUsd: 1 });
@@ -117,7 +117,7 @@ test('claude-code mission (fake CLI): failing tests trigger one fix iteration, t
   assert.equal((await omega.verifyEvidence(m.id)).ok, true);
 });
 
-test('claude-code mission (fake CLI): an agent writing outside its scope is reverted and the mission fails', POSIX_ONLY, async () => {
+test('claude-code mission (fake CLI): an agent writing outside its scope is reverted and the mission fails', ANY_OS, async () => {
   const { omega } = setup({ testAuthorEscapes: true });
   const m = await omega.createMission({ idea: 'En funktion som adderar två tal', engine: 'claude-code', budgetUsd: 1 });
   await omega.decideApproval(omega.listApprovals('pending')[0].id, 'approve', 'test');
@@ -129,7 +129,7 @@ test('claude-code mission (fake CLI): an agent writing outside its scope is reve
   assert.ok(omega.audit.list({ missionId: m.id }).some((e) => e.type === 'policy.violation'));
 });
 
-test('claude-code mission (fake CLI): budget exhaustion stops the mission before the next paid run', POSIX_ONLY, async () => {
+test('claude-code mission (fake CLI): budget exhaustion stops the mission before the next paid run', ANY_OS, async () => {
   const { omega, calls } = setup({ coderCost: 5 }, { perRunBudgetUsd: 1 });
   const m = await omega.createMission({ idea: 'En funktion som adderar två tal', engine: 'claude-code', budgetUsd: 0.08 });
   await omega.decideApproval(omega.listApprovals('pending')[0].id, 'approve', 'test');

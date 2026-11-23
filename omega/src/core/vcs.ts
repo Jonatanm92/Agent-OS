@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import os from 'node:os';
+import path from 'node:path';
 import { runControlled, type ExecResult } from './exec.ts';
 import { resolveInside, type RolePolicy } from './policy.ts';
 
@@ -19,7 +20,15 @@ const VCS_POLICY: RolePolicy = {
   envPassthrough: [],
 };
 
-const ISOLATED_ENV = { GIT_CONFIG_GLOBAL: os.devNull, GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0' };
+/**
+ * Env that isolates git from the user's global/system config. GIT_CONFIG_GLOBAL points
+ * at an empty file we own: Git for Windows rejects the Windows null device (\\.\nul).
+ */
+export function isolatedGitEnv(): Record<string, string> {
+  const empty = path.join(os.tmpdir(), 'omega-empty.gitconfig');
+  if (!fs.existsSync(empty)) fs.writeFileSync(empty, '');
+  return { GIT_CONFIG_GLOBAL: empty, GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0' };
+}
 
 async function git(cwd: string, args: string[]): Promise<ExecResult> {
   const res = await runControlled({
@@ -28,7 +37,7 @@ async function git(cwd: string, args: string[]): Promise<ExecResult> {
     cmd: 'git',
     args: ['-c', 'core.hooksPath=.git/omega-no-hooks', '-c', 'commit.gpgsign=false', ...args],
     timeoutMs: 30_000,
-    extraEnv: ISOLATED_ENV,
+    extraEnv: isolatedGitEnv(),
   });
   if (res.code !== 0) throw new Error(`git ${args.join(' ')} failed (${res.code}): ${res.stderr.trim()}`);
   return res;

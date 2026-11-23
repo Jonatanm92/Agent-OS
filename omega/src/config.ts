@@ -16,6 +16,8 @@ export interface OmegaConfig {
   /** Must be explicitly true to bind anything other than loopback. */
   allowRemote: boolean;
   claudeBin: string;
+  /** Args placed before OMEGA's own, e.g. the cli.js path when claudeBin is node.exe. */
+  claudeArgs: string[];
   defaultModel: string;
   defaultMissionBudgetUsd: number;
   /** Hard cap across all missions per UTC day. */
@@ -61,6 +63,7 @@ export function loadConfig(overrides: Partial<OmegaConfig> = {}): OmegaConfig {
     port: num('OMEGA_PORT', 7420),
     allowRemote: process.env.OMEGA_ALLOW_REMOTE === '1',
     claudeBin: process.env.OMEGA_CLAUDE_BIN ?? 'claude',
+    claudeArgs: process.env.OMEGA_CLAUDE_ARGS ? (JSON.parse(process.env.OMEGA_CLAUDE_ARGS) as string[]) : [],
     defaultModel: process.env.OMEGA_MODEL ?? 'claude-opus-5-5',
     defaultMissionBudgetUsd: num('OMEGA_MISSION_BUDGET_USD', 3),
     dailyBudgetUsd: num('OMEGA_DAILY_BUDGET_USD', 10),

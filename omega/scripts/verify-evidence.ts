@@ -19,6 +19,7 @@ import path from 'node:path';
 import { AuditLog } from '../src/core/audit.ts';
 import { sha256 } from '../src/core/util.ts';
 import { treeDigest } from '../src/roles/files.ts';
+import { isolatedGitEnv } from '../src/core/vcs.ts';
 import type { Mission } from '../src/core/types.ts';
 
 const dir = path.resolve(process.argv[2] ?? '');
@@ -60,7 +61,7 @@ check('manifest audit head present in chain', sealedAt?.hash === manifest.auditH
 // 4–6. git history from the bundle
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'omega-verify-'));
 const repo = path.join(tmp, 'project');
-const cleanEnv = { ...process.env, GIT_CONFIG_GLOBAL: os.devNull, GIT_CONFIG_NOSYSTEM: '1' };
+const cleanEnv = { ...process.env, ...isolatedGitEnv() };
 delete (cleanEnv as Record<string, string | undefined>).NODE_TEST_CONTEXT;
 const git = (...args: string[]) => spawnSync('git', args, { cwd: repo, encoding: 'utf8', env: cleanEnv });
 spawnSync('git', ['clone', '-q', path.join(dir, 'project.bundle'), repo], { encoding: 'utf8', env: cleanEnv });

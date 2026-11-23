@@ -167,6 +167,7 @@ function transcript(ctx: EngineContext, label: string, systemAppend: string, pro
 async function invoke(ctx: EngineContext, label: string, systemAppend: string, prompt: string, opts: { maxTurns: number; timeoutMs: number; jsonSchema?: object }): Promise<{ res: ClaudeRunResult; ev: Evidence }> {
   const res = await runClaude({
     bin: ctx.cfg.claudeBin,
+    binArgs: ctx.cfg.claudeArgs,
     policy: ctx.role.policy,
     cwd: ctx.mission.projectDir,
     prompt,

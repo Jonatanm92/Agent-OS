@@ -4,6 +4,7 @@ import path from 'node:path';
 import type { OmegaConfig } from '../config.ts';
 import { runControlled } from '../core/exec.ts';
 import { isSecretPath, type RolePolicy } from '../core/policy.ts';
+import { isolatedGitEnv } from '../core/vcs.ts';
 
 /**
  * Phase-1 inventory: what agent tooling, disks and git repositories exist on the
@@ -152,7 +153,7 @@ async function repoInfo(dir: string): Promise<RepoInfo> {
     /* worktree or unusual layout */
   }
   info.remote = readRemote(gitDir);
-  const isolated = { GIT_CONFIG_GLOBAL: os.devNull, GIT_CONFIG_NOSYSTEM: '1', GIT_OPTIONAL_LOCKS: '0' };
+  const isolated = { ...isolatedGitEnv(), GIT_OPTIONAL_LOCKS: '0' };
   try {
     const logArgs = ['-C', dir, 'log', '-1', '--format=%cI'];
     const res = await runControlled({ policy: policyFor('git', ['-C']), cwd: dir, cmd: 'git', args: logArgs, timeoutMs: 10_000, extraEnv: isolated });
