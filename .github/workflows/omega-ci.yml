@@ -6,19 +6,25 @@ on:
     paths: ['omega/**', '.github/workflows/omega-ci.yml']
   pull_request:
     paths: ['omega/**', '.github/workflows/omega-ci.yml']
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+# CI never calls a paid model and uses no secrets: the Claude adapter is exercised
+# against a fake CLI in tests, and the demo uses the offline template engine.
+concurrency:
+  group: omega-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
+    name: test (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    # Windows support is not yet verified on real hardware; report it without blocking.
-    continue-on-error: ${{ matrix.os == 'windows-latest' }}
     timeout-minutes: 15
     defaults:
       run:
