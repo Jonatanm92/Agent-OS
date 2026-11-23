@@ -1,0 +1,13 @@
+{
+  "digest": "d53cb04754c91b41186f9caf8ab0e1f0e1b9abd20fb2bb05d46c1390c21e2350",
+  "files": [
+    {
+      "path": "test/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test/acceptance.test.js",
+      "sha256": "a9307d360fb17d9adb9580df0afbb9dfef12beec820ddd01b581a1c620dc555d"
+    }
+  ]
+}

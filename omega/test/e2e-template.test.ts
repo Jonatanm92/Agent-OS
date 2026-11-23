@@ -26,8 +26,18 @@ test('template engine: idea → spec → scaffold → tests → code → verifie
   assert.equal(m.security?.high, 0);
 
   // The project really works, independently of OMEGA: run its tests ourselves.
-  const own = spawnSync(process.execPath, ['--test', 'test/'], { cwd: m.projectDir, encoding: 'utf8' });
+  // Clean env: Node's test runner sets NODE_TEST_CONTEXT, which would make a nested
+  // `node --test` report to us instead of exiting non-zero on failure.
+  const { NODE_TEST_CONTEXT: _ctx, ...cleanEnv } = process.env;
+  const own = spawnSync(process.execPath, ['--test', 'test/**/*.test.js'], { cwd: m.projectDir, encoding: 'utf8', env: cleanEnv });
   assert.equal(own.status, 0, own.stdout + own.stderr);
+  assert.match(own.stdout, /# pass 6/);
+  // And the same check is not vacuous: a broken implementation fails it.
+  const brokenDir = fs.mkdtempSync(path.join(path.dirname(m.projectDir), 'broken-'));
+  fs.cpSync(m.projectDir, brokenDir, { recursive: true, filter: (src) => !src.includes(`${path.sep}.git`) });
+  fs.writeFileSync(path.join(brokenDir, 'src', 'index.js'), 'export const convert = () => 0; export const celsiusToFahrenheit = () => 0; export const fahrenheitToCelsius = () => 0;\n');
+  const broken = spawnSync(process.execPath, ['--test', 'test/**/*.test.js'], { cwd: brokenDir, encoding: 'utf8', env: cleanEnv });
+  assert.notEqual(broken.status, 0, 'a wrong implementation must fail the same command');
   const cli = spawnSync(process.execPath, ['src/cli.js', '100', 'C', 'F'], { cwd: m.projectDir, encoding: 'utf8' });
   assert.equal(cli.stdout.trim(), '212 F');
 

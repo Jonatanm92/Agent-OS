@@ -1,0 +1,82 @@
+{
+  "ok": true,
+  "tests": 8,
+  "pass": 8,
+  "fail": 0,
+  "durationMs": 137.133181,
+  "failures": [],
+  "coverage": [
+    {
+      "id": "AC1",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC1: roundKronor rounds to nearest whole krona, .5 rounds up"
+      ]
+    },
+    {
+      "id": "AC2",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC2: calculateTip returns rounded tip in whole kronor"
+      ]
+    },
+    {
+      "id": "AC3",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC3: splitBill 347 kr, 10 %, 3 people"
+      ]
+    },
+    {
+      "id": "AC4",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC4: splitBill uses defaults 10 % and 1 person"
+      ]
+    },
+    {
+      "id": "AC5",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC5: shares have correct length, are integers, sum to total and differ by at most 1"
+      ]
+    },
+    {
+      "id": "AC6",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC6: splitBill throws RangeError for invalid input"
+      ]
+    },
+    {
+      "id": "AC7",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC7: CLI prints tip, total and shares and exits 0"
+      ]
+    },
+    {
+      "id": "AC8",
+      "covered": true,
+      "passing": true,
+      "tests": [
+        "AC8: CLI exits 1 with stderr message for invalid input"
+      ]
+    }
+  ],
+  "exitCode": 0,
+  "runId": 2,
+  "logEvidence": "test-run-2.tap",
+  "integrity": {
+    "expected": "d53cb04754c91b41186f9caf8ab0e1f0e1b9abd20fb2bb05d46c1390c21e2350",
+    "actual": "d53cb04754c91b41186f9caf8ab0e1f0e1b9abd20fb2bb05d46c1390c21e2350",
+    "ok": true
+  }
+}

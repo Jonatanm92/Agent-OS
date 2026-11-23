@@ -1,0 +1,60 @@
+$ node --test --test-reporter=tap --test-timeout=20000 test/**/*.test.js
+# exit=0 signal=null timedOut=false wall_ms=163
+TAP version 13
+# Subtest: AC1: roundKronor rounds to nearest whole krona, .5 rounds up
+ok 1 - AC1: roundKronor rounds to nearest whole krona, .5 rounds up
+  ---
+  duration_ms: 0.959403
+  type: 'test'
+  ...
+# Subtest: AC2: calculateTip returns rounded tip in whole kronor
+ok 2 - AC2: calculateTip returns rounded tip in whole kronor
+  ---
+  duration_ms: 1.11978
+  type: 'test'
+  ...
+# Subtest: AC3: splitBill 347 kr, 10 %, 3 people
+ok 3 - AC3: splitBill 347 kr, 10 %, 3 people
+  ---
+  duration_ms: 0.92706
+  type: 'test'
+  ...
+# Subtest: AC4: splitBill uses defaults 10 % and 1 person
+ok 4 - AC4: splitBill uses defaults 10 % and 1 person
+  ---
+  duration_ms: 0.229976
+  type: 'test'
+  ...
+# Subtest: AC5: shares have correct length, are integers, sum to total and differ by at most 1
+ok 5 - AC5: shares have correct length, are integers, sum to total and differ by at most 1
+  ---
+  duration_ms: 0.564183
+  type: 'test'
+  ...
+# Subtest: AC6: splitBill throws RangeError for invalid input
+ok 6 - AC6: splitBill throws RangeError for invalid input
+  ---
+  duration_ms: 0.496967
+  type: 'test'
+  ...
+# Subtest: AC7: CLI prints tip, total and shares and exits 0
+ok 7 - AC7: CLI prints tip, total and shares and exits 0
+  ---
+  duration_ms: 26.369197
+  type: 'test'
+  ...
+# Subtest: AC8: CLI exits 1 with stderr message for invalid input
+ok 8 - AC8: CLI exits 1 with stderr message for invalid input
+  ---
+  duration_ms: 45.129146
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 137.133181

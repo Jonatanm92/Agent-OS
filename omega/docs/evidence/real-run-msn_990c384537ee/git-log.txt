@@ -1,0 +1,41 @@
+commit b2afedc5b76ed205a91c6db5db47b87c7048c3f2
+Author: OMEGA docs <docs@omega.local>
+Date:   2026-11-23T09:54:17+00:00
+
+    [omega:docs] README.md written from spec, verified test results and git history
+
+
+ README.md | 68 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+commit e99429dbfa7b0f38b08617037669db27e5ffe876
+Author: OMEGA coder <coder@omega.local>
+Date:   2026-11-23T09:54:16+00:00
+
+    [omega:coder] I wrote `src/index.js` and `src/cli.js`. I couldn't run anything here, so the tests haven't been run; I checked the exp…
+
+
+ src/cli.js   | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/index.js | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 116 insertions(+)
+commit f57ca1ddf16dd75f6f7963f5e53f7f78c106a693
+Author: OMEGA test-author <test-author@omega.local>
+Date:   2026-11-23T09:53:39+00:00
+
+    [omega:test-author] 1 test file(s): I've written the acceptance tests in `test/acceptance.test.js`, one test for each criterion AC1–AC8. I …
+
+
+ test/acceptance.test.js | 87 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 87 insertions(+)
+commit 5d88a4b9232ad866aa163aa9ada981d3adcaf2d6
+Author: OMEGA architect <architect@omega.local>
+Date:   2026-11-23T09:53:12+00:00
+
+    [omega:architect] Scaffolded package.json, .gitignore, OMEGA.md, src/.gitkeep, test/.gitkeep
+
+
+ .gitignore    |  1 +
+ OMEGA.md      | 53 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ package.json  | 19 +++++++++++++++++++
+ src/.gitkeep  |  0
+ test/.gitkeep |  0
+ 5 files changed, 73 insertions(+)

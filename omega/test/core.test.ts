@@ -58,7 +58,8 @@ test('policy: paths cannot escape the project, including via symlinks', () => {
     assert.throws(() => resolveInside(root, bad), PolicyError, bad);
   }
   const outside = tempHome('omega-outside-');
-  fs.symlinkSync(outside, path.join(root, 'src', 'link'));
+  // A junction on Windows needs no admin rights and escapes the same way.
+  fs.symlinkSync(outside, path.join(root, 'src', 'link'), process.platform === 'win32' ? 'junction' : 'dir');
   assert.throws(() => resolveInside(root, 'src/link/file.js'), /symlink/);
   assert.ok(resolveInside(root, 'src/ok.js').endsWith(path.join('src', 'ok.js')));
 });

@@ -1,0 +1,19 @@
+{
+  "name": "dricks-och-notadelning",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ett litet Node.js-bibliotek med kommandoradsverktyg. Det räknar ut dricks på ett belopp, avrundar till hela kronor och delar totalen mellan flera personer. Andelarna är hela kronor och summerar exakt till totalen.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "dricks-och-notadelning": "src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "start": "node src/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED"
+}

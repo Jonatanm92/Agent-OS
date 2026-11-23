@@ -177,7 +177,7 @@ export class Omega {
 
     if (engine === 'claude-code') {
       const autoOk = budgetUsd <= this.cfg.autoApproveSpendUnderUsd;
-      this.#requestApproval(id, 'spend_gate', `Godkänn AI-körning (högst $${budgetUsd.toFixed(2)})`, 'This mission runs paid Claude Code agents (product, test-author, coder).', {
+      this.#requestApproval(id, 'spend_gate', `Godkänn AI-körning (högst $${budgetUsd.toFixed(2)})`, 'Uppdraget kör betalda Claude Code-agenter (produkt, testförfattare, kodare) inom budgettaket nedan.', {
         engine,
         model,
         budgetUsd,
@@ -369,7 +369,8 @@ export class Omega {
   }
 
   #nextRunId(m: Mission): number {
-    return m.stages.filter((s) => s.role === 'tester').length + m.verifications.length + 1;
+    // The current tester stage is already recorded as "running"; count only finished runs.
+    return m.stages.filter((s) => s.role === 'tester' && s.state !== 'running').length + m.verifications.length + 1;
   }
 
   async #runTask(task: Task): Promise<void> {
@@ -501,7 +502,7 @@ export class Omega {
     });
     this.audit.append('omega', 'mission.sealed', { manifestSha256: ev.sha256, headCommit: manifest.headCommit }, id);
     const t = m.tests;
-    this.#requestApproval(id, 'final_review', `Granska: ${m.spec?.title ?? m.title}`, 'All stages finished. Review the code, tests and evidence, then approve or reject.', {
+    this.#requestApproval(id, 'final_review', `Granska: ${m.spec?.title ?? m.title}`, 'Alla steg är klara. Granska kod, tester och evidens – godkänn eller avvisa med motivering.', {
       tests: t ? `${t.pass}/${t.tests} passed` : 'none',
       securityHigh: m.security?.high ?? 0,
       securityMedium: m.security?.medium ?? 0,

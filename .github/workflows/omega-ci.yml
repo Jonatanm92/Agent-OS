@@ -1,0 +1,35 @@
+name: OMEGA CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['omega/**', '.github/workflows/omega-ci.yml']
+  pull_request:
+    paths: ['omega/**', '.github/workflows/omega-ci.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    # Windows support is not yet verified on real hardware; report it without blocking.
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: omega
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: node scripts/verify-evidence.ts docs/evidence/real-run-msn_990c384537ee
+      - run: node src/cli.ts demo --home ./.omega-home

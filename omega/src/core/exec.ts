@@ -44,6 +44,8 @@ const DENY_ENV = [
   /^GH_TOKEN$/i, /^GITHUB_TOKEN$/i, /^GH_ENTERPRISE_TOKEN$/i, /^AWS_/i, /^AZURE_/i, /^GOOGLE_APPLICATION_CREDENTIALS$/i,
   /^CLOUDSDK_AUTH_/i, /^NPM_TOKEN$/i, /^NODE_AUTH_TOKEN$/i, /^OMEGA_TOKEN$/i, /^OPENAI_API_KEY$/i, /^HF_TOKEN$/i,
   /^SSH_AUTH_SOCK$/i, /^GIT_ASKPASS$/i, /^GIT_CONFIG_/i,
+  // Could change how a child Node process behaves (inject code / fake test results).
+  /^NODE_OPTIONS$/i, /^NODE_TEST_CONTEXT$/i,
 ];
 
 function matchesName(name: string, pattern: string): boolean {

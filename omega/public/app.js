@@ -27,6 +27,7 @@ function h(tag, props, ...children) {
   for (const [k, v] of Object.entries(props || {})) {
     if (v === null || v === undefined || v === false) continue;
     if (k === 'class') el.className = v;
+    else if (k === 'cssWidth') el.style.width = v; // CSSOM, permitted by the strict CSP
     else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
     else el.setAttribute(k, v === true ? '' : String(v));
   }
@@ -83,7 +84,7 @@ function loginView() {
     h('h1', {}, 'Logga in'),
     h('p', { class: 'muted' }, 'OMEGA kräver en API-token. Den skrivs ut när servern startar och finns i filen token i OMEGA_HOME.'),
     h('label', { for: 'tok' }, 'Token'), input,
-    h('div', { class: 'row', style: 'margin-top:12px' },
+    h('div', { class: 'row mt' },
       h('button', { class: 'btn', onclick: () => { setToken(input.value.trim()); route(); } }, 'Logga in')));
 }
 
@@ -98,7 +99,7 @@ async function overviewView() {
       tile('Väntar på dig', o.pendingApprovals),
       tile('I kö / körs', `${o.queued} / ${o.running}`),
       tile('Kostnad idag', `${usd(o.spentTodayUsd)} / $${lim.dailyBudgetUsd}`)),
-    h('div', { class: 'card', style: 'margin-top:12px' },
+    h('div', { class: 'card mt' },
       h('div', { class: 'row spread' }, h('h3', {}, 'Granskningslogg'), pill(o.audit.ok ? 'Kedjan intakt' : 'BRUTEN', o.audit.ok ? 'ok' : 'bad')),
       h('p', { class: 'small muted' }, `${o.audit.count} poster, senaste hash `, h('span', { class: 'mono' }, short(o.audit.headHash))),
       h('p', { class: 'small muted' }, `Gränser: $${lim.perRunBudgetUsd}/agentkörning, standard $${lim.defaultMissionBudgetUsd}/uppdrag, max ${lim.maxFixIterations} rättningsvarv. `,
@@ -144,7 +145,7 @@ function newView() {
     h('label', { for: 'budget' }, 'Budgettak (USD)'), budget,
     h('p', { class: 'help' }, 'Hårt tak för hela uppdraget. Varje agentkörning får dessutom högst serverns tak per körning.'),
     h('label', { for: 'model' }, 'Modell (valfritt)'), model,
-    h('div', { class: 'row', style: 'margin-top:14px' }, submit));
+    h('div', { class: 'row mt' }, submit));
   return h('div', {}, h('h1', {}, 'Beställ en app'),
     h('p', { class: 'muted' }, 'Flöde: produkt → arkitektur → testförfattare → kodare → oberoende testkörning (med rättningsvarv) → säkerhetsgranskning → dokumentation → din granskning.'),
     form);
@@ -164,7 +165,7 @@ async function missionView(id) {
       m.engine === 'claude-code' ? h('div', {},
         h('div', { class: 'row spread small' }, h('span', {}, `Förbrukat ${usd(m.spentUsd)} av $${m.budgetUsd.toFixed(2)}`), h('span', { class: 'muted' }, 'enligt Claude Codes egen kostnadsrapport')),
         h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': m.budgetUsd, 'aria-valuenow': m.spentUsd },
-          h('span', { style: `width:${Math.min(100, (m.spentUsd / Math.max(m.budgetUsd, 0.0001)) * 100)}%` }))) : null),
+          h('span', { cssWidth: `${Math.min(100, (m.spentUsd / Math.max(m.budgetUsd, 0.0001)) * 100)}%` }))) : null),
     h('h2', {}, 'Pipeline'), pipeline(m, d.tasks),
     m.tests ? testsCard(m) : null,
     m.verifications.length ? h('div', { class: 'card' }, h('h3', {}, 'Omverifieringar'),
@@ -176,7 +177,7 @@ async function missionView(id) {
     h('h2', {}, 'Versionshistorik (git)'), commitsCard(d.commits),
     h('h2', {}, 'Filer i projektet'), filesCard(m, d.files),
     h('h2', {}, 'Åtgärder'), actionsCard(m),
-    h('h2', {}, 'Händelser'), auditList(d.audit, false));
+    h('details', {}, h('summary', {}, `Händelser (${d.audit.length})`), auditList(d.audit, false)));
   return el;
 }
 
@@ -219,7 +220,7 @@ function stagesCard(m) {
   return h('div', { class: 'card' }, h('ul', { class: 'list' }, m.stages.map((s) => h('li', {},
     h('div', { class: 'row spread' }, h('strong', {}, `${ROLE_LABEL[s.role] || s.role}${s.iteration > 1 ? ` (varv ${s.iteration})` : ''}`),
       h('span', { class: 'row' }, s.costUsd ? pill(usd(s.costUsd), 'info') : null, pill(s.state, s.state === 'succeeded' ? 'ok' : s.state === 'failed' ? 'bad' : 'info'))),
-    s.summary ? h('p', { class: 'small' }, s.summary) : null,
+    s.summary ? h('p', { class: 'small clamp', title: s.summary }, s.summary) : null,
     s.error ? h('p', { class: 'small error' }, s.error) : null,
     s.commit ? h('p', { class: 'small muted' }, 'Commit ', h('span', { class: 'mono' }, short(s.commit)), ` · ${(s.changedFiles || []).join(', ')}`) : null,
     s.evidence.map((e) => h('div', { class: 'evidence small' },
@@ -270,7 +271,7 @@ async function artifact(missionId, name) {
 }
 
 function approvalCard(a, mission) {
-  const note = h('textarea', { placeholder: a.kind === 'final_review' ? 'Kommentar (krävs vid avvisning)' : 'Kommentar (valfritt)', style: 'min-height:70px' });
+  const note = h('textarea', { placeholder: a.kind === 'final_review' ? 'Kommentar (krävs vid avvisning)' : 'Kommentar (valfritt)', class: 'short' });
   const highRisk = a.kind === 'final_review' && (a.context.securityHigh || 0) > 0;
   const ack = h('input', { type: 'checkbox' });
   const ok = h('button', { class: 'btn', onclick: () => act(ok, async () => {
@@ -282,12 +283,12 @@ function approvalCard(a, mission) {
     flash('Avvisat'); route();
   }) }, 'Avvisa');
   const ctx = Object.entries(a.context || {}).map(([k, v]) => h('div', { class: 'small' }, h('span', { class: 'muted' }, `${k}: `), Array.isArray(v) ? v.join(', ') : String(v)));
-  return h('div', { class: 'card', style: 'border-color: var(--warn)' },
+  return h('div', { class: 'card attention' },
     h('div', { class: 'row spread' }, h('h3', {}, a.title), pill(a.kind === 'spend_gate' ? 'Utgiftsgrind' : 'Slutgranskning', 'warn')),
     mission ? null : h('p', { class: 'small' }, h('a', { href: `#/m/${a.missionId}` }, 'Öppna uppdraget')),
     h('p', { class: 'small muted' }, a.reason), ctx,
     highRisk ? h('label', { class: 'check' }, ack, 'Jag har läst säkerhetsfynden med hög allvarlighet och godkänner ändå') : null,
-    note, h('div', { class: 'row', style: 'margin-top:10px' }, ok, no));
+    note, h('div', { class: 'row mt' }, ok, no));
 }
 
 async function approvalsView() {
@@ -348,7 +349,7 @@ async function systemView() {
     inv.repos.length ? h('div', {}, h('h2', {}, 'Befintliga repon (endast läsning)'), h('div', { class: 'card' }, h('ul', { class: 'list small' }, inv.repos.map((r) => h('li', {},
       h('strong', {}, r.name), ` (${r.branch || '?'}) · ${r.dirtyFiles ?? '?'} ändrade filer · ${when(r.lastCommit)}`, h('div', { class: 'muted mono' }, r.remote || 'ingen remote')))))) : null,
     inv.notes.map((n) => h('p', { class: 'small muted' }, n)),
-    h('div', { class: 'row', style: 'margin-top:12px' }, h('button', { class: 'btn ghost', onclick: () => { setToken(''); route(); } }, 'Logga ut')));
+    h('div', { class: 'row mt' }, h('button', { class: 'btn ghost', onclick: () => { setToken(''); route(); } }, 'Logga ut')));
 }
 
 // ── router ───────────────────────────────────────────────────────────────────
@@ -388,7 +389,19 @@ async function refreshBadge() {
     $badge.textContent = String(o.pendingApprovals);
   } catch { /* ignore */ }
 }
+// Token handed over in the URL fragment (never sent to the server) → store and strip.
+// Runs on every navigation, not only on load: opening the link in an already-open tab
+// is a same-document hash change.
+function consumeTokenFragment() {
+  const frag = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const t = frag.get('token');
+  if (!t) return false;
+  setToken(t);
+  history.replaceState(null, '', `${location.pathname}#/overview`);
+  return true;
+}
 function route() {
+  consumeTokenFragment();
   const changed = current !== location.hash;
   current = location.hash;
   render().then(() => { if (changed) $view.focus({ preventScroll: true }); });
@@ -401,9 +414,6 @@ function autoRefresh() {
   }, 4000);
 }
 
-// Token handed over in the URL fragment (never sent to the server) → store and strip.
-const frag = new URLSearchParams(location.hash.replace(/^#/, ''));
-if (frag.get('token')) { setToken(frag.get('token')); history.replaceState(null, '', `${location.pathname}#/overview`); }
 window.addEventListener('hashchange', route);
 route();
 autoRefresh();

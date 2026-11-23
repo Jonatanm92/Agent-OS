@@ -28,6 +28,14 @@ This is an open implementation of the four-pillar "Sovereign Stack" idea:
 ---
 
 
+## OMEGA (experimental, in `omega/`)
+
+`omega/` contains **OMEGA**, a separate, zero-dependency orchestrator for governed multi-agent missions:
+a mission queue with explicit state machines, per-role permissions, budget caps, a manual approval queue,
+a hash-chained audit log and a mobile-first dashboard. It runs real Claude Code agents in a locked-down
+headless mode and verifies their work independently. It shares no code with the Agent OS server.
+See [`omega/README.md`](./omega/README.md).
+
 ## Open-source goals
 
 Agent OS exists to make multi-agent development infrastructure inspectable and

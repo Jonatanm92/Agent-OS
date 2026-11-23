@@ -1,0 +1,187 @@
+{
+  "missionId": "msn_990c384537ee",
+  "generatedAt": "2026-11-23T09:54:17.060Z",
+  "engine": "claude-code",
+  "model": "claude-opus-5-5",
+  "spentUsd": 0.3548522,
+  "projectDir": "/tmp/claude-0/-home-user-Agent-OS/a4a28415-ef25-5209-976b-72d3f63bfef6/scratchpad/omega-real/projects/bygg-en-liten-app-som-raknar-ut-990c38",
+  "headCommit": "b2afedc5b76ed205a91c6db5db47b87c7048c3f2",
+  "commits": [
+    {
+      "sha": "b2afedc5b76ed205a91c6db5db47b87c7048c3f2",
+      "author": "OMEGA docs",
+      "date": "2026-11-23T09:54:17+00:00",
+      "subject": "[omega:docs] README.md written from spec, verified test results and git history"
+    },
+    {
+      "sha": "e99429dbfa7b0f38b08617037669db27e5ffe876",
+      "author": "OMEGA coder",
+      "date": "2026-11-23T09:54:16+00:00",
+      "subject": "[omega:coder] I wrote `src/index.js` and `src/cli.js`. I couldn't run anything here, so the tests haven't been run; I checked the exp…"
+    },
+    {
+      "sha": "f57ca1ddf16dd75f6f7963f5e53f7f78c106a693",
+      "author": "OMEGA test-author",
+      "date": "2026-11-23T09:53:39+00:00",
+      "subject": "[omega:test-author] 1 test file(s): I've written the acceptance tests in `test/acceptance.test.js`, one test for each criterion AC1–AC8. I …"
+    },
+    {
+      "sha": "5d88a4b9232ad866aa163aa9ada981d3adcaf2d6",
+      "author": "OMEGA architect",
+      "date": "2026-11-23T09:53:12+00:00",
+      "subject": "[omega:architect] Scaffolded package.json, .gitignore, OMEGA.md, src/.gitkeep, test/.gitkeep"
+    }
+  ],
+  "testDigest": "d53cb04754c91b41186f9caf8ab0e1f0e1b9abd20fb2bb05d46c1390c21e2350",
+  "tests": {
+    "ok": true,
+    "tests": 8,
+    "pass": 8,
+    "fail": 0,
+    "durationMs": 137.133181,
+    "failures": [],
+    "coverage": [
+      {
+        "id": "AC1",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC1: roundKronor rounds to nearest whole krona, .5 rounds up"
+        ]
+      },
+      {
+        "id": "AC2",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC2: calculateTip returns rounded tip in whole kronor"
+        ]
+      },
+      {
+        "id": "AC3",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC3: splitBill 347 kr, 10 %, 3 people"
+        ]
+      },
+      {
+        "id": "AC4",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC4: splitBill uses defaults 10 % and 1 person"
+        ]
+      },
+      {
+        "id": "AC5",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC5: shares have correct length, are integers, sum to total and differ by at most 1"
+        ]
+      },
+      {
+        "id": "AC6",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC6: splitBill throws RangeError for invalid input"
+        ]
+      },
+      {
+        "id": "AC7",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC7: CLI prints tip, total and shares and exits 0"
+        ]
+      },
+      {
+        "id": "AC8",
+        "covered": true,
+        "passing": true,
+        "tests": [
+          "AC8: CLI exits 1 with stderr message for invalid input"
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "runId": 2,
+    "logEvidence": "test-run-2.tap"
+  },
+  "security": {
+    "high": 0,
+    "medium": 0,
+    "total": 0
+  },
+  "artifacts": [
+    {
+      "stage": "product",
+      "iteration": 1,
+      "name": "agent-product.json",
+      "sha256": "0679676d5ce13d511434fe49c3348461bf0b44f541ce8b66e5ba49d9c4a5d238",
+      "bytes": 13205
+    },
+    {
+      "stage": "product",
+      "iteration": 1,
+      "name": "spec.json",
+      "sha256": "d9177b093573c3cd6cd7a6e07f077c605ec10a322fff62859ca22e23b6c61e87",
+      "bytes": 5039
+    },
+    {
+      "stage": "test-author",
+      "iteration": 1,
+      "name": "agent-test-author.json",
+      "sha256": "fc9a9595e61b3e89b9c683fe1b36ddbe13278a20fbece031a8a004b811bc2d5d",
+      "bytes": 8728
+    },
+    {
+      "stage": "test-author",
+      "iteration": 1,
+      "name": "test-digest.json",
+      "sha256": "998a55a6ff56e33e0f6507c8eb7fca79dddd8105bcca9196c27c833a8104a0f2",
+      "bytes": 363
+    },
+    {
+      "stage": "coder",
+      "iteration": 1,
+      "name": "agent-coder.json",
+      "sha256": "1d9563dd65357e1317bbae7c1fccec28dce7989224d4a1fc4de8b71aac4bed2a",
+      "bytes": 8573
+    },
+    {
+      "stage": "tester",
+      "iteration": 1,
+      "name": "test-run-2.tap",
+      "sha256": "74ae463f6d87622a205a5bfbac6ba62bc9beb2e69851bb0c1843c08f437987c8",
+      "bytes": 1672
+    },
+    {
+      "stage": "tester",
+      "iteration": 1,
+      "name": "test-report-2.json",
+      "sha256": "62656a58758bcd05ccb9c18898ef7492c08e4e77747bf541b1c8d1137a260b01",
+      "bytes": 1735
+    },
+    {
+      "stage": "security",
+      "iteration": 1,
+      "name": "security-report.json",
+      "sha256": "a6c89af9d31187dc5fc2f5fda43daa4bb040cf108a0a563e420406a3e7e9c74c",
+      "bytes": 41
+    },
+    {
+      "stage": "docs",
+      "iteration": 1,
+      "name": "README.md",
+      "sha256": "84c2bfad46dd8632b948f4ed492b06d1abb36552ceecdeda4108417bd5a384b2",
+      "bytes": 3668
+    }
+  ],
+  "auditHead": {
+    "seq": 29,
+    "hash": "1f689417971311502b6d186f645919ccdc95599e44a5b10d4e6430194c6b0b3d"
+  }
+}
